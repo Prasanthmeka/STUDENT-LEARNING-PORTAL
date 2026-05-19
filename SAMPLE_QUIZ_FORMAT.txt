@@ -1,0 +1,36 @@
+Quiz Questions - Chapter 5: Photosynthesis
+
+1. What is the primary function of photosynthesis in plants?
+A) To break down glucose for energy
+B) To convert light energy into chemical energy stored in glucose
+C) To produce oxygen for respiration only
+D) To absorb water from the soil
+Answer: B
+
+2. Which of the following is NOT a requirement for photosynthesis?
+A) Chlorophyll
+B) Water
+C) Carbon dioxide
+D) Nitrogen
+Answer: D
+
+3. During which phase of photosynthesis is glucose produced?
+A) Light-dependent reactions
+B) Light-independent reactions (Calvin Cycle)
+C) Electron transport chain
+D) Water splitting
+Answer: B
+
+4. What is the role of chlorophyll in photosynthesis?
+A) To transport water through the plant
+B) To absorb light energy
+C) To produce oxygen
+D) To decompose carbon dioxide
+Answer: B
+
+5. Which wavelength of light is most effectively absorbed by chlorophyll a?
+A) Red and blue light
+B) Green light
+C) Yellow light
+D) Infrared light
+Answer: A

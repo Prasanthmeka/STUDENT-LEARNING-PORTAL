@@ -1,0 +1,136 @@
+.footer {
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  padding: 60px 40px 20px;
+  margin-top: 80px;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.footer-section h3 {
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.footer-section p {
+  line-height: 1.8;
+  color: #bdc3c7;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-section ul li {
+  margin-bottom: 12px;
+}
+
+.footer-section a {
+  color: #bdc3c7;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-section a:hover {
+  color: #667eea;
+}
+
+.footer-social {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.footer-social h3 {
+  font-size: 1.3rem;
+  color: white;
+}
+
+.social-links {
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  background: transparent;
+}
+
+.social-link i {
+  font-size: 2.2rem;
+  transition: transform 0.3s ease;
+}
+
+.social-link.instagram i {
+  background: -webkit-linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.social-link.instagram:hover i {
+  transform: scale(1.2);
+}
+
+.social-link.facebook i {
+  color: #1877f2;
+}
+
+.social-link.facebook:hover i {
+  transform: scale(1.2);
+}
+
+.social-link.whatsapp i {
+  color: #25d366;
+}
+
+.social-link.whatsapp:hover i {
+  transform: scale(1.2);
+}
+
+.footer-bottom {
+  border-top: 1px solid #34495e;
+  padding-top: 20px;
+  text-align: center;
+  color: #95a5a6;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .footer {
+    padding: 40px 20px 20px;
+  }
+
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+  }
+
+  .social-links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .social-link i {
+    font-size: 1.8rem;
+  }
+}

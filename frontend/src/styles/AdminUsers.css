@@ -1,0 +1,166 @@
+.admin-users {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.admin-users::-webkit-scrollbar {
+  display: none;
+}
+
+.page-header {
+  background: rgba(0, 0, 0, 0.1);
+  color: white;
+  padding: 30px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.btn-back {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid white;
+  padding: 10px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+  white-space: nowrap;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.btn-back:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 2.5em;
+  flex: 1;
+  text-align: center;
+}
+
+.page-header p {
+  margin: 0;
+  font-size: 1.1em;
+  opacity: 0.9;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.users-list-container {
+  background: rgba(25, 25, 35, 0.85);
+  backdrop-filter: blur(16px);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.users-list-container h2 {
+  margin-top: 0;
+  margin-bottom: 25px;
+  color: white;
+}
+
+.users-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+
+.users-table th {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 15px 10px;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+.users-table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 15px 10px;
+}
+
+.role-badge {
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.role-admin {
+  background: rgba(74, 144, 226, 0.2);
+  color: #66b0ff;
+  border: 1px solid rgba(74, 144, 226, 0.4);
+}
+
+.role-student {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-make-admin {
+  padding: 8px 15px;
+  font-size: 0.85rem;
+  min-width: 110px;
+  background: rgba(74, 144, 226, 0.2);
+  color: #66b0ff;
+  border: 1px solid rgba(74, 144, 226, 0.4);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 600;
+}
+
+.btn-make-admin:hover {
+  background: rgba(74, 144, 226, 0.4);
+}
+
+.btn-revoke-admin {
+  padding: 8px 15px;
+  font-size: 0.85rem;
+  min-width: 110px;
+  background: rgba(220, 53, 69, 0.2);
+  color: #ff6b6b;
+  border: 1px solid rgba(220, 53, 69, 0.4);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 600;
+}
+
+.btn-revoke-admin:hover {
+  background: rgba(220, 53, 69, 0.4);
+}
+
+.message {
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.message.success {
+  background: rgba(81, 207, 102, 0.2);
+  color: #51cf66;
+  border: 1px solid rgba(81, 207, 102, 0.3);
+}
+
+.message.error {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}

@@ -1,0 +1,244 @@
+.leaderboard-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dashboard-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 40px 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.header-top {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.btn-back {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid white;
+  padding: 10px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+  white-space: nowrap;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.btn-back:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.header-top h1 {
+  margin: 0;
+  font-size: 36px;
+  font-weight: bold;
+  flex: 1;
+}
+
+.header-top > div {
+  flex: 1;
+}
+
+.header-top .btn-logout {
+  flex-shrink: 0;
+}
+
+.header-top p {
+  margin: 5px 0 0 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.btn-logout {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-logout:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.dashboard-nav {
+  background: white;
+  padding: 15px 20px;
+  display: flex;
+  gap: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-nav a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.dashboard-nav a:hover {
+  background-color: #f0f0f0;
+  color: #667eea;
+}
+
+.dashboard-nav a.active {
+  color: #667eea;
+  border-bottom: 3px solid #667eea;
+}
+
+.leaderboard-section {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.leaderboard-section h2 {
+  color: white;
+  font-size: 28px;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.no-content {
+  text-align: center;
+  color: white;
+  font-size: 16px;
+  padding: 40px 20px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin-bottom: 40px;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 40px;
+}
+
+.leaderboard-table thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.leaderboard-table th {
+  padding: 18px 15px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.leaderboard-table td {
+  padding: 18px 15px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+  color: #333;
+}
+
+.leaderboard-table tbody tr {
+  transition: all 0.3s;
+}
+
+.leaderboard-table tbody tr:hover {
+  background-color: #f9f9f9;
+  transform: scale(1.01);
+}
+
+.leaderboard-table tbody tr.rank-1 {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), transparent);
+  border-left: 4px solid #ffd700;
+}
+
+.leaderboard-table tbody tr.rank-1 td:first-child {
+  font-weight: bold;
+  color: #ffd700;
+  font-size: 18px;
+}
+
+.leaderboard-table tbody tr.rank-2 {
+  background: linear-gradient(90deg, rgba(192, 192, 192, 0.1), transparent);
+  border-left: 4px solid #c0c0c0;
+}
+
+.leaderboard-table tbody tr.rank-2 td:first-child {
+  font-weight: bold;
+  color: #888;
+  font-size: 18px;
+}
+
+.leaderboard-table tbody tr.rank-3 {
+  background: linear-gradient(90deg, rgba(205, 127, 50, 0.1), transparent);
+  border-left: 4px solid #cd7f32;
+}
+
+.leaderboard-table tbody tr.rank-3 td:first-child {
+  font-weight: bold;
+  color: #8b4513;
+  font-size: 18px;
+}
+
+.leaderboard-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-size: 18px;
+  color: white;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .header-top {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .header-top h1 {
+    font-size: 28px;
+  }
+
+  .dashboard-nav {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .leaderboard-table {
+    font-size: 12px;
+  }
+
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 12px 8px;
+  }
+
+  .leaderboard-table th {
+    font-size: 12px;
+  }
+}
