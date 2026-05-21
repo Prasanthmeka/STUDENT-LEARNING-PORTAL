@@ -70,3 +70,31 @@ body {
     font-size: 12px;
   }
 }
+
+/* Global responsive helpers */
+img, picture, video, iframe {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Reduce global paddings on small screens */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 0 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 0 8px;
+  }
+
+  /* Make buttons and fixed-width elements adapt */
+  .btn {
+    width: auto;
+    max-width: 100%;
+    padding: 10px 16px;
+    box-sizing: border-box;
+  }
+}

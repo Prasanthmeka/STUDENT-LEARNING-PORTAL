@@ -109,7 +109,7 @@ const QuizPage = () => {
           <button onClick={() => navigate('/student/quizzes')} className="btn-back">← Back</button>
           <h1>Quiz Complete!</h1>
           <p>{quiz.title}</p>
-          <div style={{ background: 'rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: '8px', display: 'inline-block', marginTop: '10px' }}>
+          <div className="completion-badge" style={{ background: 'rgba(255,255,255,0.1)', padding: '10px 20px', borderRadius: '8px', display: 'inline-block', marginTop: '10px' }}>
             🔒 You have already completed this quiz. Retakes are not allowed.
           </div>
         </header>
