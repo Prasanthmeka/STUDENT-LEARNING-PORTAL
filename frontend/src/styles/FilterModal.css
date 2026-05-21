@@ -1,0 +1,68 @@
+.filter-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 16px;
+}
+
+.filter-modal-panel {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-modal-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #222;
+  padding: 8px 4px;
+}
+
+.filter-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 60vh;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.filter-modal-option {
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e6e6e6;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.filter-modal-option.active {
+  background: linear-gradient(135deg,#667eea,#764ba2);
+  color: white;
+  border-color: transparent;
+}
+
+.filter-modal-close {
+  margin-top: 4px;
+  align-self: flex-end;
+  padding: 8px 12px;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+@media (max-width: 420px) {
+  .filter-modal-panel { max-width: 96%; }
+}

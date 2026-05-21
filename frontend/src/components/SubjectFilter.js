@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import FilterModal from './FilterModal';
 import '../styles/SubjectFilter.css';
 
 function SubjectFilter({ selectedSubject, onSubjectChange, showLabel = true }) {
@@ -14,20 +15,26 @@ function SubjectFilter({ selectedSubject, onSubjectChange, showLabel = true }) {
     'Social'
   ];
 
+  const [open, setOpen] = useState(false);
+
+  const options = subjects.map(s => ({ value: s, label: s }));
+
   return (
     <div className="subject-filter">
       {showLabel && <label>Filter by Subject:</label>}
-      <div className="filter-buttons">
-        {subjects.map((subject) => (
-          <button
-            key={subject}
-            className={`filter-btn ${selectedSubject === subject ? 'active' : ''}`}
-            onClick={() => onSubjectChange(subject)}
-          >
-            {subject}
-          </button>
-        ))}
-      </div>
+
+      <button className="subject-select" onClick={() => setOpen(true)}>
+        {selectedSubject}
+      </button>
+
+      <FilterModal
+        isOpen={open}
+        title="Choose Subject"
+        options={options}
+        selected={selectedSubject}
+        onClose={() => setOpen(false)}
+        onSelect={(val) => onSubjectChange(val)}
+      />
     </div>
   );
 }

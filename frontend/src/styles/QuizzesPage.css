@@ -295,6 +295,62 @@
   }
 }
 
+/* Dropdown replacement for status filters */
+.filter-dropdowns {
+  margin-bottom: 20px;
+}
+
+.status-select {
+  width: 100%;
+  max-width: 420px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 2px solid rgba(255,255,255,0.15);
+  background: white;
+  color: #333;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .status-select {
+    max-width: 100%;
+    padding: 10px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Center dropdowns and avoid clipping on small screens */
+.filter-dropdowns {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.status-select {
+  box-sizing: border-box;
+  display: block;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1000;
+}
+
+/* Prevent selected value from wrapping letter-by-letter on very small screens */
+@media (max-width: 420px) {
+  .filter-dropdowns {
+    padding: 0 8px;
+    justify-content: stretch;
+  }
+
+  .status-select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 /* Extra small screens: improve spacing and readability */
 @media (max-width: 480px) {
   .dashboard-header {

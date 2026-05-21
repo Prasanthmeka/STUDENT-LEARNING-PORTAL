@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { quizAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import SubjectFilter from '../components/SubjectFilter';
+import FilterModal from '../components/FilterModal';
 import '../styles/QuizzesPage.css';
 
 const QuizzesPage = () => {
@@ -64,6 +65,7 @@ const QuizzesPage = () => {
 
   const shortQuizCount = quizzes.filter(q => q.time_limit_minutes <= 15).length;
   const longQuizCount = quizzes.filter(q => q.time_limit_minutes > 15).length;
+  const [showStatusModal, setShowStatusModal] = useState(false);
 
   if (loading) return <div className="loading">Loading quizzes...</div>;
 
@@ -92,25 +94,26 @@ const QuizzesPage = () => {
 
         <SubjectFilter selectedSubject={selectedSubject} onSubjectChange={handleSubjectChange} />
 
-        <div className="filter-buttons">
-          <button
-            className={`filter-btn ${selectedFilter === 'all' ? 'active' : ''}`}
-            onClick={() => filterByStatus('all')}
-          >
-            All Quizzes ({quizzes.length})
+        <div className="filter-dropdowns">
+          <button className="status-select" onClick={() => setShowStatusModal(true)}>
+            {selectedFilter === 'all' ? `All Quizzes (${quizzes.length})` : selectedFilter === 'short' ? `⚡ Quick (${shortQuizCount})` : `📖 Comprehensive (${longQuizCount})`}
           </button>
-          <button
-            className={`filter-btn ${selectedFilter === 'short' ? 'active' : ''}`}
-            onClick={() => filterByStatus('short')}
-          >
-            ⚡ Quick ({shortQuizCount})
-          </button>
-          <button
-            className={`filter-btn ${selectedFilter === 'long' ? 'active' : ''}`}
-            onClick={() => filterByStatus('long')}
-          >
-            📖 Comprehensive ({longQuizCount})
-          </button>
+
+          <FilterModal
+            isOpen={showStatusModal}
+            title="Filter Quizzes"
+            options={[
+              { value: 'all', label: `All Quizzes (${quizzes.length})` },
+              { value: 'short', label: `⚡ Quick (${shortQuizCount})` },
+              { value: 'long', label: `📖 Comprehensive (${longQuizCount})` }
+            ]}
+            selected={selectedFilter}
+            onClose={() => setShowStatusModal(false)}
+            onSelect={(val) => {
+              setSelectedFilter(val);
+              filterByStatus(val);
+            }}
+          />
         </div>
 
         {filteredQuizzes.length === 0 ? (

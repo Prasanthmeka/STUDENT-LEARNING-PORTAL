@@ -280,3 +280,58 @@
     width: 100%;
   }
 }
+
+/* Dropdown replacements for filter buttons */
+.filter-dropdowns {
+  margin-bottom: 20px;
+}
+
+.type-select {
+  width: 100%;
+  max-width: 360px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 2px solid rgba(255,255,255,0.15);
+  background: white;
+  color: #333;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .type-select {
+    max-width: 100%;
+    padding: 10px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Center dropdowns and ensure they are not clipped on mobile */
+.filter-dropdowns {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.type-select {
+  box-sizing: border-box;
+  display: block;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1000;
+}
+
+@media (max-width: 420px) {
+  .filter-dropdowns {
+    padding: 0 8px;
+    justify-content: stretch;
+  }
+
+  .type-select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
