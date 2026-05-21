@@ -280,6 +280,19 @@
   opacity: 0.9;
 }
 
+/* Badge for completed-quiz message */
+.completion-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.12);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  margin-top: 10px;
+  font-weight: 600;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 .result-summary {
   max-width: 400px;
   margin: 0 auto 40px;
@@ -625,4 +638,31 @@
 .option input[type="radio"]:checked ~ .option-letter {
   background: #667eea;
   color: white;
+}
+
+/* Small screen adjustments for results header and badge */
+@media (max-width: 480px) {
+  .result-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .result-header h1 {
+    font-size: 1.6em;
+    text-align: center;
+    margin: 0;
+  }
+
+  .completion-badge {
+    width: 100%;
+    white-space: normal;
+    padding: 12px 14px;
+    font-size: 0.95rem;
+  }
+
+  .result-summary {
+    margin-top: 10px;
+  }
 }

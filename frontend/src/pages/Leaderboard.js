@@ -72,12 +72,12 @@ const Leaderboard = () => {
             <tbody>
               {leaderboard.map((student, idx) => (
                 <tr key={student.student_id}>
-                  <td className={idx < 3 ? `rank-${idx + 1}` : ''}>{idx + 1}</td>
-                  <td>{student.full_name}</td>
-                  <td>{student.email}</td>
-                  <td>{student.quizzesCompleted}</td>
-                  <td>{student.totalMarks}</td>
-                  <td>{student.averagePercentage}%</td>
+                  <td className={idx < 3 ? `rank-${idx + 1}` : ''} data-label="Rank">{idx + 1}</td>
+                  <td data-label="Student Name">{student.full_name}</td>
+                  <td data-label="Email">{student.email}</td>
+                  <td data-label="Quizzes Completed">{student.quizzesCompleted}</td>
+                  <td data-label="Total Marks">{student.totalMarks}</td>
+                  <td data-label="Average Percentage">{student.averagePercentage}%</td>
                 </tr>
               ))}
             </tbody>
