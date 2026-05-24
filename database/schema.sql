@@ -132,6 +132,16 @@ CREATE TABLE leaderboard (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Quiz Permissions Table (For selective quiz access)
+CREATE TABLE quiz_permissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  quiz_id UUID NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
+  student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(quiz_id, student_id)
+);
+
 -- Create indexes for better performance
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_subscriptions_student ON subscriptions(student_id);
@@ -145,3 +155,5 @@ CREATE INDEX idx_attempts_student ON quiz_attempts(student_id);
 CREATE INDEX idx_attempts_quiz ON quiz_attempts(quiz_id);
 CREATE INDEX idx_leaderboard_student ON leaderboard(student_id);
 CREATE INDEX idx_leaderboard_rank ON leaderboard(rank);
+CREATE INDEX idx_quiz_permissions_quiz ON quiz_permissions(quiz_id);
+CREATE INDEX idx_quiz_permissions_student ON quiz_permissions(student_id);

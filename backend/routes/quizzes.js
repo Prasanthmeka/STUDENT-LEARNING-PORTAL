@@ -108,17 +108,60 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
 // Get All Published Quizzes
 router.get('/', async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('quizzes')
-      .select('*')
-      .eq('is_published', true)
-      .order('created_at', { ascending: false });
+    // Check if user is authenticated (has token)
+    const token = req.headers.authorization?.split(' ')[1];
+    let userId = null;
+    let userRole = null;
 
-    if (error) {
-      return res.status(400).json({ error: error.message });
+    // If authenticated, decode token to get user info
+    if (token) {
+      const jwt = require('jsonwebtoken');
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+        userId = decoded.id;
+        userRole = decoded.role;
+      } catch (e) {
+        // Invalid token, continue as anonymous
+      }
     }
 
-    res.json(data);
+    // If admin, return all published quizzes
+    if (userRole === 'admin') {
+      const { data, error } = await supabase
+        .from('quizzes')
+        .select('*')
+        .eq('is_published', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      return res.json(data);
+    }
+
+    // If authenticated student, return only quizzes they have permission for
+    if (userId && userRole === 'student') {
+      const { data: permittedQuizzes, error } = await supabase
+        .from('quiz_permissions')
+        .select('quiz_id, quizzes(*)')
+        .eq('student_id', userId)
+        .order('granted_at', { ascending: false });
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      // Extract quiz data from permissions
+      const quizzes = (permittedQuizzes || [])
+        .map(p => p.quizzes)
+        .filter(q => q && q.is_published);
+
+      return res.json(quizzes);
+    }
+
+    // Unauthenticated or unknown role - return empty array
+    res.json([]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -584,6 +627,339 @@ router.post('/from-document', authenticateToken, authorizeRole(['admin']), async
       message: 'Quiz created successfully from document', 
       quiz: quizData[0],
       questions_count: questions.length
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: Get all quizzes (published and unpublished)
+router.get('/admin/all-quizzes', authenticateToken, authorizeRole(['admin']), async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('quizzes')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: Delete a quiz
+router.delete('/:id', authenticateToken, authorizeRole(['admin']), async (req, res) => {
+  try {
+    const quizId = req.params.id;
+
+    // Verify quiz exists and belongs to this admin or is created by admin
+    const { data: quizData, error: quizError } = await supabase
+      .from('quizzes')
+      .select('id, created_by, title')
+      .eq('id', quizId)
+      .single();
+
+    if (quizError || !quizData) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+
+    // Delete quiz (cascading deletes will handle questions, options, attempts, responses)
+    const { error: deleteError } = await supabase
+      .from('quizzes')
+      .delete()
+      .eq('id', quizId);
+
+    if (deleteError) {
+      return res.status(400).json({ error: deleteError.message });
+    }
+
+    res.json({ message: `Quiz "${quizData.title}" has been deleted successfully` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: Get students with access to a quiz
+router.get('/:id/permissions', authenticateToken, authorizeRole(['admin']), async (req, res) => {
+  try {
+    const quizId = req.params.id;
+
+    // Get quiz details
+    const { data: quizData, error: quizError } = await supabase
+      .from('quizzes')
+      .select('id, title')
+      .eq('id', quizId)
+      .single();
+
+    if (quizError || !quizData) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+
+    // Get students with permission to this quiz
+    const { data: permissions, error: permError } = await supabase
+      .from('quiz_permissions')
+      .select(`
+        id,
+        student_id,
+        users:student_id (full_name, email),
+        granted_at
+      `)
+      .eq('quiz_id', quizId)
+      .order('granted_at', { ascending: false });
+
+    if (permError) {
+      return res.status(400).json({ error: permError.message });
+    }
+
+    res.json({
+      quiz: quizData,
+      students: permissions || [],
+      total_students: permissions ? permissions.length : 0
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: Enable quiz for specific students
+router.post('/:id/enable-for-students', authenticateToken, authorizeRole(['admin']), async (req, res) => {
+  try {
+    const quizId = req.params.id;
+    const { student_ids } = req.body; // Array of student IDs
+
+    if (!student_ids || !Array.isArray(student_ids) || student_ids.length === 0) {
+      return res.status(400).json({ error: 'student_ids array is required' });
+    }
+
+    // Verify quiz exists
+    const { data: quizData, error: quizError } = await supabase
+      .from('quizzes')
+      .select('id, title')
+      .eq('id', quizId)
+      .single();
+
+    if (quizError || !quizData) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+
+    // Verify all students exist
+    const { data: studentsData, error: studentsError } = await supabase
+      .from('users')
+      .select('id')
+      .in('id', student_ids)
+      .eq('role', 'student');
+
+    if (studentsError || !studentsData || studentsData.length !== student_ids.length) {
+      return res.status(400).json({ error: 'One or more students not found' });
+    }
+
+    // Insert permissions (ignore duplicates if they already exist)
+    // Insert one by one and skip duplicates
+    let successCount = 0;
+    let skippedCount = 0;
+    
+    for (const studentId of student_ids) {
+      const permissionId = uuidv4();
+      const { error } = await supabase
+        .from('quiz_permissions')
+        .insert([{
+          id: permissionId,
+          quiz_id: quizId,
+          student_id: studentId,
+          granted_at: new Date()
+        }]);
+      
+      if (error) {
+        // Check if it's a unique constraint error (already exists)
+        if (error.code === '23505' || error.message.includes('duplicate') || error.message.includes('unique')) {
+          skippedCount++;
+        } else {
+          // Log other errors but continue
+          console.error(`Error adding permission for student ${studentId}:`, error);
+        }
+      } else {
+        successCount++;
+      }
+    }
+
+    const skippedMessage = skippedCount > 0 ? ` (${skippedCount} already had access)` : '';
+    res.json({ 
+      message: `Quiz enabled for ${successCount} students${skippedMessage}`,
+      quiz: quizData.title,
+      students_enabled: successCount,
+      skipped: skippedCount
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: Remove quiz access from a student
+router.delete('/:id/permissions/:studentId', authenticateToken, authorizeRole(['admin']), async (req, res) => {
+  try {
+    const { id: quizId, studentId } = req.params;
+
+    const { error } = await supabase
+      .from('quiz_permissions')
+      .delete()
+      .eq('quiz_id', quizId)
+      .eq('student_id', studentId);
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    res.json({ message: 'Student access to quiz has been removed' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: Unpublish a quiz
+router.put('/:id/unpublish', authenticateToken, authorizeRole(['admin']), async (req, res) => {
+  try {
+    const quizId = req.params.id;
+
+    // Verify quiz exists
+    const { data: quizData, error: quizError } = await supabase
+      .from('quizzes')
+      .select('id, title, is_published')
+      .eq('id', quizId)
+      .single();
+
+    if (quizError || !quizData) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+
+    if (!quizData.is_published) {
+      return res.status(400).json({ error: 'Quiz is already unpublished' });
+    }
+
+    // Update quiz to unpublished
+    const { error: updateError } = await supabase
+      .from('quizzes')
+      .update({ is_published: false, updated_at: new Date() })
+      .eq('id', quizId);
+
+    if (updateError) {
+      return res.status(400).json({ error: updateError.message });
+    }
+
+    res.json({ message: `Quiz "${quizData.title}" has been unpublished successfully` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: Publish a quiz
+router.put('/:id/publish', authenticateToken, authorizeRole(['admin']), async (req, res) => {
+  try {
+    const quizId = req.params.id;
+
+    // Verify quiz exists
+    const { data: quizData, error: quizError } = await supabase
+      .from('quizzes')
+      .select('id, title, is_published')
+      .eq('id', quizId)
+      .single();
+
+    if (quizError || !quizData) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+
+    if (quizData.is_published) {
+      return res.status(400).json({ error: 'Quiz is already published' });
+    }
+
+    // Update quiz to published
+    const { error: updateError } = await supabase
+      .from('quizzes')
+      .update({ is_published: true, updated_at: new Date() })
+      .eq('id', quizId);
+
+    if (updateError) {
+      return res.status(400).json({ error: updateError.message });
+    }
+
+    res.json({ message: `Quiz "${quizData.title}" has been published successfully` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// Admin: Enable quiz for all students
+router.post('/:id/enable-for-all-students', authenticateToken, authorizeRole(['admin']), async (req, res) => {
+  try {
+    const quizId = req.params.id;
+
+    // Verify quiz exists
+    const { data: quizData, error: quizError } = await supabase
+      .from('quizzes')
+      .select('id, title')
+      .eq('id', quizId)
+      .single();
+
+    if (quizError || !quizData) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+
+    // Get all students
+    const { data: studentsData, error: studentsError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('role', 'student');
+
+    if (studentsError) {
+      return res.status(400).json({ error: studentsError.message });
+    }
+
+    if (!studentsData || studentsData.length === 0) {
+      return res.json({ 
+        message: 'No students found to enable quiz for',
+        quiz: quizData.title,
+        students_enabled: 0
+      });
+    }
+
+    // Insert permissions for all students (skip duplicates)
+    let successCount = 0;
+    let skippedCount = 0;
+    
+    for (const student of studentsData) {
+      const permissionId = uuidv4();
+      const { error } = await supabase
+        .from('quiz_permissions')
+        .insert([{
+          id: permissionId,
+          quiz_id: quizId,
+          student_id: student.id,
+          granted_at: new Date()
+        }]);
+      
+      if (error) {
+        // Check if it's a unique constraint error (already exists)
+        if (error.code === '23505' || error.message.includes('duplicate') || error.message.includes('unique')) {
+          skippedCount++;
+        } else {
+          console.error(`Error adding permission for student ${student.id}:`, error);
+        }
+      } else {
+        successCount++;
+      }
+    }
+
+    const skippedMessage = skippedCount > 0 ? ` (${skippedCount} already had access)` : '';
+    res.json({ 
+      message: `Quiz enabled for all ${successCount} students${skippedMessage}`,
+      quiz: quizData.title,
+      students_enabled: successCount,
+      skipped: skippedCount,
+      total_students: studentsData.length
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -16,6 +16,7 @@ const materialRoutes = require('./routes/materials');
 const quizRoutes = require('./routes/quizzes');
 const leaderboardRoutes = require('./routes/leaderboard');
 const subscriptionRoutes = require('./routes/subscriptions');
+const userRoutes = require('./routes/users');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -24,6 +25,7 @@ app.use('/api/materials', materialRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/users', userRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
