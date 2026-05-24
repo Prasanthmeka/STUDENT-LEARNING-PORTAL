@@ -21,6 +21,7 @@ import AdminAnalytics from './pages/AdminAnalytics';
 import AdminUsers from './pages/AdminUsers';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
+import AIMascot from './components/AIMascot';
 import './App.css';
 
 const ScrollToTop = () => {
@@ -86,6 +87,7 @@ function AppContent() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
+      {isAuthenticated && user?.role === 'student' && <AIMascot />}
       <Footer />
     </div>
   );

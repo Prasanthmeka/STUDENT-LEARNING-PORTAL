@@ -15,113 +15,159 @@ function Navigation() {
     setMobileMenuOpen(false);
   };
 
-  const isActive = (path) => {
-    if (path === '/' && location.pathname !== '/') return false;
-    return location.pathname.startsWith(path);
-  };
-
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        <Link to="/" className="navbar-logo">
-          <span className="logo-icon">📚</span>
-          SLP
-        </Link>
+    <div id="navigation" className="navbar-light bg-faded site-navigation">
+      <div className="container-fluid">
+        <div className="row align-items-center justify-content-between g-0" style={{ display: 'flex', width: '100%' }}>
+          
+          {/* Logo Column */}
+          <div className="col-lg-3 col-6 align-self-center">
+            <div className="site-logo">
+              <Link to="/" className="site-logo-text">
+                <img src="/assets/logo.png" alt="EduMasterPro Logo" className="navbar-logo-img" />
+              </Link>
+            </div>
+          </div>
 
-        <div className={`navbar-menu ${mobileMenuOpen ? 'active' : ''}`}>
+          {/* Desktop Menu - visible on large screens */}
+          <div className="col-lg-6 d-none d-lg-flex justify-content-center">
+            <nav id="main-menu">
+              <ul>
+                {!isAuthenticated ? (
+                  <>
+                    <li>
+                      <a href="/#home" className={location.pathname === '/' && !location.hash ? 'active' : ''}>Home</a>
+                    </li>
+                    <li>
+                      <a href="/#courses" className={location.hash === '#courses' ? 'active' : ''}>Courses</a>
+                    </li>
+                    <li>
+                      <a href="/#live-classes" className={location.hash === '#live-classes' ? 'active' : ''}>Live Classes</a>
+                    </li>
+                    <li>
+                      <a href="/#quizzes" className={location.hash === '#quizzes' ? 'active' : ''}>Quizzes</a>
+                    </li>
+                    <li>
+                      <a href="/#materials" className={location.hash === '#materials' ? 'active' : ''}>Study Materials</a>
+                    </li>
+                    <li>
+                      <a href="/#contact" className={location.hash === '#contact' ? 'active' : ''}>Contact</a>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      <Link to={user?.role === 'admin' ? '/admin/dashboard' : '/student/dashboard'} className={location.pathname.includes('dashboard') ? 'active' : ''}>
+                        Dashboard
+                      </Link>
+                    </li>
+                    {user?.role === 'student' && (
+                      <>
+                        <li>
+                          <Link to="/student/videos" className={location.pathname.includes('/student/videos') ? 'active' : ''}>Videos</Link>
+                        </li>
+                        <li>
+                          <Link to="/student/quizzes" className={location.pathname.includes('/student/quizzes') ? 'active' : ''}>Take a Quiz</Link>
+                        </li>
+                        <li>
+                          <Link to="/student/materials" className={location.pathname.includes('/student/materials') ? 'active' : ''}>Materials</Link>
+                        </li>
+                      </>
+                    )}
+                  </>
+                )}
+              </ul>
+            </nav>
+          </div>
+
+          {/* Desktop Auth Column - visible on large screens */}
+          <div className="col-lg-3 col-6 text-end align-self-center d-none d-lg-block">
+            {!isAuthenticated ? (
+              <>
+                <Link to="/login" className="header-btn">Login</Link>
+                <Link to="/register" className="btn_one">Sign Up</Link>
+              </>
+            ) : (
+              <button onClick={handleLogout} className="btn_one" style={{ border: 'none' }}>
+                Logout
+              </button>
+            )}
+          </div>
+
+          {/* Hamburger Icon for Mobile - visible on medium/small screens */}
+          <div className="col-6 d-flex d-lg-none justify-content-end align-self-center">
+            <button 
+              className={`hamburger ${mobileMenuOpen ? 'active' : ''}`}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle Menu"
+            >
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Mobile Drawer Menu - visible on medium/small screens */}
+      <div className={`mobile-menu-drawer d-lg-none ${mobileMenuOpen ? 'open' : ''}`}>
+        <ul className="mobile-menu-list">
           {!isAuthenticated ? (
             <>
-              <Link 
-                to="/" 
-                className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Home
-              </Link>
-              <Link 
-                to="/services" 
-                className={`nav-link ${location.pathname === '/services' ? 'active' : ''}`}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Services
-              </Link>
-
-              <Link 
-                to="/register" 
-                className={`nav-link ${location.pathname === '/register' ? 'active' : ''}`}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Register
-              </Link>
-              <Link 
-                to="/login" 
-                className={`nav-link nav-login ${location.pathname === '/login' && location.search !== '?action=quiz' ? 'active' : ''}`}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Login
-              </Link>
+              <li>
+                <a href="/#home" onClick={() => setMobileMenuOpen(false)}>Home</a>
+              </li>
+              <li>
+                <a href="/#courses" onClick={() => setMobileMenuOpen(false)}>Courses</a>
+              </li>
+              <li>
+                <a href="/#live-classes" onClick={() => setMobileMenuOpen(false)}>Live Classes</a>
+              </li>
+              <li>
+                <a href="/#quizzes" onClick={() => setMobileMenuOpen(false)}>Quizzes</a>
+              </li>
+              <li>
+                <a href="/#materials" onClick={() => setMobileMenuOpen(false)}>Study Materials</a>
+              </li>
+              <li>
+                <a href="/#contact" onClick={() => setMobileMenuOpen(false)}>Contact</a>
+              </li>
+              <li>
+                <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="mobile-signin">Login</Link>
+              </li>
+              <li>
+                <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="mobile-signup">Sign Up</Link>
+              </li>
             </>
           ) : (
             <>
-              <Link 
-                to={user?.role === 'admin' ? '/admin/dashboard' : '/student/dashboard'} 
-                className={`nav-link ${location.pathname.includes('dashboard') ? 'active' : ''}`}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Dashboard
-              </Link>
+              <li>
+                <Link to={user?.role === 'admin' ? '/admin/dashboard' : '/student/dashboard'} onClick={() => setMobileMenuOpen(false)}>
+                  Dashboard
+                </Link>
+              </li>
               {user?.role === 'student' && (
                 <>
-                  <Link 
-                    to="/student/videos" 
-                    className={`nav-link ${location.pathname.includes('/student/videos') ? 'active' : ''}`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Videos
-                  </Link>
-                  <Link 
-                    to="/student/quizzes" 
-                    className={`nav-link ${location.pathname.includes('/student/quizzes') ? 'active' : ''}`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Take a Quiz
-                  </Link>
-                  <Link 
-                    to="/student/materials" 
-                    className={`nav-link ${location.pathname.includes('/student/materials') ? 'active' : ''}`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Materials
-                  </Link>
-                  <Link 
-                    to="/student/leaderboard" 
-                    className={`nav-link ${location.pathname.includes('/student/leaderboard') ? 'active' : ''}`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Leaderboard
-                  </Link>
+                  <li>
+                    <Link to="/student/videos" onClick={() => setMobileMenuOpen(false)}>Videos</Link>
+                  </li>
+                  <li>
+                    <Link to="/student/quizzes" onClick={() => setMobileMenuOpen(false)}>Take a Quiz</Link>
+                  </li>
+                  <li>
+                    <Link to="/student/materials" onClick={() => setMobileMenuOpen(false)}>Materials</Link>
+                  </li>
                 </>
               )}
-              <button 
-                className="nav-link nav-logout"
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
+              <li>
+                <button onClick={handleLogout} className="mobile-logout">Logout</button>
+              </li>
             </>
           )}
-        </div>
-
-        <button 
-          className="hamburger"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+        </ul>
       </div>
-    </nav>
+    </div>
   );
 }
 

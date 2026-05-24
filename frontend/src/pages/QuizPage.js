@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { quizAPI } from '../services/api';
 import { useParams, useNavigate } from 'react-router-dom';
 import '../styles/QuizPage.css';
@@ -14,12 +14,72 @@ const QuizPage = () => {
   const [result, setResult] = useState(null);
   const [responses, setResponses] = useState([]);
   const [timeLeft, setTimeLeft] = useState(null);
+  const [attemptId, setAttemptId] = useState(null);
+
+  // Timer effect
+  const handleSubmitQuiz = useCallback(async () => {
+    try {
+      if (!quiz || !quiz.questions) return;
+      const answersArray = quiz.questions.map((q) => {
+        const studentAnswer = answers[q.id];
+        return {
+          question_id: q.id,
+          // If it's an array (multiple select), we will send it as an array
+          option_id: q.question_type === 'multiple_choice' ? studentAnswer : null,
+          text_response: q.question_type !== 'multiple_choice' ? studentAnswer : null
+        };
+      });
+
+      const response = await quizAPI.submitQuiz(id, answersArray);
+      setAttemptId(response.data.attempt?.id || response.data.id || null);
+      setResult(response.data.result);
+      setResponses(response.data.responses || []);
+      setSubmitted(true);
+    } catch (error) {
+      alert('Failed to submit quiz');
+      console.error(error);
+    }
+  }, [quiz, answers, id]);
 
   useEffect(() => {
+    const fetchQuiz = async () => {
+      try {
+        // Check if student already attempted
+        try {
+          const attemptResponse = await quizAPI.getMyAttempts(id);
+          if (attemptResponse.data && attemptResponse.data.length > 0) {
+            const attempt = attemptResponse.data[0];
+            setAttemptId(attempt.id);
+            setResult(attempt.result);
+            setResponses(attempt.responses);
+            
+            const response = await quizAPI.getQuiz(id);
+            setQuiz(response.data);
+            
+            setSubmitted(true);
+            setLoading(false);
+            return;
+          }
+        } catch (err) {
+          console.error('Error checking previous attempts:', err);
+        }
+
+        const response = await quizAPI.getQuiz(id);
+        setQuiz(response.data);
+        if (response.data.time_limit_minutes) {
+          setTimeLeft(response.data.time_limit_minutes * 60);
+        }
+      } catch (error) {
+        console.error('Failed to fetch quiz:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchQuiz();
   }, [id]);
 
-  // Timer effect
+  // Timer effect runner
   useEffect(() => {
     if (timeLeft === null || submitted) return;
 
@@ -34,68 +94,13 @@ const QuizPage = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [timeLeft, submitted]);
-
-  const fetchQuiz = async () => {
-    try {
-      // Check if student already attempted
-      try {
-        const attemptResponse = await quizAPI.getMyAttempts(id);
-        if (attemptResponse.data && attemptResponse.data.length > 0) {
-          const attempt = attemptResponse.data[0];
-          setResult(attempt.result);
-          setResponses(attempt.responses);
-          
-          const response = await quizAPI.getQuiz(id);
-          setQuiz(response.data);
-          
-          setSubmitted(true);
-          setLoading(false);
-          return;
-        }
-      } catch (err) {
-        console.error('Error checking previous attempts:', err);
-      }
-
-      const response = await quizAPI.getQuiz(id);
-      setQuiz(response.data);
-      if (response.data.time_limit_minutes) {
-        setTimeLeft(response.data.time_limit_minutes * 60);
-      }
-    } catch (error) {
-      console.error('Failed to fetch quiz:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [timeLeft, submitted, handleSubmitQuiz]);
 
   const handleAnswerChange = (questionId, value) => {
     setAnswers({
       ...answers,
       [questionId]: value
     });
-  };
-
-  const handleSubmitQuiz = async () => {
-    try {
-      const answersArray = quiz.questions.map((q) => {
-        const studentAnswer = answers[q.id];
-        return {
-          question_id: q.id,
-          // If it's an array (multiple select), we will send it as an array
-          option_id: q.question_type === 'multiple_choice' ? studentAnswer : null,
-          text_response: q.question_type !== 'multiple_choice' ? studentAnswer : null
-        };
-      });
-
-      const response = await quizAPI.submitQuiz(id, answersArray);
-      setResult(response.data.result);
-      setResponses(response.data.responses || []);
-      setSubmitted(true);
-    } catch (error) {
-      alert('Failed to submit quiz');
-      console.error(error);
-    }
   };
 
   if (loading) return <div className="loading">Loading quiz...</div>;
@@ -192,6 +197,41 @@ const QuizPage = () => {
                   <div className="text-answer-review">
                     <p><strong>Your Answer:</strong> {response?.text_response || 'No answer'}</p>
                     <p><strong>Correct Answer:</strong> {question.correct_answer}</p>
+                  </div>
+                )}
+
+                {/* AI Explanation trigger button */}
+                {!isCorrect && (
+                  <div className="ai-explain-wrong-container" style={{ marginTop: '14px', borderTop: '1px dashed rgba(255,255,255,0.1)', paddingTop: '12px' }}>
+                    <button
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent('open-ai-chat', {
+                          detail: {
+                            action: 'explain-quiz',
+                            attemptId: attemptId,
+                            subject: quiz.subject
+                          }
+                        }));
+                      }}
+                      className="ai-explain-btn"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%)',
+                        border: '1px solid rgba(168, 85, 247, 0.3)',
+                        color: '#f3f4f6',
+                        padding: '8px 16px',
+                        borderRadius: '20px',
+                        fontSize: '12.5px',
+                        fontFamily: 'Outfit, Inter, sans-serif',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        transition: 'all 0.3s'
+                      }}
+                    >
+                      🧠 Explain this question with AI
+                    </button>
                   </div>
                 )}
               </div>

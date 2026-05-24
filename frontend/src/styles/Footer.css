@@ -1,136 +1,212 @@
-.footer {
-  background-color: #2c3e50;
-  color: #ecf0f1;
-  padding: 60px 40px 20px;
-  margin-top: 80px;
+/* EduMasterPro Premium Footer Stylesheet */
+
+#site-footer.premium-footer {
+  background: #0b104a !important; /* Deep EdTech Navy Background */
+  padding: 80px 0 30px !important;
+  color: #a5b4fc !important; /* Soft lavender-blue text */
+  font-family: 'Inter', sans-serif !important;
+  border-top: 4px solid #6366f1 !important; /* Soft top purple accent border */
+  box-shadow: 0 -10px 30px rgba(11, 16, 74, 0.05) !important;
+  position: relative !important;
+  z-index: 10 !important;
 }
 
-.footer-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 40px;
-  margin-bottom: 40px;
+#site-footer.premium-footer .container {
+  max-width: 1240px !important;
+  margin: 0 auto !important;
+  padding: 0 24px !important;
 }
 
-.footer-section h3 {
-  font-size: 1.3rem;
-  margin-bottom: 20px;
-  color: white;
+#site-footer.premium-footer .footer-grid {
+  display: grid !important;
+  grid-template-columns: 1.5fr 1fr 1fr 1.5fr !important;
+  gap: 40px !important;
+  margin-bottom: 50px !important;
 }
 
-.footer-section p {
-  line-height: 1.8;
-  color: #bdc3c7;
-  font-size: 0.95rem;
-  margin-bottom: 10px;
+@media (max-width: 991px) {
+  #site-footer.premium-footer .footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 30px !important;
+  }
 }
 
-.footer-section ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+@media (max-width: 575px) {
+  #site-footer.premium-footer .footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 30px !important;
+  }
 }
 
-.footer-section ul li {
-  margin-bottom: 12px;
+#site-footer.premium-footer .footer-brand-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
 }
 
-.footer-section a {
-  color: #bdc3c7;
-  text-decoration: none;
-  transition: color 0.3s ease;
+#site-footer.premium-footer .footer-logo-wrap {
+  display: flex !important;
+  align-items: center !important;
 }
 
-.footer-section a:hover {
-  color: #667eea;
+#site-footer.premium-footer .footer-logo-img {
+  height: 80px !important; /* Scaled footer logo height to fit 70-100px specification */
+  width: 320px !important;  /* Scaled footer logo width to fit 250-400px specification */
+  object-fit: contain !important;
+  mix-blend-mode: multiply !important;
+  background-color: transparent !important;
 }
 
-.footer-social {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+#site-footer.premium-footer .footer-brand-desc {
+  color: #d1d5db !important; /* Soft white/gray for readability */
+  font-size: 14.5px !important;
+  line-height: 1.6 !important;
+  margin: 0 !important;
 }
 
-.footer-social h3 {
-  font-size: 1.3rem;
-  color: white;
+#site-footer.premium-footer .footer-social-icons {
+  display: flex !important;
+  gap: 12px !important;
 }
 
-.social-links {
-  display: flex;
-  flex-direction: row;
-  gap: 15px;
+#site-footer.premium-footer .footer-social-box {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 15px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  text-decoration: none !important;
 }
 
-.social-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  background: transparent;
+#site-footer.premium-footer .footer-social-box:hover {
+  background: #6366f1 !important; /* Premium purple hover color */
+  color: #ffffff !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4) !important;
 }
 
-.social-link i {
-  font-size: 2.2rem;
-  transition: transform 0.3s ease;
+#site-footer.premium-footer .footer-links-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
 }
 
-.social-link.instagram i {
-  background: -webkit-linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+#site-footer.premium-footer .footer-links-col h4,
+#site-footer.premium-footer .footer-contact-col h4 {
+  color: #ffffff !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+  position: relative !important;
+  padding-bottom: 8px !important;
 }
 
-.social-link.instagram:hover i {
-  transform: scale(1.2);
+#site-footer.premium-footer .footer-links-col h4::after,
+#site-footer.premium-footer .footer-contact-col h4::after {
+  content: '' !important;
+  position: absolute !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: 35px !important;
+  height: 2.5px !important;
+  background: #6366f1 !important;
+  border-radius: 100px !important;
 }
 
-.social-link.facebook i {
-  color: #1877f2;
+#site-footer.premium-footer .footer-links-col ul {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
 }
 
-.social-link.facebook:hover i {
-  transform: scale(1.2);
+#site-footer.premium-footer .footer-links-col ul li a {
+  color: #a5b4fc !important;
+  font-size: 14.5px !important;
+  text-decoration: none !important;
+  transition: all 0.25s ease !important;
+  display: inline-block !important;
 }
 
-.social-link.whatsapp i {
-  color: #25d366;
+#site-footer.premium-footer .footer-links-col ul li a:hover {
+  color: #ffffff !important;
+  transform: translateX(4px) !important;
 }
 
-.social-link.whatsapp:hover i {
-  transform: scale(1.2);
+#site-footer.premium-footer .footer-contact-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
 }
 
-.footer-bottom {
-  border-top: 1px solid #34495e;
-  padding-top: 20px;
-  text-align: center;
-  color: #95a5a6;
-  font-size: 0.9rem;
+#site-footer.premium-footer .footer-contact-item {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 14px !important;
 }
 
-/* Responsive */
+#site-footer.premium-footer .footer-contact-item i {
+  color: #6366f1 !important;
+  font-size: 16px !important;
+  margin-top: 3px !important;
+}
+
+#site-footer.premium-footer .footer-contact-item p {
+  margin: 0 !important;
+  font-size: 14.5px !important;
+  line-height: 1.5 !important;
+  color: #a5b4fc !important;
+}
+
+#site-footer.premium-footer .footer-contact-item p b {
+  color: #ffffff !important;
+}
+
+#site-footer.premium-footer .footer-contact-item p a {
+  color: #a5b4fc !important;
+  text-decoration: none !important;
+  transition: color 0.25s ease !important;
+}
+
+#site-footer.premium-footer .footer-contact-item p a:hover {
+  color: #ffffff !important;
+}
+
+/* Footer Bottom Bar styling */
+#site-footer.premium-footer .footer-bottom-bar {
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding-top: 25px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 15px !important;
+  font-size: 14px !important;
+  color: #9ca3af !important;
+}
+
 @media (max-width: 768px) {
-  .footer {
-    padding: 40px 20px 20px;
+  #site-footer.premium-footer .footer-bottom-bar {
+    flex-direction: column !important;
+    text-align: center !important;
   }
+}
 
-  .footer-container {
-    grid-template-columns: 1fr;
-    gap: 30px;
-    margin-bottom: 30px;
-  }
+#site-footer.premium-footer .footer-heart {
+  color: #ef4444 !important;
+  margin: 0 2px !important;
+  animation: heartPulse 1.2s infinite alternate !important;
+}
 
-  .social-links {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .social-link i {
-    font-size: 1.8rem;
-  }
+@keyframes heartPulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.15); }
 }

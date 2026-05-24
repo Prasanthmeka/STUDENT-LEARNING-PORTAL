@@ -30,6 +30,26 @@ const StudentMaterials = () => {
     navigate('/login');
   };
 
+  const handleAISummarize = (material) => {
+    window.dispatchEvent(new CustomEvent('open-ai-chat', {
+      detail: {
+        action: 'summarize',
+        materialId: material.id,
+        subject: material.subject
+      }
+    }));
+  };
+
+  const handleAITranslate = (material) => {
+    window.dispatchEvent(new CustomEvent('open-ai-chat', {
+      detail: {
+        action: 'translate',
+        materialId: material.id,
+        subject: material.subject
+      }
+    }));
+  };
+
   useEffect(() => {
     fetchMaterials();
   }, []);
@@ -209,6 +229,52 @@ const StudentMaterials = () => {
                     );
                   })()}
                 </div>
+                <div className="material-ai-actions" style={{ display: 'flex', gap: '8px', marginTop: '12px', borderTop: '1px dashed rgba(0,0,0,0.06)', paddingTop: '10px' }}>
+                  <button
+                    onClick={() => handleAISummarize(material)}
+                    className="btn-ai-action summarize"
+                    style={{
+                      background: 'rgba(147, 51, 234, 0.1)',
+                      color: '#7e22ce',
+                      border: '1px solid rgba(147, 51, 234, 0.2)',
+                      padding: '6px 12px',
+                      borderRadius: '16px',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    💡 Summarize
+                  </button>
+                  <button
+                    onClick={() => handleAITranslate(material)}
+                    className="btn-ai-action translate"
+                    style={{
+                      background: 'rgba(59, 130, 246, 0.1)',
+                      color: '#1d4ed8',
+                      border: '1px solid rgba(59, 130, 246, 0.2)',
+                      padding: '6px 12px',
+                      borderRadius: '16px',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    🌐 Translate
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -221,6 +287,44 @@ const StudentMaterials = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{selectedMaterial.title}</h2>
+              <div style={{ display: 'flex', gap: '8px', marginRight: '16px' }}>
+                <button
+                  onClick={() => {
+                    handleAISummarize(selectedMaterial);
+                    closeMaterialModal();
+                  }}
+                  style={{
+                    background: 'linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '16px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  💡 Summarize
+                </button>
+                <button
+                  onClick={() => {
+                    handleAITranslate(selectedMaterial);
+                    closeMaterialModal();
+                  }}
+                  style={{
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '16px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🌐 Translate
+                </button>
+              </div>
               <button onClick={closeMaterialModal} className="btn-close">✕</button>
             </div>
             <div className="modal-body">

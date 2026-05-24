@@ -42,7 +42,8 @@ const Login = () => {
       </div>
       <div className="auth-container" style={{ position: 'relative', zIndex: 1 }}>
       <div className="auth-card">
-        <h2>Student Learning Platform</h2>
+        <img src="/assets/logo.png" alt="EduMasterPro Logo" className="logo-square" />
+        <h2>EduMasterPro</h2>
         <h3>Login</h3>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>

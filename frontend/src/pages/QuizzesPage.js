@@ -37,6 +37,7 @@ const QuizzesPage = () => {
   };
 
   const filterByStatus = (status) => {
+    setSelectedFilter(status);
     applyFilters(status, selectedSubject);
   };
 
