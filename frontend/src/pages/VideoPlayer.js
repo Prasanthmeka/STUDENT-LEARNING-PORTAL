@@ -1,32 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { videoAPI } from '../services/api';
-import { useAuth } from '../context/AuthContext';
 import '../styles/VideoPlayer.css';
 
 const VideoPlayer = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const fetchVideo = async () => {
+      try {
+        const response = await videoAPI.getVideo(id);
+        setVideo(response.data);
+      } catch (err) {
+        setError('Failed to load video');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchVideo();
   }, [id]);
-
-  const fetchVideo = async () => {
-    try {
-      const response = await videoAPI.getVideo(id);
-      setVideo(response.data);
-    } catch (err) {
-      setError('Failed to load video');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return <div className="loading">Loading video...</div>;

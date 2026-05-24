@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="EduMasterPro - Learn programming (Java, Python, Web Dev), quantitative aptitude, and interview preparation in Telugu & Hindi. Interactive quizzes, leaderboards, and study materials.">
+  <title>EduMasterPro - Regional Telugu & Hindi Software Engineering & Aptitude Platform</title>
+  
+  <!-- FontAwesome for footer and socials -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Decorative background gradient blobs -->
+  <div class="gradient-blob blob-1"></div>
+  <div class="gradient-blob blob-2"></div>
+  <div class="gradient-blob blob-3"></div>
+
+  <!-- STICKY NAVBAR -->
+  <header>
+    <div class="container">
+      <div class="navbar">
+        <!-- Logo Left -->
+        <a href="#" class="logo-wrapper">
+          <img src="assets/logo.png" alt="EduMasterPro Logo" class="logo-img">
+        </a>
+
+        <!-- Desktop Menu Items -->
+        <nav class="nav-menu-wrapper">
+          <ul class="nav-menu">
+            <li><a href="#home" class="nav-link active">Home</a></li>
+            <li><a href="#courses" class="nav-link">Courses</a></li>
+            <li><a href="#about" class="nav-link">Live Classes</a></li>
+            <li><a href="#materials" class="nav-link">Materials</a></li>
+            <li><a href="#quizzes" class="nav-link">Quizzes</a></li>
+            <li><a href="#leaderboard" class="nav-link">Leaderboard</a></li>
+            <li><a href="#contact" class="nav-link">Contact</a></li>
+            
+            <!-- Mobile Auth Links inside drawer -->
+            <div class="nav-auth-mobile d-none">
+              <a href="#" class="btn btn-secondary">Login</a>
+              <a href="#" class="btn btn-primary">Sign Up</a>
+            </div>
+          </ul>
+        </nav>
+
+        <!-- Desktop Auth Buttons Right -->
+        <div class="nav-auth">
+          <a href="#" class="btn btn-text">Login</a>
+          <a href="#" class="btn btn-primary">Sign Up</a>
+        </div>
+
+        <!-- Hamburger Icon -->
+        <button class="hamburger" aria-label="Toggle Navigation">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="hero" id="home">
+    <div class="container">
+      <div class="hero-grid">
+        <!-- Hero Content Left -->
+        <div class="hero-content">
+          <div class="hero-badge">
+            <span class="badge-icon">🌐</span>
+            <span>Regional EdTech Platform</span>
+          </div>
+          <h1 class="hero-title">
+            Learn Smarter.<br>Compete Better. <span>Achieve More.</span>
+          </h1>
+          <p class="hero-desc">
+            Learn programming, aptitude, academics, and tech skills through bilingual courses with interactive quizzes and study resources.
+          </p>
+          
+          <!-- Search Bar with Live Filter capability -->
+          <div class="search-bar">
+            <input type="text" id="subjectSearch" placeholder="Search courses, quizzes, materials...">
+            <button id="searchBtn">Search</button>
+          </div>
+
+          <div class="hero-buttons">
+            <a href="#register" class="btn btn-primary">Start Learning</a>
+            <a href="#courses" class="btn btn-secondary">Explore Courses</a>
+          </div>
+        </div>
+
+        <!-- Hero Illustration Right -->
+        <div class="hero-visual">
+          <img src="assets/hero_illustration.png" alt="EduMasterPro Students Learning" class="hero-image">
+          
+          <!-- Floating Badge 1 -->
+          <div class="hero-floating-card card-1">
+            <div class="badge-icon">👨‍💻</div>
+            <div class="badge-info">
+              <h5>Telugu & Hindi</h5>
+              <p>Tech & coding courses</p>
+            </div>
+          </div>
+
+          <!-- Floating Badge 2 -->
+          <div class="hero-floating-card card-2">
+            <div class="badge-icon" style="background: rgba(37,99,235,0.1); color: var(--accent);">🏆</div>
+            <div class="badge-info">
+              <h5>Aptitude & Skills</h5>
+              <p>Interactive self-quizzes</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES SECTION -->
+  <section class="features" id="about">
+    <div class="container">
+      <div class="section-header">
+        <span>Why Choose Us</span>
+        <h2>Designed to Fuel <span>Technical Competence</span></h2>
+        <p>We provide a premium, modern learning environment tailored to high-demand skills, interactive prep, and academic excellence.</p>
+      </div>
+
+      <div class="features-grid">
+        <!-- 1. Live Video Classes -->
+        <div class="feature-card">
+          <div class="feature-icon-box color-1">
+            <i class="fa-solid fa-video"></i>
+          </div>
+          <h3>Live Video Classes</h3>
+          <p>Attend expert-led live teaching sessions with real-time doubt clarification and detailed concept breakdowns.</p>
+        </div>
+
+        <!-- 2. Smart Quizzes -->
+        <div class="feature-card">
+          <div class="feature-icon-box color-2">
+            <i class="fa-solid fa-square-poll-horizontal" style="color: var(--secondary);"></i>
+          </div>
+          <h3>Smart Quizzes</h3>
+          <p>Evaluate your learning through interactive, auto-graded worksheets with detailed step-by-step solutions.</p>
+        </div>
+
+        <!-- 3. GitHub Study Materials -->
+        <div class="feature-card">
+          <div class="feature-icon-box color-3">
+            <i class="fa-brands fa-github" style="color: var(--accent);"></i>
+          </div>
+          <h3>GitHub Study Materials</h3>
+          <p>Sync with high-quality study guides, code modules, cheatsheets, and repository notes immediately.</p>
+        </div>
+
+        <!-- 4. Student Leaderboard -->
+        <div class="feature-card">
+          <div class="feature-icon-box color-6" style="background: rgba(245, 158, 11, 0.08); color: #f59e0b;">
+            <i class="fa-solid fa-trophy"></i>
+          </div>
+          <h3>Student Leaderboard</h3>
+          <p>Climb friendly peer rankings, gain Experience Points (XP) through correct answers, and earn weekly badges.</p>
+        </div>
+
+        <!-- 5. Performance Analytics -->
+        <div class="feature-card">
+          <div class="feature-icon-box color-5" style="background: rgba(16, 185, 129, 0.08); color: #10b981;">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <h3>Performance Analytics</h3>
+          <p>Track your conceptual strengths, study streak metrics, quiz histories, and complete syllabus coverages.</p>
+        </div>
+
+        <!-- 6. Premium Courses -->
+        <div class="feature-card">
+          <div class="feature-icon-box color-4" style="background: rgba(236, 72, 153, 0.08); color: #ec4899;">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <h3>Premium Courses</h3>
+          <p>Unlock structured full-length bilingually-accurate curriculum modules designed for school and software skills.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COURSE CATEGORIES SECTION -->
+  <section class="courses" id="courses">
+    <div class="container">
+      <div class="section-header">
+        <span>Our Curriculum</span>
+        <h2>Core <span>Subjects & Languages</span></h2>
+        <p>Master primary languages, mathematical operations, natural sciences, and social histories through structured, bilingually-rich learning units.</p>
+      </div>
+
+      <!-- 7 School Subject Cards with Custom Inline SVGs -->
+      <div class="courses-grid">
+        
+        <!-- 1. Telugu -->
+        <div class="subject-card">
+          <div class="subject-icon-wrapper">
+            <svg viewBox="0 0 100 100" width="80" height="80">
+              <defs>
+                <linearGradient id="telGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#6366f1" />
+                  <stop offset="100%" stop-color="#4f46e5" />
+                </linearGradient>
+                <linearGradient id="telBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#f5f7ff" />
+                  <stop offset="100%" stop-color="#e0e7ff" />
+                </linearGradient>
+              </defs>
+              <rect width="100" height="100" rx="24" fill="url(#telBg)"/>
+              <path d="M25,65 H75 V70 H25 Z" fill="url(#telGrad)" opacity="0.4"/>
+              <!-- Book representation -->
+              <path d="M30,55 C30,45 50,45 50,55 C50,45 70,45 70,55 V72 C70,62 50,62 50,72 C50,62 30,62 30,72 Z" fill="none" stroke="url(#telGrad)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="50" y1="52" x2="50" y2="72" stroke="url(#telGrad)" stroke-width="3"/>
+              <!-- Telugu Character 'అ' -->
+              <text x="50" y="38" font-family="'Outfit', sans-serif" font-size="28" font-weight="900" fill="url(#telGrad)" text-anchor="middle" alignment-baseline="middle">అ</text>
+            </svg>
+          </div>
+          <h3>Telugu</h3>
+          <p>Bilingual script grammar, vocabulary exercises, classic prose, and pronunciation leagues for Telugu learners.</p>
+          <a href="#register" class="explore-link" style="color: #6366f1;">
+            Start Learning
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+        <!-- 2. Hindi -->
+        <div class="subject-card">
+          <div class="subject-icon-wrapper">
+            <svg viewBox="0 0 100 100" width="80" height="80">
+              <defs>
+                <linearGradient id="hinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#f97316" />
+                  <stop offset="100%" stop-color="#ea580c" />
+                </linearGradient>
+                <linearGradient id="hinBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#fff7ed" />
+                  <stop offset="100%" stop-color="#ffedd5" />
+                </linearGradient>
+              </defs>
+              <rect width="100" height="100" rx="24" fill="url(#hinBg)"/>
+              <!-- Pen representation -->
+              <path d="M65,30 L70,35 L45,60 L38,62 L40,55 Z" fill="url(#hinGrad)" opacity="0.95"/>
+              <line x1="32" y1="68" x2="68" y2="68" stroke="#ea580c" stroke-width="4.5" stroke-linecap="round"/>
+              <!-- Devanagari Hindi Character 'अ' -->
+              <text x="46" y="44" font-family="'Outfit', sans-serif" font-size="30" font-weight="900" fill="url(#hinGrad)" text-anchor="middle" alignment-baseline="middle">अ</text>
+            </svg>
+          </div>
+          <h3>Hindi</h3>
+          <p>Core Devanagari script, grammar metrics, standard vocabulary sheets, and short story comprehension.</p>
+          <a href="#register" class="explore-link" style="color: #ea580c;">
+            Start Learning
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+        <!-- 3. English -->
+        <div class="subject-card">
+          <div class="subject-icon-wrapper">
+            <svg viewBox="0 0 100 100" width="80" height="80">
+              <defs>
+                <linearGradient id="engGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#2563eb" />
+                  <stop offset="100%" stop-color="#3b82f6" />
+                </linearGradient>
+                <linearGradient id="engBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#eff6ff" />
+                  <stop offset="100%" stop-color="#dbeafe" />
+                </linearGradient>
+              </defs>
+              <rect width="100" height="100" rx="24" fill="url(#engBg)"/>
+              <!-- Speech bubble and Letter A -->
+              <path d="M25,35 C25,25 75,25 75,35 C75,45 65,55 50,55 C45,55 40,58 35,62 V55 C25,55 25,45 25,35 Z" fill="none" stroke="url(#engGrad)" stroke-width="4.5" stroke-linejoin="round"/>
+              <text x="50" y="38" font-family="'Outfit', sans-serif" font-size="28" font-weight="900" fill="url(#engGrad)" text-anchor="middle" alignment-baseline="middle">A</text>
+              <line x1="25" y1="75" x2="75" y2="75" stroke="#3b82f6" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3>English</h3>
+          <p>Tenses, grammar rules, active listening, comprehension worksheets, and conversational skills.</p>
+          <a href="#register" class="explore-link" style="color: #2563eb;">
+            Start Learning
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+        <!-- 4. Physics -->
+        <div class="subject-card">
+          <div class="subject-icon-wrapper">
+            <svg viewBox="0 0 100 100" width="80" height="80">
+              <defs>
+                <linearGradient id="phyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#06b6d4" />
+                  <stop offset="100%" stop-color="#0891b2" />
+                </linearGradient>
+                <linearGradient id="phyBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#ecfeff" />
+                  <stop offset="100%" stop-color="#cffafe" />
+                </linearGradient>
+              </defs>
+              <rect width="100" height="100" rx="24" fill="url(#phyBg)"/>
+              <!-- Atom representation -->
+              <ellipse cx="50" cy="50" rx="30" ry="10" fill="none" stroke="url(#phyGrad)" stroke-width="3" transform="rotate(30, 50, 50)"/>
+              <ellipse cx="50" cy="50" rx="30" ry="10" fill="none" stroke="url(#phyGrad)" stroke-width="3" transform="rotate(-30, 50, 50)"/>
+              <ellipse cx="50" cy="50" rx="30" ry="10" fill="none" stroke="url(#phyGrad)" stroke-width="3" transform="rotate(90, 50, 50)"/>
+              <circle cx="50" cy="50" r="7" fill="#0891b2"/>
+              <circle cx="24" cy="35" r="3.5" fill="#22d3ee"/>
+              <circle cx="76" cy="65" r="3.5" fill="#22d3ee"/>
+            </svg>
+          </div>
+          <h3>Physics</h3>
+          <p>Laws of motion, electricity parameters, magnetic grids, optics, and structural formulas.</p>
+          <a href="#register" class="explore-link" style="color: #06b6d4;">
+            Start Learning
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+        <!-- 5. Chemistry -->
+        <div class="subject-card">
+          <div class="subject-icon-wrapper">
+            <svg viewBox="0 0 100 100" width="80" height="80">
+              <defs>
+                <linearGradient id="chGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#059669" />
+                  <stop offset="100%" stop-color="#10b981" />
+                </linearGradient>
+                <linearGradient id="chBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#f0fdf4" />
+                  <stop offset="100%" stop-color="#dcfce7" />
+                </linearGradient>
+              </defs>
+              <rect width="100" height="100" rx="24" fill="url(#chBg)"/>
+              <!-- Laboratory beaker/flask -->
+              <path d="M40,25 H60 M45,25 V45 L32,70 C30,75 35,80 42,80 H58 C65,80 70,75 68,70 L55,45 V25" fill="none" stroke="url(#chGrad)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="38" y1="62" x2="62" y2="62" stroke="#a7f3d0" stroke-width="3"/>
+              <circle cx="44" cy="70" r="3" fill="#10b981"/>
+              <circle cx="56" cy="68" r="4.5" fill="#047857"/>
+            </svg>
+          </div>
+          <h3>Chemistry</h3>
+          <p>Organic compounds, balancing chemical reactions, periodic tables, and molecular bonds.</p>
+          <a href="#register" class="explore-link" style="color: #059669;">
+            Start Learning
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+        <!-- 6. Maths -->
+        <div class="subject-card">
+          <div class="subject-icon-wrapper">
+            <svg viewBox="0 0 100 100" width="80" height="80">
+              <defs>
+                <linearGradient id="matGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#818cf8" />
+                  <stop offset="100%" stop-color="#4f46e5" />
+                </linearGradient>
+                <linearGradient id="matBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#f5f7ff" />
+                  <stop offset="100%" stop-color="#e0e7ff" />
+                </linearGradient>
+              </defs>
+              <rect width="100" height="100" rx="24" fill="url(#matBg)"/>
+              <!-- Mathematical symbols pi, +, =, compass -->
+              <text x="50" y="52" font-family="'Outfit', sans-serif" font-size="34" font-weight="900" fill="url(#matGrad)" text-anchor="middle" alignment-baseline="middle">π</text>
+              <text x="25" y="32" font-family="'Outfit', sans-serif" font-size="18" font-weight="900" fill="#a5b4fc" text-anchor="middle" alignment-baseline="middle">+</text>
+              <text x="75" y="32" font-family="'Outfit', sans-serif" font-size="18" font-weight="900" fill="#a5b4fc" text-anchor="middle" alignment-baseline="middle">×</text>
+              <text x="75" y="72" font-family="'Outfit', sans-serif" font-size="18" font-weight="900" fill="#a5b4fc" text-anchor="middle" alignment-baseline="middle">÷</text>
+              <text x="25" y="72" font-family="'Outfit', sans-serif" font-size="18" font-weight="900" fill="#a5b4fc" text-anchor="middle" alignment-baseline="middle">=</text>
+            </svg>
+          </div>
+          <h3>Maths</h3>
+          <p>Algebra formulas, geometry proofs, ratios, trigonometry coordinates, and competitive aptitude.</p>
+          <a href="#register" class="explore-link" style="color: #4f46e5;">
+            Start Learning
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+        <!-- 7. Social Studies -->
+        <div class="subject-card">
+          <div class="subject-icon-wrapper">
+            <svg viewBox="0 0 100 100" width="80" height="80">
+              <defs>
+                <linearGradient id="socGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#f59e0b" />
+                  <stop offset="100%" stop-color="#d97706" />
+                </linearGradient>
+                <linearGradient id="socBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#fef3c7" />
+                  <stop offset="100%" stop-color="#fde68a" />
+                </linearGradient>
+              </defs>
+              <rect width="100" height="100" rx="24" fill="url(#socBg)"/>
+              <!-- Globe grid lines -->
+              <circle cx="50" cy="50" r="28" fill="none" stroke="url(#socGrad)" stroke-width="4.5"/>
+              <ellipse cx="50" cy="50" rx="28" fill="none" stroke="#f59e0b" stroke-width="2.5" opacity="0.6"/>
+              <ellipse cx="50" cy="50" rx="14" fill="none" stroke="#f59e0b" stroke-width="2.5" opacity="0.6"/>
+              <line x1="22" y1="50" x2="78" y2="50" stroke="#f59e0b" stroke-width="2.5" opacity="0.6"/>
+              <path d="M38,32 L62,68" stroke="url(#socGrad)" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3>Social Studies</h3>
+          <p>World geography, histories, political systems, economic indexes, and landmark timelines.</p>
+          <a href="#register" class="explore-link" style="color: #f59e0b;">
+            Start Learning
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD PREVIEW SECTION -->
+  <section class="dashboard-preview" id="faculty">
+    <div class="container">
+      <div class="dashboard-layout">
+        <div class="preview-content">
+          <div class="hero-badge" style="background: rgba(37,99,235,0.08); color: var(--accent); border-color: rgba(37,99,235,0.15)">
+            <span>📊 Interactive Workspace</span>
+          </div>
+          <h2 style="font-size: 38px; margin-bottom: 20px; line-height: 1.2;">
+            A Fully Immersive <span>Student Dashboard</span>
+          </h2>
+          <p class="hero-desc" style="margin-bottom: 25px;">
+            Compete, track, and score seamlessly. Our dashboard organizes your active programming sheets, quant aptitude checkpoints, and completed course history in real-time.
+          </p>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 15px; margin-bottom: 35px;">
+            <li style="display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 15px;">
+              <span style="background: rgba(16,185,129,0.15); color: #10b981; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;">✔</span> Automated progress score meters & quiz accuracy
+            </li>
+            <li style="display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 15px;">
+              <span style="background: rgba(16,185,129,0.15); color: #10b981; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;">✔</span> Detailed checklists of completed modules
+            </li>
+            <li style="display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 15px;">
+              <span style="background: rgba(16,185,129,0.15); color: #10b981; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;">✔</span> Dynamic peer leaderboard XP ranks
+            </li>
+          </ul>
+          <a href="#register" class="btn btn-primary">Check Student Portal</a>
+        </div>
+
+        <!-- Dashboard UI Mockup Right -->
+        <div class="preview-visual">
+          <div class="dashboard-mock">
+            <div class="mock-header">
+              <span class="mock-title"><i class="fa-solid fa-gauge-high" style="color: var(--primary); margin-right: 8px;"></i>Student Learning Portal</span>
+              <div class="mock-tabs">
+                <button class="mock-tab active" data-tab="weekly">Weekly</button>
+                <button class="mock-tab" data-tab="monthly">Monthly</button>
+                <button class="mock-tab" data-tab="overall">Overall</button>
+              </div>
+            </div>
+            
+            <div class="mock-body">
+              <!-- Progress Tracking Charts Grid -->
+              <div class="progress-container">
+                <div class="progress-card">
+                  <div class="progress-circle-wrap">
+                    <svg class="progress-circle-svg">
+                      <circle class="progress-circle-bg" cx="35" cy="35" r="31"></circle>
+                      <circle class="progress-circle-fill" cx="35" cy="35" r="31" style="stroke-dashoffset: 58.4;"></circle> <!-- 70% -->
+                    </svg>
+                    <span class="progress-val">70%</span>
+                  </div>
+                  <h6 style="font-size: 13px; font-weight: 700; margin-bottom: 4px;">Syllabus Covered</h6>
+                  <p style="font-size: 11px; color: var(--text-muted);">Java (Telugu Medium)</p>
+                </div>
+
+                <div class="progress-card" style="border-color: rgba(168,85,247,0.15);">
+                  <div class="progress-circle-wrap">
+                    <svg class="progress-circle-svg">
+                      <circle class="progress-circle-bg" cx="35" cy="35" r="31"></circle>
+                      <circle class="progress-circle-fill" cx="35" cy="35" r="31" style="stroke: var(--secondary); stroke-dashoffset: 44;"></circle> <!-- 80% -->
+                    </svg>
+                    <span class="progress-val">80%</span>
+                  </div>
+                  <h6 style="font-size: 13px; font-weight: 700; margin-bottom: 4px;">Quiz Accuracy</h6>
+                  <p style="font-size: 11px; color: var(--text-muted);">Aptitude Practice (8.0/10)</p>
+                </div>
+              </div>
+
+              <!-- Completed Courses Checklist and Leaderboard ranks side-by-side or stacked -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                <!-- Completed Courses -->
+                <div class="leaderboard-block" style="margin-top: 0; padding: 12px; text-align: left;">
+                  <h6 style="font-size: 12px; font-weight: 700; margin-bottom: 8px; color: var(--text-dark);"><i class="fa-solid fa-circle-check" style="color: #10b981; margin-right: 6px;"></i>Completed Courses</h6>
+                  <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12px;">
+                    <li style="display: flex; align-items: center; gap: 6px; color: var(--text-dark); font-weight: 600;">
+                      <span style="color: #10b981;">✔</span> Python Basics (Hindi)
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 6px; color: var(--text-dark); font-weight: 600;">
+                      <span style="color: #10b981;">✔</span> Web Dev Basics (Telugu)
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Leaderboard Block -->
+                <div class="leaderboard-block" style="margin-top: 0; padding: 12px; text-align: left;">
+                  <h6 style="font-size: 12px; font-weight: 700; margin-bottom: 8px; color: var(--text-dark);"><i class="fa-solid fa-ranking-star" style="color: #f59e0b; margin-right: 6px;"></i>Active Peer Ranks</h6>
+                  <div class="leaderboard-list">
+                    <div class="leader-item">
+                      <span class="leader-name">1. Prasanth Meka</span>
+                      <span class="leader-score">2,840 XP</span>
+                    </div>
+                    <div class="leader-item">
+                      <span class="leader-name">2. Surat S.</span>
+                      <span class="leader-score">2,610 XP</span>
+                    </div>
+                    <div class="leader-item">
+                      <span class="leader-name">3. Ananya Rao</span>
+                      <span class="leader-score">2,490 XP</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS SECTION -->
+  <section class="testimonials">
+    <div class="container">
+      <div class="section-header">
+        <span>Success Stories</span>
+        <h2>What Our <span>Students Say</span></h2>
+        <p>Real feedback from learners who mastered coding logic and quantitative aptitude in regional languages.</p>
+      </div>
+
+      <div class="testimonials-grid">
+        <!-- Card 1 -->
+        <div class="testimonial-card">
+          <div class="quote-icon">“</div>
+          <p>EduMasterPro completely transformed my approach to Java and Web Dev. Studying complex programming modules in my mother tongue, Telugu, made standard principles extremely clear and straightforward!</p>
+          <div class="user-profile">
+            <div class="user-avatar" style="background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);">PM</div>
+            <div class="user-info">
+              <h4>Prasanth Meka</h4>
+              <p>Software Engineer Intern • 76k XP</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="testimonial-card">
+          <div class="quote-icon">“</div>
+          <p>As a parent, I am amazed at how fast my son picked up Python syntax through the Hindi medium explanations. His logical thinking and mathematical aptitude have reached new heights.</p>
+          <div class="user-profile">
+            <div class="user-avatar" style="background: linear-gradient(135deg, var(--secondary) 0%, #ec4899 100%);">SS</div>
+            <div class="user-info">
+              <h4>Surat S.</h4>
+              <p>Parent of Python Student</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="testimonial-card">
+          <div class="quote-icon">“</div>
+          <p>Having instant sync to GitHub study materials and quantitative reasoning equations explained step-by-step in Telugu has saved me so much search time before placement exams.</p>
+          <div class="user-profile">
+            <div class="user-avatar" style="background: linear-gradient(135deg, #10b981 0%, var(--primary) 100%);">AR</div>
+            <div class="user-info">
+              <h4>Ananya Rao</h4>
+              <p>Aptitude Student • 42k XP</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+   <!-- REGISTRATION CALL TO ACTION -->
+  <section class="container" id="register" style="padding: 100px 24px;">
+    <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); padding: 60px 40px; border-radius: 24px; text-align: center; box-shadow: 0 20px 50px rgba(99, 102, 241, 0.3); position: relative; overflow: hidden; z-index: 1;">
+      <!-- Subtle circles behind -->
+      <div style="position: absolute; top: -100px; left: -100px; width: 300px; height: 300px; background: rgba(255,255,255,0.06); border-radius: 50%; z-index: -1;"></div>
+      <div style="position: absolute; bottom: -150px; right: -100px; width: 400px; height: 400px; background: rgba(255,255,255,0.06); border-radius: 50%; z-index: -1;"></div>
+      
+      <h2 style="color: white; font-size: 38px; margin-bottom: 15px; letter-spacing: -0.5px;">Start Your Learning Journey Today</h2>
+      <p style="color: #e0e7ff; font-size: 17px; margin-bottom: 35px; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 26px;">
+        Join thousands of students scoring higher and competing in active coding & aptitude study leagues. Create your free account in less than a minute.
+      </p>
+      <a href="#" class="btn btn-secondary" style="font-size: 17px; padding: 16px 40px; border-radius: 100px; font-weight: 700; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">Create Free Account</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="contact">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Col 1 Brand -->
+        <div class="footer-brand">
+          <h3 style="font-family: 'Outfit', sans-serif; font-weight: 800; color: white;">Edu<span>MasterPro</span></h3>
+          <p>Premium digital educational portal providing bilingual Telugu and Hindi programming courses, aptitude checkpoints, video lessons, and weekly peer rankings.</p>
+          <div class="social-icons">
+            <a href="#" class="social-icon" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#" class="social-icon" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
+            <a href="#" class="social-icon" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" class="social-icon" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          </div>
+        </div>
+
+        <!-- Col 2 Navigation Links -->
+        <div class="footer-col">
+          <h4>Platform</h4>
+          <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#courses">Courses</a></li>
+            <li><a href="#about">Live Classes</a></li>
+            <li><a href="#contact">Contact Support</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3 Resources Links -->
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="#courses">Study Videos</a></li>
+            <li><a href="#courses">Smart Quizzes</a></li>
+            <li><a href="#courses">Repository Sync</a></li>
+            <li><a href="#register">Student SignUp</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4 Contact & Newsletter -->
+        <div class="footer-newsletter">
+          <h4>Stay Updated</h4>
+          <p style="font-size: 14px; margin-top: 10px; line-height: 20px;">Subscribe to receive weekly programming worksheets, aptitude alerts, and new course announcements.</p>
+          <div class="newsletter-box">
+            <input type="email" placeholder="Enter your email address" aria-label="Email">
+            <button class="btn btn-primary" style="padding: 12px; font-size: 14px;">Subscribe</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Bottom -->
+      <div class="footer-bottom">
+        <p>&copy; 2026 EduMasterPro Learning Platform. All rights reserved.</p>
+        <p>Designed with <i class="fa-solid fa-heart" style="color: var(--secondary);"></i> for standard student excellence.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="app.js"></script>
+</body>
+</html>

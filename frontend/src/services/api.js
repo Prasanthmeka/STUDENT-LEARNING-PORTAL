@@ -65,4 +65,13 @@ export const subscriptionAPI = {
   upgradeSubscription: (subscriptionId, data) => API.put(`/subscriptions/${subscriptionId}`, data)
 };
 
+// AI Assistant APIs
+export const aiAPI = {
+  chat: (message, history, language) => API.post('/ai/chat', { message, history, language }),
+  summarize: (materialId, text, actionType, language) => API.post('/ai/summarize', { materialId, text, actionType, language }),
+  generateQuiz: (materialId, text, count, subject) => API.post('/ai/generate-quiz', { materialId, text, count, subject }),
+  explainAnswer: (attemptId) => API.post('/ai/explain-answer', { attemptId }),
+  getRecommendations: () => API.post('/ai/recommendations')
+};
+
 export default API;

@@ -1,11 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { aiAPI } from '../services/api';
 import '../styles/StudentDashboard.css';
+import '../styles/AIMascot.css';
 
 const StudentDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const [recs, setRecs] = useState(null);
+  const [loadingRecs, setLoadingRecs] = useState(true);
+
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      try {
+        const response = await aiAPI.getRecommendations();
+        setRecs(response.data);
+      } catch (error) {
+        console.error('Failed to fetch recommendations:', error);
+      } finally {
+        setLoadingRecs(false);
+      }
+    };
+    fetchRecommendations();
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -30,6 +49,75 @@ const StudentDashboard = () => {
         <a href="/student/quizzes">Quizzes</a>
         <a href="/student/leaderboard">Leaderboard</a>
       </nav>
+
+      {/* Personalized AI Recommendations Section */}
+      <section className="ai-recs-section" style={{ padding: '0 20px', marginTop: '24px' }}>
+        <div className="ai-recs-widget">
+          <div className="ai-recs-header">
+            <img src="/assets/mascot.png" alt="Mascot" className="ai-recs-mascot" />
+            <h2 className="ai-recs-title">Personalized AI Learning Recommendations</h2>
+          </div>
+          
+          {loadingRecs ? (
+            <div className="ai-recs-loading">
+              <div className="ai-recs-loading-spinner"></div>
+              <p>Analyzing your quiz attempts and course materials...</p>
+            </div>
+          ) : recs ? (
+            <div className="ai-recs-body">
+              <div className="ai-recs-weakness-list">
+                <div className="ai-recs-weakness-item">
+                  {recs.weakSubjects && recs.weakSubjects.length > 0 && (
+                    <div style={{ marginBottom: '12px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#9ca3af', textTransform: 'uppercase', marginRight: '10px' }}>
+                        Focus Areas:
+                      </span>
+                      {recs.weakSubjects.map(subj => (
+                        <span key={subj} className="ai-recs-subject-badge">{subj}</span>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <p className="ai-recs-analysis">{recs.reasoning}</p>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
+                    {recs.recommendedQuizzes && recs.recommendedQuizzes.length > 0 && (
+                      <div className="ai-recs-suggestions">
+                        <span className="ai-recs-suggestion-title">Recommended Quizzes</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                          {recs.recommendedQuizzes.map(quiz => (
+                            <a key={quiz.id} href={`/student/quiz/${quiz.id}`} className="ai-recs-link">
+                              ✏️ {quiz.title} ({quiz.subject})
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {recs.recommendedMaterials && recs.recommendedMaterials.length > 0 && (
+                      <div className="ai-recs-suggestions">
+                        <span className="ai-recs-suggestion-title">Recommended Materials</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                          {recs.recommendedMaterials.map(mat => (
+                            <a key={mat.id} href="/student/materials" className="ai-recs-link">
+                              📚 {mat.title} ({mat.subject})
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p style={{ color: '#9ca3af', fontSize: '14px' }}>
+              No recommendations found yet. Complete quizzes to get personalized recommendations!
+            </p>
+          )}
+        </div>
+      </section>
 
       <section className="dashboard-overview">
         <h2>Learning Resources</h2>

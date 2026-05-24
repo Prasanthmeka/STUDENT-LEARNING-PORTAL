@@ -3,39 +3,35 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: #0b0f19; /* Fallback dark background */
-  background: transparent;
+  background: #f8fafc; /* Beautiful soft slate light background */
   padding: 40px 20px;
   position: relative;
   z-index: 2;
 }
 
 .auth-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff; /* Solid white background for high contrast */
+  border: 1px solid rgba(99, 102, 241, 0.15); /* Soft premium purple border */
   padding: 40px;
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.08); /* Sleek shadow */
   width: 100%;
   max-width: 450px;
-  color: white;
+  color: #1e293b; /* Dark slate text for outstanding contrast */
 }
 
 .auth-card h2 {
   text-align: center;
-  color: white !important;
+  color: #4f46e5 !important; /* Bold primary purple logo text */
   margin-bottom: 10px;
   font-size: 24px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .auth-card h3 {
   text-align: center;
-  color: #e0e7ff !important;
+  color: #0f172a !important; /* Extremely dark title text */
   margin-bottom: 30px;
   font-size: 20px;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
 .form-group {
@@ -46,8 +42,7 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
-  color: #e0e7ff !important;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  color: #334155 !important; /* Accessible dark grey label */
 }
 
 .form-group input,
@@ -55,13 +50,13 @@
 .form-group textarea {
   width: 100%;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  color: white !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important; /* Highly visible border */
+  color: #0f172a !important; /* Dark text for optimal readability */
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
-  transition: border-color 0.3s;
+  transition: all 0.3s;
 }
 
 /* Fix for Chrome Auto-fill turning inputs white */
@@ -69,29 +64,29 @@
 .form-group input:-webkit-autofill:hover, 
 .form-group input:-webkit-autofill:focus, 
 .form-group input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px #1a233a inset !important;
-  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+  -webkit-text-fill-color: #0f172a !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
 .form-group input option,
 .form-group select option {
-  background: #0b0f19;
-  color: white;
+  background: #ffffff;
+  color: #0f172a;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
 .auth-card button {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); /* Deep rich purple gradient */
   color: white !important;
   border: none;
   border-radius: 30px;
@@ -100,27 +95,34 @@
   cursor: pointer;
   transition: all 0.3s ease;
   margin-bottom: 15px;
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
 }
 
 .auth-card button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
 }
 
 .auth-card p {
   text-align: center;
-  color: #9ca3af;
+  color: #64748b; /* Readable grey */
   font-size: 14px;
 }
 
 .auth-card a {
-  color: #a5b4fc !important;
+  color: #6366f1 !important; /* Highly visible primary blue-purple */
   text-decoration: none;
   font-weight: 600;
 }
 
 .auth-card a:hover {
   text-decoration: underline;
+}
+
+.logo-square {
+  width: 160px !important;
+  height: 160px !important;
+  object-fit: contain !important;
+  display: block !important;
+  margin: 0 auto !important;
 }

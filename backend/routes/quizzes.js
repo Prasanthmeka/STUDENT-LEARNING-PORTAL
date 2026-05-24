@@ -437,11 +437,19 @@ router.post('/extract-questions', authenticateToken, authorizeRole(['admin']), u
       // Extract text from document
       const text = await extractTextFromDocument(tempFilePath, req.file.mimetype);
       
-      // Parse questions from text
-      let questions = parseQuestionsFromText(text);
+      // Parse questions from text (with AI generation fallback if requested)
+      let questions = [];
+      if (req.body.use_ai === 'true' || req.body.use_ai === true) {
+        const { generateQuizFromText } = require('../utils/openai');
+        const subject = req.body.subject || 'General Science';
+        const count = parseInt(req.body.question_numbers) || 5;
+        questions = await generateQuizFromText(text, count, subject);
+      } else {
+        questions = parseQuestionsFromText(text);
+      }
 
-      // Filter by question_numbers if provided
-      if (req.body.question_numbers) {
+      // Filter by question_numbers if provided (skip in AI mode)
+      if (req.body.question_numbers && !(req.body.use_ai === 'true' || req.body.use_ai === true)) {
         const numbersStr = req.body.question_numbers;
         const requestedNumbers = new Set();
         const parts = numbersStr.split(',');
