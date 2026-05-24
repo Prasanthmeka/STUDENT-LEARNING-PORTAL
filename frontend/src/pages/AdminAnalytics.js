@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { quizAPI } from '../services/api';
 import '../styles/AdminAnalytics.css';
 
+// Admin Analytics Page - Provides detailed insights into student performance, quiz attempts, and overall platform usage. Admins can view top performers, average scores, pass rates, and drill down into individual quiz attempts to see detailed responses and reset attempts if necessary.
 const AdminAnalytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [quizzes, setQuizzes] = useState([]);
