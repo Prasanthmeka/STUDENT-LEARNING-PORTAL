@@ -14,6 +14,8 @@ import Leaderboard from './pages/Leaderboard';
 import QuizzesPage from './pages/QuizzesPage';
 import QuizPage from './pages/QuizPage';
 import VideoPlayer from './pages/VideoPlayer';
+import Settings from './pages/Settings';
+import Subscription from './pages/Subscription';
 import AdminMaterials from './pages/AdminMaterials';
 import AdminQuizzes from './pages/AdminQuizzes';
 import AdminVideos from './pages/AdminVideos';
@@ -21,7 +23,6 @@ import AdminAnalytics from './pages/AdminAnalytics';
 import AdminUsers from './pages/AdminUsers';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
-import AIMascot from './components/AIMascot';
 import './App.css';
 
 const ScrollToTop = () => {
@@ -52,14 +53,17 @@ const ProtectedRoute = ({ component: Component, requiredRole }) => {
 
 function AppContent() {
   const { isAuthenticated, loading, user } = useAuth();
+  const location = useLocation();
 
   if (loading) return <div className="loading">Loading...</div>;
+
+  const isDashboardRoute = location.pathname.startsWith('/student/') || location.pathname.startsWith('/admin/');
 
   return (
     <div className="app-layout">
       <ScrollToTop />
-      <Navigation />
-      <main className="main-content">
+      {!isDashboardRoute && <Navigation />}
+      <main className={isDashboardRoute ? "" : "main-content"}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={isAuthenticated ? <Navigate to={`/${user?.role}/dashboard`} /> : <LandingPage />} />
@@ -83,12 +87,13 @@ function AppContent() {
           <Route path="/student/quizzes" element={<ProtectedRoute component={<QuizzesPage />} requiredRole="student" />} />
           <Route path="/student/quiz/:id" element={<ProtectedRoute component={<QuizPage />} requiredRole="student" />} />
           <Route path="/student/leaderboard" element={<ProtectedRoute component={<Leaderboard />} requiredRole="student" />} />
+          <Route path="/student/settings" element={<ProtectedRoute component={<Settings />} requiredRole="student" />} />
+          <Route path="/student/subscription" element={<ProtectedRoute component={<Subscription />} requiredRole="student" />} />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
-      {isAuthenticated && user?.role === 'student' && <AIMascot />}
-      <Footer />
+      {!isDashboardRoute && <Footer />}
     </div>
   );
 }

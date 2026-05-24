@@ -65,6 +65,16 @@ export const subscriptionAPI = {
   upgradeSubscription: (subscriptionId, data) => API.put(`/subscriptions/${subscriptionId}`, data)
 };
 
+// Course APIs
+export const courseAPI = {
+  getCourses: () => API.get('/courses')
+};
+
+// Analytics APIs
+export const analyticsAPI = {
+  getStudentDashboard: () => API.get('/analytics/student-dashboard')
+};
+
 // AI Assistant APIs
 export const aiAPI = {
   chat: (message, history, language) => API.post('/ai/chat', { message, history, language }),

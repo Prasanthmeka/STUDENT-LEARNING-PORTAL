@@ -3,7 +3,7 @@
 #navigation {
   background: #ffffff !important;
   padding: 0 40px !important;
-  height: 100px !important; /* Increased height to comfortably fit 80px tall logo */
+  height: 90px !important; /* Adjusted to 90px for perfect desktop vertical balance */
   border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
   position: sticky !important;
   top: 0 !important;
@@ -31,13 +31,13 @@
 
 /* Three-column layout distribution on desktop */
 #navigation .col-lg-3 {
-  flex: 0 0 20% !important;
-  max-width: 20% !important;
+  flex: 0 0 25% !important; /* Expanded to 25% to allow a beautiful, large logo */
+  max-width: 25% !important;
 }
 
 #navigation .col-lg-6 {
-  flex: 0 0 60% !important;
-  max-width: 60% !important;
+  flex: 0 0 50% !important; /* Adjusted to 50% to maintain perfect alignment */
+  max-width: 50% !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
@@ -56,15 +56,19 @@
   text-decoration: none !important;
 }
 
-.navbar-logo-img {
-  height: 80px !important; /* Scaled desktop logo height to fit 70-100px specification */
-  width: 320px !important; /* Scaled desktop logo width to fit 250-400px specification */
+.navbar-logo-img, .logo {
+  width: 280px !important; /* Increased to 280px to make the logo prominent and clear */
+  height: auto !important;
+  max-height: 80px !important; /* Expanded vertical height ceiling */
   object-fit: contain !important;
-  max-height: 100% !important;
   display: block !important;
   image-rendering: -webkit-optimize-contrast !important;
   mix-blend-mode: multiply !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.navbar-logo-img:hover, .logo:hover {
+  transform: scale(1.03) !important; /* Smooth premium scale highlight */
 }
 
 /* Desktop Main Menu Centering */
@@ -90,7 +94,7 @@
   position: relative !important;
   display: flex !important;
   align-items: center !important;
-  height: 100px !important; /* Matches increased navbar height for vertical centering */
+  height: 90px !important; /* Matches adjusted navbar height for vertical centering */
   padding: 0 !important;
   margin: 0 !important;
   line-height: normal !important;
@@ -344,7 +348,7 @@
 @media (max-width: 991px) {
   #navigation {
     padding: 0 24px !important;
-    height: 70px !important; /* Slightly shorter on tablet */
+    height: 80px !important; /* Premium tablet navbar height */
   }
 
   #navigation .row {
@@ -356,8 +360,10 @@
     max-width: 50% !important;
   }
 
-  .navbar-logo-img {
-    height: 52px !important; /* Prominent and legible responsive logo on tablet */
+  .navbar-logo-img, .logo {
+    width: 220px !important; /* Scaled up premium tablet logo width */
+    max-height: 70px !important;
+    height: auto !important;
   }
 }
 
@@ -365,12 +371,13 @@
 @media (max-width: 575px) {
   #navigation {
     padding: 0 16px !important;
-    height: 64px !important; /* Compact height on mobile */
+    height: 70px !important; /* Recommended mobile navbar height */
   }
 
-  .navbar-logo-img {
-    height: 42px !important; /* Compact but visible responsive logo on mobile */
-    max-width: 155px !important;
+  .navbar-logo-img, .logo {
+    width: 180px !important; /* Scaled up premium mobile logo width */
+    max-height: 60px !important;
+    height: auto !important;
   }
 }
 
