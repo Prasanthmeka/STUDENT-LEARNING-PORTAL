@@ -56,3 +56,52 @@
     font-size: 0.95rem;
   }
 }
+
+/* Dropdown styles (used instead of button groups) */
+.subject-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  font-size: 1rem;
+  color: #333;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+@media (max-width: 480px) {
+  .subject-filter {
+    padding: 12px;
+  }
+
+  .subject-select {
+    padding: 10px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Ensure select is centered and doesn't get clipped */
+.subject-filter .subject-select {
+  box-sizing: border-box;
+  display: block;
+  margin: 0 auto;
+  max-width: 420px;
+  position: relative;
+  z-index: 1000;
+}
+
+@media (max-width: 420px) {
+  .subject-filter {
+    padding: 0 8px;
+  }
+
+  .subject-filter .subject-select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

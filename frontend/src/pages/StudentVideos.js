@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { videoAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import SubjectFilter from '../components/SubjectFilter';
+import FilterModal from '../components/FilterModal';
 import '../styles/StudentVideos.css';
 
 const StudentVideos = () => {
@@ -63,6 +64,7 @@ const StudentVideos = () => {
 
   const recordedCount = videos.filter(v => v.video_type === 'recorded').length;
   const liveCount = videos.filter(v => v.video_type === 'live').length;
+  const [showTypeModal, setShowTypeModal] = useState(false);
 
   if (loading) return <div className="loading">Loading...</div>;
 
@@ -91,25 +93,23 @@ const StudentVideos = () => {
 
         <SubjectFilter selectedSubject={selectedSubject} onSubjectChange={handleSubjectChange} />
 
-        <div className="filter-buttons">
-          <button
-            className={`filter-btn ${selectedType === 'all' ? 'active' : ''}`}
-            onClick={() => filterByType('all')}
-          >
-            All Videos ({videos.length})
+        <div className="filter-dropdowns">
+          <button className="type-select" onClick={() => setShowTypeModal(true)}>
+            {selectedType === 'all' ? `All Videos (${videos.length})` : selectedType === 'recorded' ? `📹 Recorded (${recordedCount})` : `🔴 Live (${liveCount})`}
           </button>
-          <button
-            className={`filter-btn ${selectedType === 'recorded' ? 'active' : ''}`}
-            onClick={() => filterByType('recorded')}
-          >
-            📹 Recorded ({recordedCount})
-          </button>
-          <button
-            className={`filter-btn ${selectedType === 'live' ? 'active' : ''}`}
-            onClick={() => filterByType('live')}
-          >
-            🔴 Live ({liveCount})
-          </button>
+
+          <FilterModal
+            isOpen={showTypeModal}
+            title="Filter Videos"
+            options={[
+              { value: 'all', label: `All Videos (${videos.length})` },
+              { value: 'recorded', label: `📹 Recorded (${recordedCount})` },
+              { value: 'live', label: `🔴 Live (${liveCount})` }
+            ]}
+            selected={selectedType}
+            onClose={() => setShowTypeModal(false)}
+            onSelect={(val) => filterByType(val)}
+          />
         </div>
 
         {filteredVideos.length === 0 ? (

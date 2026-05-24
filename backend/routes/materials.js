@@ -75,6 +75,72 @@ router.get('/admin', authenticateToken, authorizeRole(['admin']), async (req, re
   }
 });
 
+// Proxy / Render external material content (restricted to GitHub hosts)
+router.get('/render', async (req, res) => {
+  try {
+    const { url } = req.query;
+    if (!url) return res.status(400).json({ error: 'Missing url query param' });
+
+    const allowedHosts = ['github.com', 'raw.githubusercontent.com', 'gist.githubusercontent.com', 'githubusercontent.com'];
+    let parsed;
+    try {
+      parsed = new URL(url);
+    } catch (e) {
+      return res.status(400).json({ error: 'Invalid url' });
+    }
+
+    if (!allowedHosts.some(h => parsed.hostname.includes(h))) {
+      return res.status(400).json({ error: 'Unsupported host' });
+    }
+
+    // Convert normal GitHub blob URLs to raw.githubusercontent.com
+    let urlToFetch = url;
+    if (parsed.hostname.includes('github.com')) {
+      const parts = parsed.pathname.split('/');
+      const blobIndex = parts.indexOf('blob');
+      if (blobIndex !== -1) {
+        const user = parts[1];
+        const repo = parts[2];
+        const branch = parts[4];
+        const filePath = parts.slice(5).join('/');
+        urlToFetch = `https://raw.githubusercontent.com/${user}/${repo}/${branch}/${filePath}`;
+      }
+    }
+
+    // Use global fetch (Node 18+).
+    // Support HEAD requests from the frontend probe: return headers only.
+    if (req.method === 'HEAD') {
+      const headResp = await fetch(urlToFetch, { method: 'HEAD' });
+      if (!headResp.ok) {
+        return res.status(headResp.status).end();
+      }
+      const headContentType = headResp.headers.get('content-type') || 'application/octet-stream';
+      res.setHeader('content-type', headContentType);
+      return res.status(200).end();
+    }
+
+    const resp = await fetch(urlToFetch);
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => '');
+      return res.status(resp.status).send(text || 'Failed to fetch resource');
+    }
+
+    const contentType = resp.headers.get('content-type') || 'application/octet-stream';
+    const buffer = Buffer.from(await resp.arrayBuffer());
+    res.setHeader('content-type', contentType);
+    // Allow PDFs to render inline in iframes by suggesting inline disposition
+    if (contentType.includes('pdf')) {
+      res.setHeader('content-disposition', `inline; filename="${encodeURIComponent(parsed.pathname.split('/').pop() || 'file.pdf')}"`);
+    } else {
+      // For other types, default to attachment so browsers download
+      res.setHeader('content-disposition', `attachment; filename="${encodeURIComponent(parsed.pathname.split('/').pop() || 'file')}"`);
+    }
+    res.send(buffer);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Get Material by ID
 router.get('/:id', async (req, res) => {
   try {
@@ -139,6 +205,54 @@ router.delete('/:id', authenticateToken, authorizeRole(['admin']), async (req, r
     }
 
     res.json({ message: 'Material deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Proxy / Render external material content (restricted to GitHub hosts)
+router.get('/render', async (req, res) => {
+  try {
+    const { url } = req.query;
+    if (!url) return res.status(400).json({ error: 'Missing url query param' });
+
+    const allowedHosts = ['github.com', 'raw.githubusercontent.com', 'gist.githubusercontent.com', 'githubusercontent.com'];
+    let parsed;
+    try {
+      parsed = new URL(url);
+    } catch (e) {
+      return res.status(400).json({ error: 'Invalid url' });
+    }
+
+    if (!allowedHosts.some(h => parsed.hostname.includes(h))) {
+      return res.status(400).json({ error: 'Unsupported host' });
+    }
+
+    // Convert normal GitHub blob URLs to raw.githubusercontent.com
+    let urlToFetch = url;
+    if (parsed.hostname.includes('github.com')) {
+      const parts = parsed.pathname.split('/');
+      const blobIndex = parts.indexOf('blob');
+      if (blobIndex !== -1) {
+        const user = parts[1];
+        const repo = parts[2];
+        const branch = parts[4];
+        const filePath = parts.slice(5).join('/');
+        urlToFetch = `https://raw.githubusercontent.com/${user}/${repo}/${branch}/${filePath}`;
+      }
+    }
+
+    // Use global fetch (Node 18+). Read as ArrayBuffer and stream to client.
+    const resp = await fetch(urlToFetch);
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => '');
+      return res.status(resp.status).send(text || 'Failed to fetch resource');
+    }
+
+    const contentType = resp.headers.get('content-type') || 'application/octet-stream';
+    const buffer = Buffer.from(await resp.arrayBuffer());
+    res.setHeader('content-type', contentType);
+    res.send(buffer);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

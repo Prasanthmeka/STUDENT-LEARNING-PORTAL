@@ -4,6 +4,10 @@ import { materialAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import SubjectFilter from '../components/SubjectFilter';
 import '../styles/StudentMaterials.css';
+import { Document, Page, pdfjs } from 'react-pdf';
+
+// Point pdfjs worker to CDN (bundlers may require different setup)
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 const StudentMaterials = () => {
   const [materials, setMaterials] = useState([]);
@@ -12,6 +16,11 @@ const StudentMaterials = () => {
   const [selectedSubject, setSelectedSubject] = useState('All');
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [materialContent, setMaterialContent] = useState(null);
+  const [viewerUrl, setViewerUrl] = useState(null);
+  const [downloadUrl, setDownloadUrl] = useState(null);
+  const [pdfData, setPdfData] = useState(null);
+  const [numPages, setNumPages] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
   const [contentLoading, setContentLoading] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -58,18 +67,51 @@ const StudentMaterials = () => {
 
   const handleViewMaterial = async (material) => {
     setSelectedMaterial(material);
+    setMaterialContent(null);
+    setViewerUrl(null);
     setContentLoading(true);
 
-    // For text-based files, fetch the content
-    if (material.file_type === 'txt') {
-      try {
-        const response = await fetch(material.github_url);
+    const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+    const proxyUrl = `${API_BASE}/materials/render?url=${encodeURIComponent(material.github_url)}`;
+
+    try {
+      // Probe the proxied resource to decide how to present it
+      const headResp = await fetch(proxyUrl, { method: 'HEAD' });
+      const contentType = (headResp.headers.get('content-type') || '').toLowerCase();
+
+      if (contentType.startsWith('text/') || contentType.includes('json')) {
+        const response = await fetch(proxyUrl);
         const text = await response.text();
         setMaterialContent(text);
-      } catch (error) {
-        console.error('Failed to load material content:', error);
-        setMaterialContent('Failed to load content: ' + error.message);
+        setViewerUrl(null);
+        setDownloadUrl(null);
+      } else if (contentType.includes('pdf')) {
+        // fetch PDF bytes and render with react-pdf
+        try {
+          const resp = await fetch(proxyUrl);
+          const arrayBuffer = await resp.arrayBuffer();
+          const uint8 = new Uint8Array(arrayBuffer);
+          setPdfData(uint8);
+          setNumPages(null);
+          setPageNumber(1);
+          setViewerUrl(null);
+          setDownloadUrl(null);
+          setMaterialContent(null);
+        } catch (e) {
+          console.error('Failed to fetch PDF bytes:', e);
+          setDownloadUrl(proxyUrl);
+        }
+      } else {
+        // Unsupported to render in-browser reliably; offer download via proxy
+        setViewerUrl(null);
+        setMaterialContent(null);
+        setDownloadUrl(proxyUrl);
       }
+    } catch (error) {
+      console.error('Failed to load material content:', error);
+      setMaterialContent('Failed to load content: ' + error.message);
+      setViewerUrl(null);
+      setDownloadUrl(null);
     }
 
     setContentLoading(false);
@@ -78,6 +120,9 @@ const StudentMaterials = () => {
   const closeMaterialModal = () => {
     setSelectedMaterial(null);
     setMaterialContent(null);
+    setPdfData(null);
+    setNumPages(null);
+    setPageNumber(1);
   };
 
   const filteredMaterials = materials.filter(m => {
@@ -168,24 +213,21 @@ const StudentMaterials = () => {
                   </div>
                 </div>
                 <div className="material-actions">
-                  {material.file_type === 'txt' ? (
-                    <button
-                      onClick={() => handleViewMaterial(material)}
-                      className="btn-view"
-                    >
-                      👁️ View
-                    </button>
-                  ) : (
-                    <a
-                      href={material.github_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-download"
-                      download
-                    >
-                      📥 Download
-                    </a>
-                  )}
+                  {(() => {
+                    const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+                    const proxyUrl = `${API_BASE}/materials/render?url=${encodeURIComponent(material.github_url)}`;
+                    return (
+                      <a
+                        href={proxyUrl}
+                        className="btn-download"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                      >
+                        📥 Download
+                      </a>
+                    );
+                  })()}
                 </div>
                 <div className="material-ai-actions" style={{ display: 'flex', gap: '8px', marginTop: '12px', borderTop: '1px dashed rgba(0,0,0,0.06)', paddingTop: '10px' }}>
                   <button
@@ -240,7 +282,7 @@ const StudentMaterials = () => {
       </section>
 
       {/* Material Viewer Modal - Only for Text Files */}
-      {selectedMaterial && selectedMaterial.file_type === 'txt' && (
+      {selectedMaterial && (
         <div className="material-modal" onClick={closeMaterialModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
@@ -288,8 +330,39 @@ const StudentMaterials = () => {
             <div className="modal-body">
               {contentLoading ? (
                 <div className="loading">Loading material...</div>
-              ) : (
+              ) : selectedMaterial.file_type === 'txt' || materialContent ? (
                 <pre className="text-viewer">{materialContent}</pre>
+              ) : pdfData ? (
+                <div className="pdf-viewer">
+                  <div className="pdf-controls">
+                    <button onClick={() => setPageNumber(p => Math.max(1, p - 1))} disabled={pageNumber <= 1}>Prev</button>
+                    <span>Page {pageNumber}{numPages ? ` / ${numPages}` : ''}</span>
+                    <button onClick={() => setPageNumber(p => Math.min(numPages || p + 1, p + 1))} disabled={numPages ? pageNumber >= numPages : false}>Next</button>
+                    {downloadUrl ? (
+                      <a href={downloadUrl} className="btn-download" target="_blank" rel="noopener noreferrer">📥 Download</a>
+                    ) : null}
+                  </div>
+                  <Document
+                    file={{ data: pdfData }}
+                    onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+                    loading={<div className="loading">Loading PDF...</div>}
+                  >
+                    <Page pageNumber={pageNumber} width={800} />
+                  </Document>
+                </div>
+              ) : viewerUrl ? (
+                <iframe
+                  title={selectedMaterial.title}
+                  src={viewerUrl}
+                  style={{ width: '100%', height: '80vh', border: 'none' }}
+                />
+              ) : downloadUrl ? (
+                <div className="download-fallback">
+                  <p>Preview unavailable. You can download the file instead:</p>
+                  <a href={downloadUrl} className="btn-download" target="_blank" rel="noopener noreferrer">📥 Download</a>
+                </div>
+              ) : (
+                <div className="loading">Viewer unavailable for this file</div>
               )}
             </div>
           </div>
