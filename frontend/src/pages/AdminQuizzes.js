@@ -10,7 +10,7 @@ const AdminQuizzes = () => {
   const [message, setMessage] = useState('');
   const [extractedQuestions, setExtractedQuestions] = useState([]);
   const [showConfirmation, setShowConfirmation] = useState(false);
-<<<<<<< HEAD
+  const [useAI, setUseAI] = useState(false);
 
   // Quiz management state
   const [quizzes, setQuizzes] = useState([]);
@@ -23,10 +23,6 @@ const AdminQuizzes = () => {
   const [deletingQuizId, setDeletingQuizId] = useState(null);
   const [subjectFilter, setSubjectFilter] = useState('');
 
-=======
-  const [useAI, setUseAI] = useState(false);
-  
->>>>>>> 830c7593b0919f44950dd2fc18521fff541a2fdb
   const [quizInfo, setQuizInfo] = useState({
     title: '',
     description: '',
@@ -392,7 +388,6 @@ const AdminQuizzes = () => {
                     onClick={() => setUploadMode('document')}
                     disabled={loading}
                   >
-<<<<<<< HEAD
                     📄 Upload Document
                   </button>
                   <button
@@ -405,7 +400,6 @@ const AdminQuizzes = () => {
                 </div>
 
                 {uploadMode === 'document' ? (
-                  // Document Upload Mode
                   <form onSubmit={handleUploadDocument} className="form-section">
                     <h2>Upload Document to Extract Questions</h2>
 
@@ -503,18 +497,37 @@ const AdminQuizzes = () => {
                     </div>
 
                     <div className="form-group">
-                      <label>Extract Specific Questions (Optional)</label>
+                      <label>{useAI ? 'Number of Questions to Generate *' : 'Extract Specific Questions (Optional)'}</label>
                       <input
                         type="text"
                         name="question_numbers"
                         value={quizInfo.question_numbers}
                         onChange={handleQuizInfoChange}
                         disabled={loading}
-                        placeholder="e.g., 1,3,5 or 1-5"
+                        placeholder={useAI ? 'e.g., 5 or 10 (defaults to 5)' : 'e.g., 1,3,5 or 1-5'}
                       />
                       <small>
-                        Enter question numbers separated by commas or ranges. Leave empty to extract all.
+                        {useAI 
+                          ? 'Specify the total number of quiz questions you want the AI tutor to generate.'
+                          : 'Enter question numbers separated by commas or ranges. Leave empty to extract all.'
+                        }
                       </small>
+                    </div>
+
+                    <div className="form-group" style={{ background: 'rgba(147, 51, 234, 0.05)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(147, 51, 234, 0.2)', margin: '20px 0' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0, fontWeight: '700', color: '#d8b4fe' }}>
+                        <input
+                          type="checkbox"
+                          checked={useAI}
+                          onChange={(e) => setUseAI(e.target.checked)}
+                          disabled={loading}
+                          style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                        />
+                        ⚡ Generate Quiz questions with AI (Powered by OpenAI)
+                      </label>
+                      <p style={{ fontSize: '12px', color: '#a0aec0', margin: '8px 0 0 26px', lineHeight: '1.4' }}>
+                        AI will analyze the uploaded document and generate high-quality MCQs, True/False, and Fill-in-the-blanks questions automatically.
+                      </p>
                     </div>
 
                     {message && (
@@ -525,7 +538,7 @@ const AdminQuizzes = () => {
 
                     <div className="form-buttons">
                       <button type="submit" disabled={loading || !file} className="btn-submit">
-                        {loading ? 'Processing...' : 'Extract Questions from Document'}
+                        {loading ? 'Processing...' : (useAI ? '⚡ Generate AI Quiz' : 'Extract Questions from Document')}
                       </button>
                     </div>
                   </form>
@@ -613,73 +626,6 @@ const AdminQuizzes = () => {
                   </div>
                 ))}
 
-=======
-                    <option value="">Select Subject</option>
-                    <option value="Telugu">Telugu</option>
-                    <option value="Hindi">Hindi</option>
-                    <option value="English">English</option>
-                    <option value="Maths">Maths</option>
-                    <option value="Physics">Physics</option>
-                    <option value="Chemistry">Chemistry</option>
-                    <option value="Biology">Biology</option>
-                    <option value="Social">Social Studies</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Upload Document (PDF, TXT, or DOCX) *</label>
-                  <div className="file-upload">
-                    <input
-                      type="file"
-                      onChange={handleFileChange}
-                      accept=".pdf,.txt,.docx"
-                      disabled={loading}
-                      id="file-input"
-                    />
-                    <label htmlFor="file-input" className="file-label">
-                      {file ? file.name : 'Choose file or drag and drop'}
-                    </label>
-                  </div>
-                  <small>
-                    Format: Numbered questions (1. Question?, 2. Question?, etc.) with options (A) Option, B) Option, etc.)
-                  </small>
-                </div>
-
-                <div className="form-group">
-                  <label>{useAI ? 'Number of Questions to Generate *' : 'Extract Specific Questions (Optional)'}</label>
-                  <input
-                    type="text"
-                    name="question_numbers"
-                    value={quizInfo.question_numbers}
-                    onChange={handleQuizInfoChange}
-                    disabled={loading}
-                    placeholder={useAI ? 'e.g., 5 or 10 (defaults to 5)' : 'e.g., 1,3,5 or 1-5'}
-                  />
-                  <small>
-                    {useAI 
-                      ? 'Specify the total number of quiz questions you want the AI tutor to generate.'
-                      : 'Enter question numbers separated by commas or ranges. Leave empty to extract all.'
-                    }
-                  </small>
-                </div>
-
-                <div className="form-group" style={{ background: 'rgba(147, 51, 234, 0.05)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(147, 51, 234, 0.2)', margin: '20px 0' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0, fontWeight: '700', color: '#d8b4fe' }}>
-                    <input
-                      type="checkbox"
-                      checked={useAI}
-                      onChange={(e) => setUseAI(e.target.checked)}
-                      disabled={loading}
-                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                    />
-                    ⚡ Generate Quiz questions with AI (Powered by OpenAI)
-                  </label>
-                  <p style={{ fontSize: '12px', color: '#a0aec0', margin: '8px 0 0 26px', lineHeight: '1.4' }}>
-                    AI will analyze the uploaded document and generate high-quality MCQs, True/False, and Fill-in-the-blanks questions automatically.
-                  </p>
-                </div>
-
->>>>>>> 830c7593b0919f44950dd2fc18521fff541a2fdb
                 {message && (
                   <div className={`message ${message.includes('Error') ? 'error' : 'success'}`}>
                     {message}
@@ -687,7 +633,6 @@ const AdminQuizzes = () => {
                 )}
 
                 <div className="form-buttons">
-<<<<<<< HEAD
                   <button
                     onClick={handleCreateQuizFromDocument}
                     disabled={loading}
@@ -705,10 +650,6 @@ const AdminQuizzes = () => {
                     className="btn-cancel"
                   >
                     Cancel
-=======
-                  <button type="submit" disabled={loading || !file} className="btn-submit">
-                    {loading ? 'Processing...' : (useAI ? '⚡ Generate AI Quiz' : 'Extract Questions from Document')}
->>>>>>> 830c7593b0919f44950dd2fc18521fff541a2fdb
                   </button>
                 </div>
               </div>
