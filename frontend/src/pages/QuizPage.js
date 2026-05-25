@@ -44,11 +44,17 @@ const QuizPage = () => {
   const [responses, setResponses] = useState([]);
   const [timeLeft, setTimeLeft] = useState(null);
   const [attemptId, setAttemptId] = useState(null);
+  const [startedAt] = useState(new Date().toISOString());
 
   // Submit Quiz Callback
   const handleSubmitQuiz = useCallback(async () => {
     try {
       if (!quiz || !quiz.questions) return;
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('You must be logged in to submit the quiz. Please login and try again.');
+        return;
+      }
       const answersArray = quiz.questions.map((q) => {
         const studentAnswer = answers[q.id];
         return {
@@ -58,7 +64,7 @@ const QuizPage = () => {
         };
       });
 
-      const response = await quizAPI.submitQuiz(id, answersArray);
+      const response = await quizAPI.submitQuiz(id, answersArray, startedAt);
       console.log('📊 Submit response:', response.data);
       console.log('📊 Result from response:', response.data.result);
       
@@ -67,10 +73,13 @@ const QuizPage = () => {
       setResponses(response.data.responses || []);
       setSubmitted(true);
     } catch (error) {
-      alert('Failed to submit quiz');
-      console.error(error);
+      const status = error?.response?.status;
+      const serverMsg = error?.response?.data?.error || error?.response?.data?.message;
+      console.error('Submit quiz error:', { status, serverMsg, error });
+      const alertMsg = serverMsg || error.message || 'Failed to submit quiz';
+      alert(`Failed to submit quiz: ${alertMsg}`);
     }
-  }, [quiz, answers, id]);
+  }, [quiz, answers, id, startedAt]);
 
   // Fetch Quiz & Attempts
   useEffect(() => {
