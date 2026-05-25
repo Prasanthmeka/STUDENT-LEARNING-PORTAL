@@ -279,9 +279,16 @@ const QuizzesPage = () => {
               <div className="space-y-3">
                 {/* Subject badge and question counts */}
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-extrabold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 text-indigo-500 dark:text-indigo-400 px-2 py-0.5 rounded-md">
-                    {quiz.subject === 'Social' ? 'Social Studies' : quiz.subject}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] font-extrabold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 text-indigo-500 dark:text-indigo-400 px-2 py-0.5 rounded-md">
+                      {quiz.subject === 'Social' ? 'Social Studies' : quiz.subject}
+                    </span>
+                    {quiz.attempt && (
+                      <span className="inline-flex items-center gap-0.5 text-[9.5px] font-black uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 text-emerald-600 dark:text-emerald-450 px-2 py-0.5 rounded-md shadow-sm">
+                        ✓ Completed
+                      </span>
+                    )}
+                  </div>
                   <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
                     {quiz.total_questions || 5} Questions
                   </span>
@@ -310,12 +317,21 @@ const QuizzesPage = () => {
                   </span>
                 </div>
 
-                <a 
-                  href={`/student/quiz/${quiz.id}`}
-                  className="py-2 px-4 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 group-hover:bg-indigo-600 group-hover:text-white text-indigo-600 dark:text-indigo-400 font-bold text-xs tracking-wide transition-smooth"
-                >
-                  Start Quiz
-                </a>
+                {quiz.attempt ? (
+                  <a 
+                    href={`/student/quiz/${quiz.id}`}
+                    className="py-2 px-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 group-hover:bg-emerald-600 group-hover:text-white text-emerald-600 dark:text-emerald-400 font-bold text-xs tracking-wide transition-smooth"
+                  >
+                    View Results
+                  </a>
+                ) : (
+                  <a 
+                    href={`/student/quiz/${quiz.id}`}
+                    className="py-2 px-4 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 group-hover:bg-indigo-600 group-hover:text-white text-indigo-600 dark:text-indigo-400 font-bold text-xs tracking-wide transition-smooth"
+                  >
+                    Start Quiz
+                  </a>
+                )}
               </div>
             </motion.div>
           ))}
