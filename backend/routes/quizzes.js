@@ -225,7 +225,7 @@ router.get('/:id', async (req, res) => {
 // Submit Quiz Answers
 router.post('/:id/submit', authenticateToken, authorizeRole(['student']), async (req, res) => {
   try {
-    const { answers } = req.body; // answers: [{question_id, option_id_or_text}, ...]
+    const { answers, startedAt } = req.body; // answers: [{question_id, option_id_or_text}, ...]
     const quizId = req.params.id;
 
     // Create quiz attempt
@@ -238,6 +238,7 @@ router.post('/:id/submit', authenticateToken, authorizeRole(['student']), async 
           student_id: req.user.id,
           quiz_id: quizId,
           status: 'submitted',
+          started_at: startedAt ? new Date(startedAt) : new Date(),
           submitted_at: new Date()
         }
       ])
@@ -343,9 +344,9 @@ router.post('/:id/submit', authenticateToken, authorizeRole(['student']), async 
 
     // Calculate time taken
     let timeTaken = 0;
-    if (updatedAttempt[0].started_at && updatedAttempt[0].submitted_at) {
-      const startTime = new Date(updatedAttempt[0].started_at);
-      const endTime = new Date(updatedAttempt[0].submitted_at);
+    if (attemptData && attemptData[0] && attemptData[0].started_at && attemptData[0].submitted_at) {
+      const startTime = new Date(attemptData[0].started_at);
+      const endTime = new Date(attemptData[0].submitted_at);
       timeTaken = Math.round((endTime - startTime) / 1000); // in seconds
     }
 
