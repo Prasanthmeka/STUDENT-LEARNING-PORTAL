@@ -152,10 +152,36 @@ router.get('/', async (req, res) => {
         return res.status(400).json({ error: error.message });
       }
 
-      // Extract quiz data from permissions
+      // Fetch all attempts for this student to attach attempt status
+      const { data: attempts } = await supabase
+        .from('quiz_attempts')
+        .select('quiz_id, status, is_passed, percentage, id')
+        .eq('student_id', userId);
+
+      // Create a map of quiz_id -> latest attempt
+      const attemptsMap = {};
+      if (attempts) {
+        attempts.forEach(att => {
+          attemptsMap[att.quiz_id] = att;
+        });
+      }
+
+      // Extract quiz data from permissions and attach attempt info
       const quizzes = (permittedQuizzes || [])
         .map(p => p.quizzes)
-        .filter(q => q && q.is_published);
+        .filter(q => q && q.is_published)
+        .map(q => {
+          const attempt = attemptsMap[q.id] || null;
+          return {
+            ...q,
+            attempt: attempt ? {
+              id: attempt.id,
+              status: attempt.status,
+              is_passed: attempt.is_passed,
+              percentage: attempt.percentage
+            } : null
+          };
+        });
 
       return res.json(quizzes);
     }
@@ -228,15 +254,29 @@ router.post('/:id/submit', authenticateToken, authorizeRole(['student']), async 
       .eq('id', quizId)
       .single();
 
+    if (!quizData) {
+      return res.status(400).json({ error: 'Quiz not found' });
+    }
+
     // Get all questions with correct answers
     const { data: questionsData } = await supabase
       .from('quiz_questions')
       .select('*, quiz_options(*)')
       .eq('quiz_id', quizId);
 
+    if (!questionsData || questionsData.length === 0) {
+      return res.status(400).json({ error: 'No questions found for this quiz' });
+    }
+
     let totalMarks = 0;
     let marksObtained = 0;
     const responses = [];
+
+    console.log('📝 GRADING:', {
+      answersCount: answers?.length,
+      questionsCount: questionsData?.length,
+      answerSample: answers?.[0]
+    });
 
     // Grade each answer
     for (const answer of answers) {
@@ -299,7 +339,26 @@ router.post('/:id/submit', authenticateToken, authorizeRole(['student']), async 
 
     // Calculate percentage
     const percentage = totalMarks > 0 ? (marksObtained / totalMarks) * 100 : 0;
-    const isPassed = percentage >= quizData.passing_score;
+    const isPassed = percentage >= (quizData.passing_score || 50);
+
+    // Calculate time taken
+    let timeTaken = 0;
+    if (updatedAttempt[0].started_at && updatedAttempt[0].submitted_at) {
+      const startTime = new Date(updatedAttempt[0].started_at);
+      const endTime = new Date(updatedAttempt[0].submitted_at);
+      timeTaken = Math.round((endTime - startTime) / 1000); // in seconds
+    }
+
+    console.log('📊 QUIZ GRADING:', {
+      quizId,
+      totalMarks,
+      marksObtained,
+      percentage: percentage.toFixed(2),
+      isPassed,
+      passingScore: quizData.passing_score,
+      attemptId,
+      timeTaken
+    });
 
     // Update quiz attempt with results
     const { data: updatedAttempt, error: updateError } = await supabase
@@ -318,17 +377,32 @@ router.post('/:id/submit', authenticateToken, authorizeRole(['student']), async 
       return res.status(400).json({ error: updateError.message });
     }
 
-    res.json({
+    // Fetch inserted responses with related data for frontend display
+    const { data: insertedResponses } = await supabase
+      .from('student_responses')
+      .select('*, quiz_questions(*), quiz_options(*)')
+      .eq('quiz_attempt_id', attemptId);
+
+    const resultPayload = {
       message: 'Quiz submitted successfully',
       attempt: updatedAttempt[0],
       result: {
         totalMarks,
         marksObtained,
         percentage: percentage.toFixed(2),
-        isPassed
+        isPassed,
+        timeTaken: timeTaken // seconds
       },
-      responses // Include responses so frontend can show detailed results
+      responses: insertedResponses
+    };
+
+    console.log('📤 SENDING RESPONSE:', {
+      result: resultPayload.result,
+      attemptKeys: Object.keys(resultPayload.attempt || {}),
+      responsesCount: insertedResponses?.length || 0
     });
+
+    res.json(resultPayload);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -383,15 +457,27 @@ router.get('/:id/my-attempts', authenticateToken, authorizeRole(['student', 'adm
       const latestAttempt = attempts[0];
       const { data: responses } = await supabase
         .from('student_responses')
-        .select('*')
+        .select('*, quiz_questions(*), quiz_options(*)')
         .eq('quiz_attempt_id', latestAttempt.id);
 
       const result = {
         totalMarks: latestAttempt.total_marks,
         marksObtained: latestAttempt.marks_obtained,
         percentage: latestAttempt.percentage,
-        isPassed: latestAttempt.is_passed
+        isPassed: latestAttempt.is_passed,
+        timeTaken: latestAttempt.started_at && latestAttempt.submitted_at 
+          ? Math.round((new Date(latestAttempt.submitted_at) - new Date(latestAttempt.started_at)) / 1000)
+          : 0
       };
+
+      console.log('📥 FETCHING MY-ATTEMPTS:', {
+        attemptId: latestAttempt.id,
+        dbPercentage: latestAttempt.percentage,
+        dbTotalMarks: latestAttempt.total_marks,
+        dbMarksObtained: latestAttempt.marks_obtained,
+        timeTaken: result.timeTaken,
+        result
+      });
 
       res.json([{ attempt: latestAttempt, result, responses }]);
     } else {
