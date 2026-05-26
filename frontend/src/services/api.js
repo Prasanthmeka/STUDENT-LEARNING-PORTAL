@@ -72,7 +72,8 @@ export const courseAPI = {
 
 // Analytics APIs
 export const analyticsAPI = {
-  getStudentDashboard: () => API.get('/analytics/student-dashboard')
+  getStudentDashboard: () => API.get('/analytics/student-dashboard'),
+  getAdminDashboard: () => API.get('/analytics/admin-dashboard')
 };
 
 // AI Assistant APIs

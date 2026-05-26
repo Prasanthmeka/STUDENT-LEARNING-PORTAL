@@ -21,6 +21,7 @@ import AdminQuizzes from './pages/AdminQuizzes';
 import AdminVideos from './pages/AdminVideos';
 import AdminAnalytics from './pages/AdminAnalytics';
 import AdminUsers from './pages/AdminUsers';
+import AdminSubjectPage from './pages/AdminSubjectPage';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
 import './App.css';
@@ -78,6 +79,7 @@ function AppContent() {
           <Route path="/admin/videos" element={<ProtectedRoute component={<AdminVideos />} requiredRole="admin" />} />
           <Route path="/admin/analytics" element={<ProtectedRoute component={<AdminAnalytics />} requiredRole="admin" />} />
           <Route path="/admin/users" element={<ProtectedRoute component={<AdminUsers />} requiredRole="admin" />} />
+          <Route path="/admin/subject/:subjectName" element={<ProtectedRoute component={<AdminSubjectPage />} requiredRole="admin" />} />
           
           {/* Student Routes */}
           <Route path="/student/dashboard" element={<ProtectedRoute component={<StudentDashboard />} requiredRole="student" />} />
