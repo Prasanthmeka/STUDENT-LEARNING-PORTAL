@@ -1,8 +1,8 @@
 import React from 'react';
-import { BookOpen, ArrowRight, PlayCircle } from 'lucide-react';
+import { ArrowRight, PlayCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const CoursesGrid = ({ courses = [], loading = false }) => {
+const CoursesGrid = ({ courses = [], loading = false, searchQuery = '' }) => {
 
   const getGradientColor = (subject) => {
     const gradients = {
@@ -17,6 +17,32 @@ const CoursesGrid = ({ courses = [], loading = false }) => {
       'Social': 'from-fuchsia-500 to-pink-600'
     };
     return gradients[subject] || 'from-slate-500 to-slate-700';
+  };
+
+  const getSubjectIcon = (subject, fallbackIcon) => {
+    const normalized = (subject || '').trim().toLowerCase();
+    switch (normalized) {
+      case 'telugu':
+        return '📙';
+      case 'hindi':
+        return '📔';
+      case 'english':
+        return '📕';
+      case 'maths':
+      case 'mathematics':
+        return '📐';
+      case 'physics':
+        return '⚛️';
+      case 'chemistry':
+        return '🧪';
+      case 'biology':
+        return '🌿';
+      case 'social':
+      case 'social studies':
+        return '🌍';
+      default:
+        return fallbackIcon || '📚';
+    }
   };
 
   const containerVariants = {
@@ -43,11 +69,22 @@ const CoursesGrid = ({ courses = [], loading = false }) => {
     );
   }
 
-  // Restrict to standard 8 subjects
+  // Restrict to standard 8 subjects & filter based on search query
   const allowedSubjects = ['TELUGU', 'HINDI', 'ENGLISH', 'SOCIAL', 'PHYSICS', 'CHEMISTRY', 'MATHS', 'BIOLOGY', 'SOCIAL STUDIES'];
-  const filteredCourses = courses.filter(course => 
-    allowedSubjects.includes(course.subject?.toUpperCase())
-  );
+  const filteredCourses = courses.filter(course => {
+    const isAllowed = allowedSubjects.includes(course.subject?.toUpperCase());
+    const matchesSearch = searchQuery 
+      ? course.subject?.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+    return isAllowed && matchesSearch;
+  });
+
+  const formatSubjectName = (subject) => {
+    if (!subject) return '';
+    const lower = subject.toLowerCase();
+    if (lower === 'social studies' || lower === 'social') return 'Social Studies';
+    return subject.charAt(0).toUpperCase() + lower.slice(1);
+  };
 
   return (
     <div className="space-y-6">
@@ -65,6 +102,7 @@ const CoursesGrid = ({ courses = [], loading = false }) => {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
       >
         {filteredCourses.map((course) => {
+          const displaySubject = formatSubjectName(course.subject);
           return (
             <motion.div
               key={course.id}
@@ -79,14 +117,14 @@ const CoursesGrid = ({ courses = [], loading = false }) => {
                 
                 <div className="flex items-center justify-between z-10">
                   <span className="text-[10px] font-extrabold uppercase tracking-widest bg-white/20 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10">
-                    {course.subject}
+                    Syllabus
                   </span>
-                  <span className="text-2xl">{course.icon}</span>
+                  <span className="text-2xl">{getSubjectIcon(course.subject, course.icon)}</span>
                 </div>
 
                 <div className="z-10 mt-2">
                   <h4 className="font-extrabold text-white text-base tracking-tight leading-snug line-clamp-2 font-sans group-hover:text-indigo-100 transition-smooth">
-                    {course.title}
+                    {displaySubject}
                   </h4>
                 </div>
               </div>

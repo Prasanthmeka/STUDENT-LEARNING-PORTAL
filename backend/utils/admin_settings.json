@@ -1,0 +1,7 @@
+{
+  "theme_accent": "purple",
+  "notif_registrations": true,
+  "notif_submissions": true,
+  "notif_alerts": true,
+  "notif_uploads": true
+}

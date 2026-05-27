@@ -14,7 +14,7 @@ const AdminLayout = ({
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex font-sans transition-colors duration-300 text-slate-800 dark:text-slate-200">
+    <div className="h-screen bg-slate-50 dark:bg-slate-950 flex font-sans transition-colors duration-300 text-slate-800 dark:text-slate-200 overflow-hidden">
       
       {/* Admin Sidebar Panel */}
       <AdminSidebar 
@@ -28,15 +28,15 @@ const AdminLayout = ({
 
       {/* Main Content Wrapper */}
       <div 
-        className="flex-grow flex flex-col min-w-0 transition-all duration-300 ease-in-out"
+        className="main-content-wrapper flex-grow flex flex-col h-screen min-w-0 overflow-hidden transition-all duration-300 ease-in-out"
         style={{
-          paddingLeft: isSidebarCollapsed ? '90px' : '280px'
+          paddingLeft: isSidebarCollapsed ? '80px' : '280px'
         }}
       >
         {/* CSS Override for Responsive Breaks */}
         <style>{`
           @media (max-width: 768px) {
-            .flex-grow {
+            .main-content-wrapper {
               padding-left: 0px !important;
             }
           }
@@ -50,7 +50,7 @@ const AdminLayout = ({
         />
 
         {/* Inner Page Content */}
-        <main className="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full overflow-x-hidden">
+        <main className="flex-grow overflow-y-auto p-4 md:p-8 max-w-7xl mx-auto w-full overflow-x-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               initial={{ opacity: 0, y: 15 }}

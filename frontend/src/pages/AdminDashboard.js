@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { analyticsAPI } from '../services/api';
 import AdminLayout from '../layouts/AdminLayout';
 import { 
@@ -8,15 +7,10 @@ import {
   TrendingUp, 
   AlertTriangle, 
   Search, 
-  Filter, 
   ArrowUpDown, 
   ChevronLeft, 
   ChevronRight, 
-  Download, 
-  Sparkles,
-  CheckCircle,
   RefreshCw,
-  Database,
   Pencil,
   Trash2,
   X,
@@ -92,6 +86,7 @@ const AdminDashboard = () => {
   // Analytics API data loading
   const [data, setData] = useState(defaultDummyData);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line no-unused-vars
   const [isRealBackend, setIsRealBackend] = useState(false);
   const [refreshCounter, setRefreshCounter] = useState(0);
 
@@ -253,7 +248,7 @@ const AdminDashboard = () => {
     const link = document.createElement('a');
     
     link.setAttribute('href', url);
-    link.setAttribute('download', `EduMasterPro_Subscribed_Students_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute('download', `LearnoQube_Subscribed_Students_${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -265,7 +260,7 @@ const AdminDashboard = () => {
     const printContent = `
       <html>
         <head>
-          <title>EduMasterPro Student Subscriptions Report</title>
+          <title>LearnoQube Student Subscriptions Report</title>
           <style>
             body { font-family: 'Segoe UI', Roboto, sans-serif; padding: 40px; color: #0f172a; }
             h1 { margin-bottom: 5px; font-size: 26px; color: #4f46e5; }
@@ -280,7 +275,7 @@ const AdminDashboard = () => {
           </style>
         </head>
         <body>
-          <h1>EduMasterPro Portal</h1>
+          <h1>LearnoQube Portal</h1>
           <p>Overall Student Subscriptions Report — Generated on ${new Date().toLocaleDateString()}</p>
           <table>
             <thead>
@@ -336,12 +331,71 @@ const AdminDashboard = () => {
 
   // Palette colors for charts
   const COLORS = {
-    indigo: '#6366f1',
-    purple: '#a855f7',
-    emerald: '#10b981',
-    slateLight: '#f1f5f9',
+    primary: '#6366F1',
+    secondary: '#8B5CF6',
+    accent: '#06B6D4',
+    highlight: '#F59E0B',
+    slateLight: '#EEF2FF',
     slateDark: '#1e293b'
   };
+
+  // Reactive Theme Accent state
+  const [themeAccent, setThemeAccent] = useState(() => localStorage.getItem('admin_theme_accent') || 'purple');
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setThemeAccent(localStorage.getItem('admin_theme_accent') || 'purple');
+    };
+    window.addEventListener('admin-theme-changed', handleThemeChange);
+    return () => window.removeEventListener('admin-theme-changed', handleThemeChange);
+  }, []);
+
+  const getThemeColors = () => {
+    switch (themeAccent) {
+      case 'pink':
+        return {
+          primary: '#EC4899',
+          secondary: '#F43F5E',
+          glow: 'from-pink-500 to-rose-500',
+          text: 'text-pink-650',
+          activeBg: 'bg-pink-50',
+          activeBorder: 'border-pink-500',
+          btn: 'bg-pink-600 hover:bg-pink-700 shadow-pink-600/20'
+        };
+      case 'green':
+        return {
+          primary: '#10B981',
+          secondary: '#059669',
+          glow: 'from-emerald-500 to-green-500',
+          text: 'text-emerald-650',
+          activeBg: 'bg-emerald-50',
+          activeBorder: 'border-emerald-500',
+          btn: 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'
+        };
+      case 'orange':
+        return {
+          primary: '#F97316',
+          secondary: '#EA580C',
+          glow: 'from-orange-500 to-amber-500',
+          text: 'text-orange-650',
+          activeBg: 'bg-orange-50',
+          activeBorder: 'border-orange-500',
+          btn: 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20'
+        };
+      case 'purple':
+      default:
+        return {
+          primary: '#6366F1',
+          secondary: '#8B5CF6',
+          glow: 'from-indigo-500 to-purple-500',
+          text: 'text-[#6366F1]',
+          activeBg: 'bg-indigo-50',
+          activeBorder: 'border-[#6366F1]',
+          btn: 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20'
+        };
+    }
+  };
+
+  const themeColors = getThemeColors();
 
   return (
     <AdminLayout
@@ -370,10 +424,6 @@ const AdminDashboard = () => {
                 <span className="text-[10px] font-black uppercase bg-indigo-500 text-white py-0.5 px-2 rounded-md shadow-sm tracking-wider">
                   Admin Control Panel
                 </span>
-                <span className="text-[10px] font-black uppercase bg-slate-800 text-indigo-400 py-0.5 px-2 rounded-md border border-slate-750 tracking-wider flex items-center gap-1">
-                  <Database className="w-2.5 h-2.5" />
-                  {isRealBackend ? 'Live DB Mode' : 'High-Fidelity Mock Mode'}
-                </span>
               </div>
               <h1 className="text-2xl md:text-3xl font-black tracking-tight font-sans text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-indigo-200">
                 Welcome Back, Admin 👋
@@ -396,7 +446,6 @@ const AdminDashboard = () => {
           </div>
         </motion.div>
 
-
         {/* ----------------------------------------------------
         // SECTION 2: GRID OF 4 PREMIUM ANALYTICS CARDS
         // ---------------------------------------------------- */}
@@ -417,12 +466,12 @@ const AdminDashboard = () => {
                   {loading ? '...' : data?.summary?.totalStudents}
                 </h3>
               </div>
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20">
+              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${themeColors.glow} text-white flex items-center justify-center shadow-md`}>
                 <GraduationCap className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-4 flex items-center gap-1.5 text-[10px] text-slate-455 font-bold">
-              <span className="text-emerald-500 font-black">⚡ Active</span>
+              <span className={`font-black ${themeColors.text}`}>⚡ Active</span>
               <span>across standard categories</span>
             </div>
           </motion.div>
@@ -442,12 +491,12 @@ const AdminDashboard = () => {
                   {loading ? '...' : data?.summary?.activeSubscriptions}
                 </h3>
               </div>
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-green-600 text-white flex items-center justify-center shadow-md shadow-emerald-500/20">
+              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${themeColors.glow} text-white flex items-center justify-center shadow-md`}>
                 <Crown className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-4 flex items-center gap-1.5 text-[10px] text-slate-455 font-bold">
-              <span className="text-emerald-500 font-black">
+              <span className={`font-black ${themeColors.text}`}>
                 {loading ? '...' : ((data?.summary?.activeSubscriptions / (data?.summary?.totalStudents || 1)) * 100).toFixed(1)}%
               </span>
               <span>conversion rate ratio</span>
@@ -469,12 +518,12 @@ const AdminDashboard = () => {
                   {loading ? '...' : `${data?.summary?.passRate}%`}
                 </h3>
               </div>
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20">
+              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${themeColors.glow} text-white flex items-center justify-center shadow-md`}>
                 <TrendingUp className="w-5 h-5" />
               </div>
             </div>
             <div className="mt-4 flex items-center gap-1.5 text-[10px] text-slate-455 font-bold">
-              <span className="text-indigo-500 font-black">✓ Pass target</span>
+              <span className={`font-black ${themeColors.text}`}>✓ Pass target</span>
               <span>above 50% benchmarks</span>
             </div>
           </motion.div>
@@ -520,11 +569,11 @@ const AdminDashboard = () => {
             className="p-6 rounded-3xl bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas space-y-6 flex flex-col justify-between"
           >
             <div className="space-y-1">
-              <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Curriculum Metrics</span>
+              <span className={`text-[10px] font-black uppercase tracking-widest ${themeColors.text}`}>Curriculum Metrics</span>
               <h3 className="text-base font-black text-slate-800 dark:text-white tracking-tight font-sans">
                 Subject Subscription Analytics
               </h3>
-              <p className="text-[11px] text-slate-450 font-semibold leading-relaxed">
+              <p className="text-[11px] text-slate-455 font-semibold leading-relaxed">
                 Comparison of premium subscribed users vs non-subscribed trial users per active subject.
               </p>
             </div>
@@ -534,7 +583,7 @@ const AdminDashboard = () => {
                 <BarChart
                   data={data?.subjectSubscriptionAnalytics || []}
                   margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                  barGap={4}
+                  barGap={6}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
                   <XAxis 
@@ -550,14 +599,17 @@ const AdminDashboard = () => {
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.96)',
                       borderRadius: '12px',
-                      border: '1px solid rgba(255,255,255,0.08)',
+                      border: '1px solid #E5E7EB',
                       fontSize: '11px',
-                      color: 'white',
-                      fontWeight: 'bold'
+                      color: '#1E293B',
+                      fontWeight: 'bold',
+                      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05)'
                     }}
-                    cursor={{ fill: 'rgba(99,102,241,0.03)' }}
+                    itemStyle={{ color: '#1E293B' }}
+                    labelStyle={{ color: '#64748B', fontWeight: 'bold' }}
+                    cursor={{ fill: 'rgba(99,102,241,0.02)' }}
                   />
                   <Legend 
                     verticalAlign="top" 
@@ -569,16 +621,18 @@ const AdminDashboard = () => {
                   <Bar 
                     dataKey="subscribedUsers" 
                     name="Subscribed" 
-                    fill={COLORS.indigo} 
-                    radius={[4, 4, 0, 0]} 
+                    fill={themeColors.primary} 
+                    radius={[6, 6, 0, 0]} 
                     animationDuration={1200}
+                    activeBar={{ fill: themeColors.secondary, stroke: themeColors.primary, strokeWidth: 1 }}
                   />
                   <Bar 
                     dataKey="nonSubscribedUsers" 
                     name="Non-Subscribed" 
-                    fill="#94a3b8" 
-                    radius={[4, 4, 0, 0]} 
+                    fill={COLORS.slateLight} 
+                    radius={[6, 6, 0, 0]} 
                     animationDuration={1200}
+                    activeBar={{ fill: '#E2E8F0', stroke: '#94A3B8', strokeWidth: 1 }}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -593,7 +647,7 @@ const AdminDashboard = () => {
             className="p-6 rounded-3xl bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas space-y-6 flex flex-col justify-between"
           >
             <div className="space-y-1">
-              <span className="text-[10px] font-black text-purple-500 uppercase tracking-widest">Platform Engagement</span>
+              <span className={`text-[10px] font-black uppercase tracking-widest ${themeColors.text}`}>Platform Engagement</span>
               <h3 className="text-base font-black text-slate-800 dark:text-white tracking-tight font-sans">
                 Quiz Attempt Analytics
               </h3>
@@ -617,8 +671,8 @@ const AdminDashboard = () => {
                       dataKey="value"
                       animationDuration={1500}
                     >
-                      <Cell fill={COLORS.indigo} />
-                      <Cell fill="#f1f5f9" className="dark:fill-slate-850" />
+                      <Cell fill={themeColors.primary} />
+                      <Cell fill="#EEF2FF" className="dark:fill-slate-850" />
                     </Pie>
                     
                     {/* Inner Ring: Unattempted Percentage */}
@@ -632,19 +686,28 @@ const AdminDashboard = () => {
                       dataKey="value"
                       animationDuration={1500}
                     >
-                      <Cell fill={COLORS.purple} />
-                      <Cell fill="#f1f5f9" className="dark:fill-slate-850" />
+                      <Cell fill={COLORS.accent} />
+                      <Cell fill="#EEF2FF" className="dark:fill-slate-850" />
                     </Pie>
-                    <Tooltip />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.96)',
+                        borderRadius: '12px',
+                        border: '1px solid #E5E7EB',
+                        fontSize: '11px',
+                        color: '#1E293B',
+                        fontWeight: 'bold'
+                      }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
 
                 {/* Center labels overlays */}
                 <div className="absolute text-center flex flex-col items-center">
-                  <span className="text-xs font-black tracking-tighter text-indigo-500 leading-none">
+                  <span className={`text-base font-black tracking-tighter leading-none ${themeColors.text}`}>
                     {data?.quizAttemptAnalytics?.attemptedPercentage || 74.2}%
                   </span>
-                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
+                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">
                     Attempted
                   </span>
                 </div>
@@ -653,7 +716,7 @@ const AdminDashboard = () => {
               {/* Legends explanation detail */}
               <div className="space-y-4 text-xs font-bold leading-normal font-sans">
                 <div className="flex items-center gap-3">
-                  <div className="w-3.5 h-3.5 rounded-full bg-indigo-500 shadow-sm shrink-0" />
+                  <div className="w-3.5 h-3.5 rounded-full shadow-sm shrink-0" style={{ backgroundColor: themeColors.primary }} />
                   <div>
                     <span className="block text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Outer Ring (Attempted)</span>
                     <span className="block text-slate-800 dark:text-white mt-1">
@@ -663,7 +726,7 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="w-3.5 h-3.5 rounded-full bg-purple-500 shadow-sm shrink-0" />
+                  <div className="w-3.5 h-3.5 rounded-full shadow-sm shrink-0" style={{ backgroundColor: COLORS.accent }} />
                   <div>
                     <span className="block text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Inner Ring (Unattempted)</span>
                     <span className="block text-slate-800 dark:text-white mt-1">

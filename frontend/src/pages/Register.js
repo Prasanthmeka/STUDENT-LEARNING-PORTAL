@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Auth.css';
 import '../styles/LandingPage.css';
+import LearnoQubeLogo from '../components/LearnoQubeLogo';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -61,8 +62,10 @@ const Register = () => {
       </div>
       <div className="auth-container" style={{ position: 'relative', zIndex: 1 }}>
       <div className="auth-card">
-        <img src="/assets/logo.png" alt="EduMasterPro Logo" className="logo-square" />
-        <h2>EduMasterPro</h2>
+        <div className="flex items-center justify-center gap-2 mb-6 select-none">
+          <LearnoQubeLogo className="w-9 h-9 shrink-0" />
+          <span className="font-bold text-3xl tracking-wide bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">LearnoQube</span>
+        </div>
         <h3>Register</h3>
         {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>
@@ -112,7 +115,7 @@ const Register = () => {
           </div>
 
           <button type="submit" disabled={loading}>
-            {loading ? 'Registering...' : 'Register'}
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
         <p>Already have an account? <a href="/login">Login</a></p>

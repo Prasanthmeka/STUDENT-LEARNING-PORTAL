@@ -76,6 +76,12 @@ export const analyticsAPI = {
   getAdminDashboard: () => API.get('/analytics/admin-dashboard')
 };
 
+// Settings APIs
+export const settingsAPI = {
+  getSettings: () => API.get('/admin/settings'),
+  updateSettings: (data) => API.put('/admin/settings', data)
+};
+
 // AI Assistant APIs
 export const aiAPI = {
   chat: (message, history, language) => API.post('/ai/chat', { message, history, language }),

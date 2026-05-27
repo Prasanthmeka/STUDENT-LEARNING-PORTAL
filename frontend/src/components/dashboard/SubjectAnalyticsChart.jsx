@@ -4,8 +4,7 @@ import {
   PieChart, 
   Pie, 
   Cell, 
-  Tooltip, 
-  Legend 
+  Tooltip
 } from 'recharts';
 import { BarChart3, HelpCircle } from 'lucide-react';
 
@@ -99,16 +98,16 @@ const SubjectAnalyticsChart = ({ data = [], loading = false }) => {
         {totalAttempted > 0 ? (
           <>
             {/* Real Donut Pie Chart */}
-            <div className="h-52 w-full">
+            <div className="h-52 w-full relative flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
+                <PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                   <Tooltip content={<CustomTooltip />} />
                   <Pie
                     data={chartData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={55}
-                    outerRadius={80}
+                    innerRadius={50}
+                    outerRadius={70}
                     paddingAngle={3}
                     dataKey="value"
                   >
@@ -127,7 +126,7 @@ const SubjectAnalyticsChart = ({ data = [], loading = false }) => {
               </ResponsiveContainer>
 
               {/* Central Text inside Donut */}
-              <div className="absolute top-[37%] left-1/2 -translate-x-1/2 text-center pointer-events-none">
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none flex flex-col items-center justify-center">
                 <span className="block text-2xl font-black text-slate-800 tracking-tighter leading-none">
                   {totalAttempted}
                 </span>

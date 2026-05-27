@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, Calendar, Sparkles, HelpCircle, Edit } from 'lucide-react';
+import { Trophy, Calendar, HelpCircle } from 'lucide-react';
 
 const TopQuizzes = ({ quizzes = [], loading = false }) => {
 

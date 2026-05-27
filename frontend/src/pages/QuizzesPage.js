@@ -9,9 +9,7 @@ import {
   Search, 
   Clock, 
   HelpCircle,
-  Award,
-  Zap,
-  BookOpen
+  Award
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -95,9 +93,6 @@ const QuizzesPage = () => {
     applyFilters(status, selectedSubject, searchQuery);
   };
 
-  const shortQuizCount = quizzes.filter(q => q.time_limit_minutes <= 15).length;
-  const longQuizCount = quizzes.filter(q => q.time_limit_minutes > 15).length;
-
   const containerVariants = {
     hidden: {},
     show: {
@@ -143,7 +138,7 @@ const QuizzesPage = () => {
       />
 
       {/* Mini Stats strip */}
-      <div className="grid grid-cols-3 gap-6 mb-8">
+      <div className="mb-8 max-w-xs">
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-saas flex items-center justify-between">
           <div className="overflow-hidden">
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Total Quizzes</span>
@@ -151,26 +146,6 @@ const QuizzesPage = () => {
           </div>
           <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 text-indigo-500 dark:text-indigo-400 shrink-0">
             <ClipboardList className="w-4 h-4" />
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-saas flex items-center justify-between">
-          <div className="overflow-hidden">
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Quick tests</span>
-            <span className="text-xl font-black text-slate-800 dark:text-white leading-none">{shortQuizCount}</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/50 text-amber-500 dark:text-amber-400 shrink-0">
-            <Zap className="w-4 h-4" />
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-saas flex items-center justify-between">
-          <div className="overflow-hidden">
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Comprehensive</span>
-            <span className="text-xl font-black text-slate-800 dark:text-white leading-none">{longQuizCount}</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 text-emerald-500 dark:text-emerald-400 shrink-0">
-            <BookOpen className="w-4 h-4" />
           </div>
         </div>
       </div>

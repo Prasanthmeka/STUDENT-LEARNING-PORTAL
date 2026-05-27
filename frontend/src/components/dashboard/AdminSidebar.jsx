@@ -2,17 +2,13 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import LearnoQubeLogo from '../LearnoQubeLogo';
 import { 
   LayoutDashboard, 
-  Settings, 
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   User,
-  Shield,
-  Bell,
-  SunMoon,
   Languages,
   BookOpen,
   Compass,
@@ -52,7 +48,11 @@ const AdminSidebar = ({
 
   const handleSettingsClick = (item) => {
     setIsMobileOpen(false);
-    alert(`Portal settings: ${item.name} panel loaded.`);
+    if (item.key === 'user') {
+      navigate('/admin/settings');
+    } else {
+      alert(`Portal settings: ${item.name} panel loaded.`);
+    }
   };
 
   // 8 Strict Subjects mapped to beautiful matching icons and gradients
@@ -69,15 +69,67 @@ const AdminSidebar = ({
 
   // Settings Links (Logout removed to be sticky bottom)
   const settingsItems = [
-    { name: 'User Settings', icon: User, key: 'user' },
-    { name: 'Theme Settings', icon: SunMoon, key: 'theme' },
-    { name: 'Notifications', icon: Bell, key: 'notifications' },
-    { name: 'Admin Profile', icon: Shield, key: 'profile' }
+    { name: 'User Settings', icon: User, key: 'user' }
   ];
 
   // Determine active route states
   const isDashboardActive = location.pathname === '/admin/dashboard';
   const isSubjectActive = (subName) => location.pathname === `/admin/subject/${subName.toLowerCase()}`;
+  const isSettingsActive = (key) => key === 'user' && location.pathname === '/admin/settings';
+
+  // Reactive Theme Accent state
+  const [themeAccent, setThemeAccent] = React.useState(() => localStorage.getItem('admin_theme_accent') || 'purple');
+  React.useEffect(() => {
+    const handleThemeChange = () => {
+      setThemeAccent(localStorage.getItem('admin_theme_accent') || 'purple');
+    };
+    window.addEventListener('admin-theme-changed', handleThemeChange);
+    return () => window.removeEventListener('admin-theme-changed', handleThemeChange);
+  }, []);
+
+  const getThemeColors = () => {
+    switch (themeAccent) {
+      case 'pink':
+        return {
+          activeText: 'text-pink-600',
+          activeBg: 'bg-gradient-to-r from-pink-50 to-pink-100/50 border-pink-500 shadow-[0_4px_12px_rgba(236,72,153,0.08)]',
+          hoverBg: 'hover:bg-gradient-to-r hover:from-[#EEF2FF] hover:to-[#E0E7FF] hover:text-pink-600',
+          pin: 'bg-pink-500',
+          logoGlow: 'from-pink-500 to-rose-500',
+          badgeText: 'bg-pink-100 text-pink-700 border border-pink-200'
+        };
+      case 'green':
+        return {
+          activeText: 'text-emerald-600',
+          activeBg: 'bg-gradient-to-r from-emerald-50 to-emerald-100/50 border-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.08)]',
+          hoverBg: 'hover:bg-gradient-to-r hover:from-[#EEF2FF] hover:to-[#E0E7FF] hover:text-emerald-600',
+          pin: 'bg-emerald-500',
+          logoGlow: 'from-emerald-500 to-green-500',
+          badgeText: 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+        };
+      case 'orange':
+        return {
+          activeText: 'text-orange-655',
+          activeBg: 'bg-gradient-to-r from-orange-50 to-orange-100/50 border-orange-500 shadow-[0_4px_12px_rgba(249,115,22,0.08)]',
+          hoverBg: 'hover:bg-gradient-to-r hover:from-[#EEF2FF] hover:to-[#E0E7FF] hover:text-orange-655',
+          pin: 'bg-orange-500',
+          logoGlow: 'from-orange-500 to-amber-500',
+          badgeText: 'bg-orange-100 text-orange-700 border border-orange-200'
+        };
+      case 'purple':
+      default:
+        return {
+          activeText: 'text-[#6366F1]',
+          activeBg: 'bg-gradient-to-r from-[#EEF2FF] to-[#E0E7FF] border-[#6366F1] shadow-[0_4px_12px_rgba(99,102,241,0.08)]',
+          hoverBg: 'hover:bg-gradient-to-r hover:from-[#EEF2FF] hover:to-[#E0E7FF] hover:text-[#6366F1]',
+          pin: 'bg-[#6366F1]',
+          logoGlow: 'from-indigo-500 to-purple-500',
+          badgeText: 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+        };
+    }
+  };
+
+  const themeColors = getThemeColors();
 
   return (
     <>
@@ -89,7 +141,7 @@ const AdminSidebar = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsMobileOpen(false)}
-            className="fixed inset-0 z-40 bg-[#020617]/85 md:hidden backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-[#020617]/40 md:hidden backdrop-blur-xs"
           />
         )}
       </AnimatePresence>
@@ -97,62 +149,62 @@ const AdminSidebar = ({
       {/* Sidebar Panel Container */}
       <motion.aside
         animate={{ 
-          width: isCollapsed ? '90px' : '280px',
+          width: isCollapsed ? '80px' : '280px',
         }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col bg-[#0b0f19]/95 text-slate-350 border-r border-indigo-950/20 shadow-2xl transition-all duration-300 backdrop-blur-xl
+        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col bg-[#F8FAFF] text-[#1E293B] border-r border-[#E5E7EB] shadow-md transition-all duration-300 backdrop-blur-md
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
           ${isCollapsed ? 'items-center' : 'items-stretch'}
           w-[280px] md:block`}
       >
         {/* Top Header Logo */}
-        <div className="flex items-center justify-between h-20 px-6 border-b border-indigo-950/20 shrink-0">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 shadow-lg shadow-indigo-500/30 shrink-0">
-              <Sparkles className="w-5 h-5 text-white animate-pulse" />
+        <div className="flex items-center justify-between h-20 px-6 border-b border-[#E5E7EB] shrink-0 w-full relative">
+          <div className={`flex items-center gap-3 overflow-hidden ${isCollapsed ? 'mx-auto justify-center' : ''}`}>
+            <div className="flex items-center justify-center w-10 h-10 shrink-0">
+              <LearnoQubeLogo className="w-10 h-10" />
             </div>
             {!isCollapsed && (
               <motion.span 
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="text-lg font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-indigo-300 font-sans"
+                className="text-lg font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 font-sans"
               >
-                EduMasterPro
+                LearnoQube
               </motion.span>
             )}
           </div>
           
-          {/* Collapse Button for Desktop */}
+          {/* Collapse Button for Desktop - absolutely positioned on right border */}
           <button 
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden p-1.5 rounded-lg border border-indigo-950/30 bg-[#0f172a]/80 hover:bg-[#1e293b] hover:text-white transition-all duration-200 md:block"
+            className="hidden absolute right-[-12px] top-7 z-[60] w-6 h-6 rounded-full border border-[#E5E7EB] bg-white text-[#1E293B] hover:bg-[#F3F4F6] transition-all duration-200 shadow-md md:flex items-center justify-center"
           >
-            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
           </button>
         </div>
 
         {/* Premium Profile Card */}
-        <div className={`p-4 border-b border-indigo-950/20 shrink-0 ${isCollapsed ? 'flex justify-center p-2 w-full' : ''}`}>
-          <div className={`relative overflow-visible rounded-2xl bg-gradient-to-tr from-[#0f172a] via-[#020617] to-indigo-950/40 border border-indigo-950/40 transition-all duration-300 hover:shadow-[0_0_20px_rgba(99,102,241,0.2)] group ${isCollapsed ? 'p-1.5 w-14 h-14 flex items-center justify-center mx-auto' : 'p-4 w-full'}`}>
-            <div className="absolute top-0 right-0 w-16 h-16 rounded-bl-full bg-gradient-to-bl from-indigo-500/10 to-purple-500/5 opacity-40 pointer-events-none" />
+        <div className={`p-4 border-b border-[#E5E7EB] shrink-0 ${isCollapsed ? 'flex justify-center p-2.5 w-full' : ''}`}>
+          <div className={`relative overflow-visible rounded-2xl bg-white border border-[#E5E7EB] transition-all duration-300 hover:shadow-[0_8px_20px_rgba(99,102,241,0.06)] group ${isCollapsed ? 'p-1.5 w-12 h-12 flex items-center justify-center mx-auto' : 'p-4 w-full'}`}>
+            <div className="absolute top-0 right-0 w-16 h-16 rounded-bl-full bg-gradient-to-bl from-indigo-500/5 to-purple-500/5 opacity-40 pointer-events-none" />
             
             <div className="flex items-center justify-center gap-3 w-full">
-              <div className="relative shrink-0 w-11 h-11 rounded-xl bg-slate-900/60 border border-indigo-950/40 flex items-center justify-center overflow-visible shadow-inner group-hover:scale-105 transition-transform duration-300">
+              <div className="relative shrink-0 w-10 h-10 rounded-xl bg-indigo-50/50 border border-[#E5E7EB] flex items-center justify-center overflow-visible shadow-inner group-hover:scale-105 transition-transform duration-300">
                 <img 
                   src={adminAvatar} 
                   alt="Admin Silhouette"
-                  className="w-8 h-8 object-contain opacity-95"
+                  className="w-7 h-7 object-contain opacity-95"
                 />
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[#020617] bg-indigo-500 shadow-md shadow-indigo-500/40"></span>
+                <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${themeColors.pin} shadow-md`}></span>
               </div>
               
               {!isCollapsed && (
                 <div className="overflow-hidden min-w-0 flex-1">
-                  <span className="block text-[9px] font-black text-indigo-400 uppercase tracking-widest leading-none">Admin Portal</span>
-                  <h4 className="font-bold text-white truncate text-xs font-sans mt-1.5 group-hover:text-indigo-200 transition-colors duration-200">
+                  <span className={`block text-[9px] font-black uppercase tracking-widest leading-none ${themeColors.activeText}`}>Admin Portal</span>
+                  <h4 className="font-bold text-[#1E293B] truncate text-xs font-sans mt-1.5 group-hover:text-indigo-650 transition-colors duration-200">
                     {user?.full_name || 'Alex Mercer'}
                   </h4>
-                  <span className="inline-block text-[9px] font-black bg-gradient-to-r from-indigo-600 to-purple-650 text-white rounded px-1.5 py-0.5 mt-1 tracking-wider uppercase leading-none">
+                  <span className={`inline-block text-[8px] font-black rounded px-1.5 py-0.5 mt-1 tracking-wider uppercase leading-none ${themeColors.badgeText}`}>
                     Super Admin
                   </span>
                 </div>
@@ -162,25 +214,25 @@ const AdminSidebar = ({
         </div>
 
         {/* Scrollable Navigation Area */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4 space-y-6 w-full sidebar-scroll-container">
           
           {/* Main Dashboard Link */}
           <div className="space-y-1">
             <button
               onClick={handleDashboardClick}
-              className={`flex items-center gap-3.5 w-full py-3 px-4 rounded-xl text-xs font-bold transition-all duration-300 relative group
+              className={`flex items-center gap-3.5 w-full py-3 px-4 rounded-xl text-xs font-bold transition-all duration-300 relative group border-l-4
                 ${isDashboardActive
-                  ? 'text-white bg-gradient-to-r from-indigo-500/20 to-purple-500/10 border-l-4 border-indigo-500 shadow-[0_8px_16px_-2px_rgba(79,70,229,0.3)]' 
-                  : 'text-slate-400 hover:text-white hover:bg-slate-900/30 border-l-4 border-transparent'
+                  ? `${themeColors.activeText} ${themeColors.activeBg}` 
+                  : 'text-[#64748B] hover:text-[#1E293B] border-transparent ' + themeColors.hoverBg
                 }
-                ${isCollapsed ? 'justify-center p-3' : ''}`}
+                ${isCollapsed ? 'justify-center p-3 border-l-0' : ''}`}
             >
-              <LayoutDashboard className={`w-4 h-4 shrink-0 transition-transform duration-300 ${isDashboardActive ? 'text-indigo-400' : 'group-hover:scale-115'}`} />
+              <LayoutDashboard className={`w-4 h-4 shrink-0 transition-transform duration-300 ${isDashboardActive ? themeColors.activeText : 'group-hover:scale-110'}`} />
               {!isCollapsed && <span>Dashboard</span>}
               
               {/* Tooltip in collapsed state */}
               {isCollapsed && (
-                <span className="absolute left-20 py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-200 bg-slate-900 border border-slate-800 opacity-0 group-hover:opacity-100 translate-x-3 group-hover:translate-x-0 pointer-events-none transition-all duration-200 z-50 shadow-xl whitespace-nowrap">
+                <span className="absolute left-20 py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-[#E5E7EB] opacity-0 group-hover:opacity-100 translate-x-3 group-hover:translate-x-0 pointer-events-none transition-all duration-200 z-50 shadow-xl whitespace-nowrap">
                   Dashboard
                 </span>
               )}
@@ -190,7 +242,7 @@ const AdminSidebar = ({
           {/* Subjects List Links */}
           <div className="space-y-2">
             {!isCollapsed && (
-              <span className="block text-[10px] font-black text-slate-500 uppercase tracking-widest pl-4">
+              <span className="block text-[10px] font-black text-[#64748B] uppercase tracking-widest pl-4">
                 Subjects List
               </span>
             )}
@@ -203,15 +255,15 @@ const AdminSidebar = ({
                   <button
                     key={sub.name}
                     onClick={() => handleSubjectClick(sub.name)}
-                    className={`flex items-center gap-3.5 w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 relative group
+                    className={`flex items-center gap-3.5 w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 relative group border-l-4
                       ${active 
-                        ? 'text-white bg-gradient-to-r from-indigo-500/15 to-purple-500/5 border-l-4 border-indigo-500 shadow-md' 
-                        : 'text-slate-400 hover:text-white hover:bg-slate-900/30 border-l-4 border-transparent'
+                        ? `${themeColors.activeText} ${themeColors.activeBg}` 
+                        : 'text-[#64748B] hover:text-[#1E293B] border-transparent ' + themeColors.hoverBg
                       }
-                      ${isCollapsed ? 'justify-center p-3' : ''}`}
+                      ${isCollapsed ? 'justify-center p-3 border-l-0' : ''}`}
                   >
                     <div className={`w-6.5 h-6.5 rounded-lg shrink-0 transition-transform duration-300 group-hover:scale-110 flex items-center justify-center font-black text-[10px] leading-none select-none
-                      ${active ? 'bg-indigo-600/30 text-indigo-400' : 'bg-slate-900/50 text-slate-500'}`}>
+                      ${active ? 'bg-indigo-50 text-indigo-500' : 'bg-slate-100 text-slate-400'}`}>
                       {sub.letter ? (
                         <span className="font-sans leading-none tracking-normal mt-0.5">{sub.letter}</span>
                       ) : (
@@ -224,12 +276,12 @@ const AdminSidebar = ({
                     
                     {/* Active Indicator Pin */}
                     {!isCollapsed && active && (
-                      <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+                      <span className={`ml-auto w-1.5 h-1.5 rounded-full ${themeColors.pin} animate-pulse`}></span>
                     )}
 
                     {/* Tooltip in collapsed state */}
                     {isCollapsed && (
-                      <span className="absolute left-20 py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-200 bg-slate-900 border border-slate-800 opacity-0 group-hover:opacity-100 translate-x-3 group-hover:translate-x-0 pointer-events-none transition-all duration-200 z-50 shadow-xl whitespace-nowrap">
+                      <span className="absolute left-20 py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-[#E5E7EB] opacity-0 group-hover:opacity-100 translate-x-3 group-hover:translate-x-0 pointer-events-none transition-all duration-200 z-50 shadow-xl whitespace-nowrap">
                         {sub.name}
                       </span>
                     )}
@@ -242,27 +294,32 @@ const AdminSidebar = ({
           {/* Settings Section Links */}
           <div className="space-y-2">
             {!isCollapsed && (
-              <span className="block text-[10px] font-black text-slate-500 uppercase tracking-widest pl-4">
+              <span className="block text-[10px] font-black text-[#64748B] uppercase tracking-widest pl-4">
                 Portal Management
               </span>
             )}
             <div className="space-y-1">
               {settingsItems.map((item) => {
-                const Icon = item.icon;
+                  const Icon = item.icon;
+                  const active = isSettingsActive(item.key);
 
                 return (
                   <button
                     key={item.key}
                     onClick={() => handleSettingsClick(item)}
-                    className={`flex items-center gap-3.5 w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 relative group text-slate-400 hover:text-white hover:bg-slate-900/30 border-l-4 border-transparent
-                      ${isCollapsed ? 'justify-center p-3' : ''}`}
+                    className={`flex items-center gap-3.5 w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all duration-300 relative group border-l-4
+                      ${active 
+                        ? `${themeColors.activeText} ${themeColors.activeBg}` 
+                        : 'text-[#64748B] hover:text-[#1E293B] border-transparent ' + themeColors.hoverBg
+                      }
+                      ${isCollapsed ? 'justify-center p-3 border-l-0' : ''}`}
                   >
-                    <Icon className="w-4 h-4 shrink-0 text-slate-500 group-hover:text-slate-350 transition-transform duration-300 group-hover:translate-x-0.5" />
+                    <Icon className={`w-4 h-4 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5 ${active ? themeColors.activeText : 'text-[#64748B] group-hover:text-[#1E293B]'}`} />
                     {!isCollapsed && <span>{item.name}</span>}
 
                     {/* Tooltip in collapsed state */}
                     {isCollapsed && (
-                      <span className="absolute left-20 py-1.5 px-3 rounded-lg text-xs font-semibold border text-slate-250 bg-slate-900 border-slate-800 opacity-0 group-hover:opacity-100 translate-x-3 group-hover:translate-x-0 pointer-events-none transition-all duration-200 z-50 shadow-xl whitespace-nowrap">
+                      <span className="absolute left-20 py-1.5 px-3 rounded-lg text-xs font-semibold border text-slate-700 bg-white border-[#E5E7EB] opacity-0 group-hover:opacity-100 translate-x-3 group-hover:translate-x-0 pointer-events-none transition-all duration-200 z-50 shadow-xl whitespace-nowrap">
                         {item.name}
                       </span>
                     )}
@@ -275,24 +332,39 @@ const AdminSidebar = ({
         </div>
 
         {/* BOTTOM SECTION: RED GRADIENT STICKY LOGOUT BUTTON */}
-        <div className={`p-4 border-t border-indigo-950/20 shrink-0 ${isCollapsed ? 'flex justify-center p-2.5' : ''}`}>
+        <div className={`p-4 border-t border-[#E5E7EB] shrink-0 w-full ${isCollapsed ? 'flex justify-center p-2.5' : ''}`}>
           <button
             onClick={handleLogout}
-            className={`flex items-center gap-3.5 w-full py-3 px-4 rounded-xl text-xs font-black text-white bg-gradient-to-r from-red-600 via-red-650 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-md hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all duration-300 relative group
+            className={`flex items-center gap-3.5 w-full py-3 px-4 rounded-xl text-xs font-black text-white bg-gradient-to-r from-red-500 via-red-550 to-rose-600 hover:from-red-400 hover:to-rose-500 shadow-md hover:shadow-[0_4px_12px_rgba(239,68,68,0.2)] transition-all duration-300 relative group
               ${isCollapsed ? 'justify-center p-2.5' : ''}`}
           >
             <LogOut className="w-4 h-4 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5 font-bold" />
-            {!isCollapsed && <span>Sign Out</span>}
+            {!isCollapsed && <span>Logout</span>}
             
             {/* Tooltip in collapsed state */}
             {isCollapsed && (
-              <span className="absolute left-20 py-1.5 px-3 rounded-lg text-xs font-semibold text-rose-200 bg-slate-900 border border-slate-800 opacity-0 group-hover:opacity-100 translate-x-3 group-hover:translate-x-0 pointer-events-none transition-all duration-200 z-50 shadow-xl whitespace-nowrap">
-                Sign Out
+              <span className="absolute left-20 py-1.5 px-3 rounded-lg text-xs font-semibold text-rose-500 bg-white border border-[#E5E7EB] opacity-0 group-hover:opacity-100 translate-x-3 group-hover:translate-x-0 pointer-events-none transition-all duration-200 z-50 shadow-xl whitespace-nowrap">
+                Logout
               </span>
             )}
           </button>
         </div>
 
+        <style>{`
+          .sidebar-scroll-container::-webkit-scrollbar {
+            width: 5px;
+          }
+          .sidebar-scroll-container::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .sidebar-scroll-container::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.35);
+            border-radius: 9999px;
+          }
+          .sidebar-scroll-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.6);
+          }
+        `}</style>
       </motion.aside>
     </>
   );

@@ -20,6 +20,7 @@ const userRoutes = require('./routes/users');
 const aiRoutes = require('./routes/ai');
 const courseRoutes = require('./routes/courses');
 const analyticsRoutes = require('./routes/analytics');
+const settingsRoutes = require('./routes/settings');
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -32,6 +33,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/admin/settings', settingsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

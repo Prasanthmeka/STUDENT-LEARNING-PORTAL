@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import LearnoQubeLogo from '../LearnoQubeLogo';
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -13,14 +14,50 @@ import {
   Settings, 
   LogOut,
   ChevronLeft,
-  ChevronRight,
-  Sparkles
+  ChevronRight
 } from 'lucide-react';
 
 const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Reactive Theme Accent state
+  const [themeAccent, setThemeAccent] = React.useState(() => localStorage.getItem('student_theme_accent') || 'indigo');
+  React.useEffect(() => {
+    const handleThemeChange = () => {
+      setThemeAccent(localStorage.getItem('student_theme_accent') || 'indigo');
+    };
+    window.addEventListener('student-theme-changed', handleThemeChange);
+    return () => window.removeEventListener('student-theme-changed', handleThemeChange);
+  }, []);
+
+  const getActiveLinkClass = () => {
+    switch (themeAccent) {
+      case 'purple':
+        return 'text-white bg-gradient-to-r from-purple-500/20 to-indigo-500/10 border-l-4 border-purple-500 shadow-[0_4px_12px_rgba(139,92,246,0.08)]';
+      case 'cyan':
+        return 'text-white bg-gradient-to-r from-cyan-500/20 to-blue-500/10 border-l-4 border-cyan-500 shadow-[0_4px_12px_rgba(6,182,212,0.08)]';
+      case 'emerald':
+        return 'text-white bg-gradient-to-r from-emerald-500/20 to-teal-500/10 border-l-4 border-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.08)]';
+      case 'rose':
+        return 'text-white bg-gradient-to-r from-rose-500/20 to-pink-500/10 border-l-4 border-rose-500 shadow-[0_4px_12px_rgba(244,63,94,0.08)]';
+      case 'indigo':
+      default:
+        return 'text-white bg-gradient-to-r from-indigo-500/20 to-purple-500/10 border-l-4 border-indigo-500 shadow-sidebar-active';
+    }
+  };
+
+  const getActiveIconClass = () => {
+    switch (themeAccent) {
+      case 'purple': return 'text-purple-400';
+      case 'cyan': return 'text-cyan-400';
+      case 'emerald': return 'text-emerald-400';
+      case 'rose': return 'text-rose-400';
+      case 'indigo':
+      default: return 'text-indigo-400';
+    }
+  };
 
   // Silhouette Vector Placeholder Avatar
   const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2364748b"><circle cx="12" cy="8" r="4"/><path d="M12 14c-6.1 0-8 4-8 4h16s-1.9-4-8-4z"/></svg>`;
@@ -95,8 +132,8 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen })
         {/* Top Header Logo */}
         <div className="flex items-center justify-between h-20 px-6 border-b border-slate-800">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 shadow-lg shadow-indigo-500/30 shrink-0">
-              <Sparkles className="w-5 h-5 text-white animate-pulse" />
+            <div className="flex items-center justify-center w-10 h-10 shrink-0">
+              <LearnoQubeLogo className="w-10 h-10" />
             </div>
             {!isCollapsed && (
               <motion.span 
@@ -104,7 +141,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen })
                 animate={{ opacity: 1, x: 0 }}
                 className="text-lg font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-400 font-sans"
               >
-                EduMasterPro
+                LearnoQube
               </motion.span>
             )}
           </div>
@@ -154,12 +191,12 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen })
                 onClick={() => handleNavigation(item)}
                 className={`flex items-center gap-3.5 w-full py-3.5 px-4 rounded-xl text-sm font-medium transition-smooth relative group
                   ${active 
-                    ? 'text-white bg-gradient-to-r from-indigo-500/20 to-purple-500/10 border-l-4 border-indigo-500 shadow-sidebar-active' 
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/40 border-l-4 border-transparent'
+                    ? getActiveLinkClass() 
+                    : 'text-slate-450 hover:text-white hover:bg-slate-800/40 border-l-4 border-transparent'
                   }
-                  ${isCollapsed ? 'justify-center p-3' : ''}`}
+                  ${isCollapsed ? 'justify-center p-3 border-l-0' : ''}`}
               >
-                <IconComponent className={`w-5 h-5 shrink-0 transition-smooth ${active ? 'text-indigo-400' : 'group-hover:scale-110'}`} />
+                <IconComponent className={`w-5 h-5 shrink-0 transition-smooth ${active ? getActiveIconClass() : 'group-hover:scale-110'}`} />
                 {!isCollapsed && <span>{item.name}</span>}
                 
                 {/* Tooltip for Collapsed Mode */}

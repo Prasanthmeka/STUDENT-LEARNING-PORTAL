@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { courseAPI, analyticsAPI } from '../services/api';
 
 // Sub-components
@@ -26,7 +25,6 @@ import {
 } from 'lucide-react';
 
 const StudentDashboard = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -35,6 +33,7 @@ const StudentDashboard = () => {
   const [coursesData, setCoursesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Activities Checklist State
   const [activities, setActivities] = useState([
@@ -104,7 +103,7 @@ const StudentDashboard = () => {
   }, [location]);
 
   return (
-    <StudentLayout>
+    <StudentLayout searchQuery={searchQuery} setSearchQuery={setSearchQuery}>
       {/* Toast Alert overlay */}
       {toast && (
         <div className={`fixed bottom-5 right-5 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border transition-smooth ${
@@ -267,12 +266,13 @@ const StudentDashboard = () => {
           <CoursesGrid 
             courses={coursesData}
             loading={loading}
+            searchQuery={searchQuery}
           />
 
           {/* Bottom Settings & Subscription placeholders for Anchor scrolling alignment */}
           <div id="subscription-section" className="scroll-mt-24 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-saas flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-1.5 text-center md:text-left">
-              <span className="text-[10px] font-extrabold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest">EduMasterPro Premium</span>
+              <span className="text-[10px] font-extrabold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest">LearnoQube Premium</span>
               <h3 className="font-black text-slate-800 dark:text-white text-lg tracking-tight font-sans">Upgrade Your Learning Experience</h3>
               <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold max-w-xl">
                 Unlock detailed step-by-step master class solutions, interactive live classrooms, unlimited mock exams, and customized downloadable study materials.
@@ -284,23 +284,6 @@ const StudentDashboard = () => {
             >
               Get Premium Access
             </button>
-          </div>
-
-          <div id="settings-section" className="scroll-mt-24 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-saas space-y-4">
-            <div className="pb-3 border-b border-slate-100 dark:border-slate-800">
-              <h3 className="font-black text-slate-800 dark:text-white text-lg tracking-tight font-sans">Dashboard Preferences</h3>
-              <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 mt-0.5">Customize your student workspace views</p>
-            </div>
-            <div className="flex flex-wrap gap-4">
-              <label className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300 font-semibold cursor-pointer">
-                <input type="checkbox" defaultChecked className="w-4 h-4 rounded text-indigo-600 dark:text-indigo-400 border-slate-300 dark:border-slate-700 bg-transparent focus:ring-indigo-500" />
-                Enable sound effects
-              </label>
-              <label className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300 font-semibold cursor-pointer">
-                <input type="checkbox" defaultChecked className="w-4 h-4 rounded text-indigo-600 dark:text-indigo-400 border-slate-300 dark:border-slate-700 bg-transparent focus:ring-indigo-500" />
-                Receive email summary reports
-              </label>
-            </div>
           </div>
 
       </div>

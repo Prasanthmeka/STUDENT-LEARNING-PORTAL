@@ -6,8 +6,6 @@ import PageHeader from '../components/layout/PageHeader';
 import GoBackButton from '../components/layout/GoBackButton';
 import {
   Clock,
-  Award,
-  HelpCircle,
   ArrowLeft,
   ArrowRight,
   CheckCircle,
@@ -43,6 +41,7 @@ const QuizPage = () => {
   const [result, setResult] = useState(null);
   const [responses, setResponses] = useState([]);
   const [timeLeft, setTimeLeft] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [attemptId, setAttemptId] = useState(null);
   const [startedAt] = useState(new Date().toISOString());
 

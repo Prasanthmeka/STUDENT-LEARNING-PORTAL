@@ -1,5 +1,5 @@
 /**
- * Strict Educational Guardrails and Safety Middleware for EduMasterPro
+ * Strict Educational Guardrails and Safety Middleware for LearnoQube
  */
 
 const ALLOWED_SUBJECTS_KEYWORDS = [
@@ -49,7 +49,7 @@ function validateEducationalContext(req, res, next) {
   for (const pattern of BLOCKED_TOPICS_REGEX) {
     if (pattern.test(trimmedQuery)) {
       return res.status(200).json({
-        message: 'I can only help with educational subjects available on EduMasterPro.',
+        message: 'I can only help with educational subjects available on LearnoQube.',
         offTopic: true
       });
     }
@@ -64,7 +64,7 @@ function validateEducationalContext(req, res, next) {
   // If it doesn't match any educational pattern, we soft refuse it to satisfy safety requirements
   if (!hasEducationalKeyword && trimmedQuery.split(' ').length > 2) {
     return res.status(200).json({
-      message: 'I can only help with educational subjects available on EduMasterPro.',
+      message: 'I can only help with educational subjects available on LearnoQube.',
       offTopic: true
     });
   }
