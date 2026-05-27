@@ -5,15 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
   Bell, 
-  Sun, 
-  Moon, 
-  User, 
   Settings, 
   LogOut, 
   Menu,
   CheckCircle,
   AlertCircle,
-  Shield,
   Activity
 } from 'lucide-react';
 
@@ -26,7 +22,6 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
 
   // State Management
   const [time, setTime] = useState(new Date());
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -42,34 +37,7 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
     return () => clearInterval(timer);
   }, []);
 
-  // Sync Dark/Light Mode Theme on Mount
-  useEffect(() => {
-    const cachedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (cachedTheme === 'dark' || (!cachedTheme && systemPrefersDark)) {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    } else {
-      setIsDarkMode(false);
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
-
-  // Theme Switch Toggle Handler
-  const handleThemeToggle = () => {
-    const nextDark = !isDarkMode;
-    setIsDarkMode(nextDark);
-    if (nextDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  };
-
-  // Click outside to close dropdowns
+  // Click outside and escape key down to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
@@ -79,8 +47,18 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
         setShowNotifications(false);
       }
     };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setShowProfileDropdown(false);
+        setShowNotifications(false);
+      }
+    };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -103,8 +81,62 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
     { id: 3, text: "Server resources status: Healthy (CPU load 14%).", type: "system", time: "3h ago" }
   ];
 
+  // Reactive Theme Accent state
+  const [themeAccent, setThemeAccent] = useState(() => localStorage.getItem('admin_theme_accent') || 'purple');
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setThemeAccent(localStorage.getItem('admin_theme_accent') || 'purple');
+    };
+    window.addEventListener('admin-theme-changed', handleThemeChange);
+    return () => window.removeEventListener('admin-theme-changed', handleThemeChange);
+  }, []);
+
+  const getAccentColors = () => {
+    switch (themeAccent) {
+      case 'pink':
+        return {
+          text: 'text-pink-600',
+          hoverText: 'hover:text-pink-700',
+          bg: 'bg-pink-500',
+          hoverBg: 'hover:bg-pink-50',
+          iconColor: 'text-pink-500',
+          pillBg: 'bg-pink-100 text-pink-700'
+        };
+      case 'green':
+        return {
+          text: 'text-emerald-600',
+          hoverText: 'hover:text-emerald-700',
+          bg: 'bg-emerald-600',
+          hoverBg: 'hover:bg-emerald-50',
+          iconColor: 'text-emerald-500',
+          pillBg: 'bg-emerald-100 text-emerald-700'
+        };
+      case 'orange':
+        return {
+          text: 'text-orange-655',
+          hoverText: 'hover:text-orange-700',
+          bg: 'bg-orange-500',
+          hoverBg: 'hover:bg-orange-50',
+          iconColor: 'text-orange-500',
+          pillBg: 'bg-orange-100 text-orange-700'
+        };
+      case 'purple':
+      default:
+        return {
+          text: 'text-[#6366F1]',
+          hoverText: 'hover:text-indigo-700',
+          bg: 'bg-[#6366F1]',
+          hoverBg: 'hover:bg-indigo-50/50',
+          iconColor: 'text-[#6366F1]',
+          pillBg: 'bg-indigo-100 text-indigo-700'
+        };
+    }
+  };
+
+  const navColors = getAccentColors();
+
   return (
-    <header className="sticky top-0 z-35 flex flex-wrap items-center justify-between min-h-[80px] h-auto py-4 pl-6 md:pl-8 pr-6 md:pr-12 bg-white/70 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-900 shadow-sm transition-all duration-300 gap-4">
+    <header className="sticky top-0 z-[1000] shrink-0 flex flex-wrap items-center justify-between min-h-[80px] h-auto py-4 pl-6 md:pl-8 pr-6 md:pr-12 bg-white/70 dark:bg-slate-955/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-900 shadow-sm transition-all duration-300 gap-4 overflow-visible">
       
       {/* Search Input Container & Mobile Menu */}
       <div className="flex items-center gap-4">
@@ -124,7 +156,7 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
             placeholder="Search students, emails..." 
             value={searchQuery || ''}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-64 pl-10 pr-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200 placeholder-slate-450 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200"
+            className="w-64 pl-10 pr-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200 placeholder-slate-455 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200"
           />
         </div>
       </div>
@@ -142,13 +174,6 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
           </span>
         </div>
 
-        {/* Dark/Light mode switcher */}
-        <button 
-          onClick={handleThemeToggle}
-          className="p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-900 bg-slate-50/50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-600 dark:text-slate-350 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200"
-        >
-          {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-        </button>
 
         {/* Notifications Dropdown */}
         <div className="relative" ref={notificationRef}>
@@ -157,7 +182,7 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
             className="relative p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-900 bg-slate-50/50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-600 dark:text-slate-350 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-550 ring-2 ring-white dark:ring-slate-950"></span>
+            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-550 ring-2 ring-white dark:ring-slate-955"></span>
           </button>
 
           <AnimatePresence>
@@ -170,7 +195,7 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
               >
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-900">
                   <span className="font-bold text-slate-850 dark:text-slate-100 text-xs tracking-wide">System Notifications</span>
-                  <span className="text-[10px] bg-indigo-50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-400 font-extrabold px-2 py-0.5 rounded-full">3 New</span>
+                  <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${navColors.pillBg}`}>3 New</span>
                 </div>
                 
                 <div className="mt-3 space-y-3">
@@ -180,7 +205,7 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
                         {notif.type === 'subscription' ? (
                           <CheckCircle className="w-4 h-4 text-emerald-500" />
                         ) : notif.type === 'analytics' ? (
-                          <Activity className="w-4 h-4 text-indigo-400" />
+                          <Activity className={`w-4 h-4 ${navColors.iconColor}`} />
                         ) : (
                           <AlertCircle className="w-4 h-4 text-amber-500" />
                         )}
@@ -201,7 +226,7 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
         <div className="h-6 w-px bg-slate-200 dark:bg-slate-900"></div>
 
         {/* Admin profile drop-down */}
-        <div className="relative" ref={profileRef}>
+        <div className="relative overflow-visible" ref={profileRef}>
           <button 
             onClick={() => setShowProfileDropdown(!showProfileDropdown)}
             className="flex items-center gap-2.5 focus:outline-none"
@@ -214,10 +239,10 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
               />
             </div>
             <div className="hidden text-left md:block">
-              <span className="block text-xs font-black text-slate-800 dark:text-slate-100 tracking-wide font-sans max-w-[120px] truncate leading-none">
+              <span className="block text-xs font-black text-slate-805 dark:text-slate-100 tracking-wide font-sans max-w-[120px] truncate leading-none">
                 {user?.full_name?.split(' ')[0] || "Admin"}
               </span>
-              <span className="block text-[9px] font-extrabold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest mt-1">
+              <span className={`block text-[9px] font-extrabold uppercase tracking-widest mt-1 ${navColors.text}`}>
                 SUPER ADMIN
               </span>
             </div>
@@ -226,40 +251,41 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
           <AnimatePresence>
             {showProfileDropdown && (
               <motion.div 
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                initial={{ opacity: 0, y: -10, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                className="absolute right-0 w-56 mt-3.5 origin-top-right rounded-2xl border border-slate-100 dark:border-slate-900 bg-white dark:bg-slate-950 py-2 shadow-2xl ring-1 ring-black/5 z-50"
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                transition={{ duration: 0.25 }}
+                className="absolute right-0 top-full mt-2 w-auto min-w-[220px] rounded-[16px] border border-[#E5E7EB] bg-white text-[#1E293B] p-3 shadow-[0_10px_30px_rgba(0,0,0,0.08)] z-[9999] overflow-visible"
               >
-                <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-900">
-                  <p className="text-[10px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-wider font-sans">Super Admin Account</p>
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate mt-1.5 font-sans leading-none">{user?.email || "admin@edumasterpro.com"}</p>
+                <div className="pb-3 border-b border-[#E5E7EB] mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-indigo-50/50 border border-[#E5E7EB] flex items-center justify-center overflow-hidden shrink-0">
+                      <img src={adminAvatar} alt="Admin" className="w-6 h-6 object-contain" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-black text-[#1E293B] truncate leading-none">{user?.full_name || "Prasanth Meka"}</p>
+                      <p className={`text-[9px] font-black uppercase tracking-wider mt-1.5 ${navColors.text}`}>Super Admin</p>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="p-1.5 space-y-0.5">
+                <div className="space-y-1">
+                  {/* 1. Account Settings */}
                   <button 
-                    onClick={() => { setShowProfileDropdown(false); alert('Admin Profile dashboard loaded.'); }}
-                    className="flex items-center gap-3 w-full text-left px-3.5 py-2.5 text-xs font-bold rounded-xl text-slate-650 dark:text-slate-300 hover:text-indigo-650 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-all duration-205"
+                    onClick={() => { setShowProfileDropdown(false); navigate('/admin/settings'); }}
+                    className="flex items-center gap-3 w-full text-left px-3 py-2.5 text-xs font-bold rounded-xl text-[#1E293B] hover:bg-[#F3F4F6] transition-all duration-200"
                   >
-                    <User className="w-4 h-4 text-slate-400" />
-                    Admin Profile
+                    <Settings className="w-4 h-4 text-purple-500 shrink-0" />
+                    <span>Account Settings</span>
                   </button>
-                  <button 
-                    onClick={() => { setShowProfileDropdown(false); alert('Account configurations panel loaded.'); }}
-                    className="flex items-center gap-3 w-full text-left px-3.5 py-2.5 text-xs font-bold rounded-xl text-slate-650 dark:text-slate-300 hover:text-indigo-650 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-all duration-205"
-                  >
-                    <Settings className="w-4 h-4 text-slate-400" />
-                    Portal Settings
-                  </button>
-                  
-                  <div className="h-px bg-slate-100 dark:bg-slate-900 my-1"></div>
 
+                  {/* 2. Logout */}
                   <button 
                     onClick={handleLogout}
-                    className="flex items-center gap-3 w-full px-3.5 py-2.5 text-xs font-bold rounded-xl text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-350 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all duration-205"
+                    className="flex items-center gap-3 w-full text-left px-3 py-2.5 text-xs font-bold rounded-xl text-rose-600 hover:bg-rose-50/50 transition-all duration-200"
                   >
-                    <LogOut className="w-4 h-4" />
-                    Sign Out
+                    <LogOut className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>Logout</span>
                   </button>
                 </div>
               </motion.div>

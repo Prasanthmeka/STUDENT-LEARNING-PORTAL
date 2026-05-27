@@ -3,17 +3,17 @@ import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
 import { Award, Flame, Star, BookOpen, GraduationCap } from 'lucide-react';
 
+const motivationalQuotes = [
+  "“The beautiful thing about learning is that no one can take it away from you.” — B.B. King",
+  "“Education is the passport to the future, for tomorrow belongs to those who prepare for it today.” — Malcolm X",
+  "“An investment in knowledge pays the best interest.” — Benjamin Franklin",
+  "“You don't have to be great to start, but you have to start to be great.” — Zig Ziglar",
+  "“Success is the sum of small efforts, repeated day in and day out.” — Robert Collier"
+];
+
 const WelcomeHero = ({ streak = 0, totalTests = 0, passPercentage = 0 }) => {
   const { user } = useAuth();
   const [motivationalMessage, setMotivationalMessage] = useState('');
-
-  const motivationalQuotes = [
-    "“The beautiful thing about learning is that no one can take it away from you.” — B.B. King",
-    "“Education is the passport to the future, for tomorrow belongs to those who prepare for it today.” — Malcolm X",
-    "“An investment in knowledge pays the best interest.” — Benjamin Franklin",
-    "“You don't have to be great to start, but you have to start to be great.” — Zig Ziglar",
-    "“Success is the sum of small efforts, repeated day in and day out.” — Robert Collier"
-  ];
 
   useEffect(() => {
     // Pick a quote based on current date to keep it consistent throughout the day

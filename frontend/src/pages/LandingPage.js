@@ -56,58 +56,84 @@ const renderSubjectIcon = (subjectName) => {
       return (
         <svg viewBox="0 0 100 100" width="80" height="80" style={{ display: 'inline-block' }}>
           <defs>
-            <linearGradient id="telGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#6366f1" />
-              <stop offset="100%" stopColor="#4f46e5" />
+            <linearGradient id="telCircleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#8b5cf6" />
+              <stop offset="100%" stopColor="#6366f1" />
             </linearGradient>
-            <linearGradient id="telBg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#f5f7ff" />
-              <stop offset="100%" stopColor="#e0e7ff" />
-            </linearGradient>
+            <filter id="telShadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#4f46e5" floodOpacity="0.25"/>
+            </filter>
           </defs>
-          <rect width="100" height="100" rx="24" fill="url(#telBg)"/>
-          <path d="M25,65 H75 V70 H25 Z" fill="url(#telGrad)" opacity="0.3"/>
-          <path d="M30,55 C30,45 50,45 50,55 C50,45 70,45 70,55 V72 C70,62 50,62 50,72 C50,62 30,62 30,72 Z" fill="none" stroke="url(#telGrad)" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <line x1="50" y1="52" x2="50" y2="72" stroke="url(#telGrad)" strokeWidth="3"/>
-          <text x="50" y="38" fontFamily="'Outfit', 'Noto Sans Telugu', sans-serif" fontSize="28" fontWeight="900" fill="url(#telGrad)" textAnchor="middle" alignmentBaseline="middle">అ</text>
+          <circle cx="50" cy="50" r="44" fill="url(#telCircleGrad)" filter="url(#telShadow)"/>
+          <circle cx="50" cy="50" r="39" fill="none" stroke="rgba(255, 255, 255, 0.25)" strokeWidth="1.5"/>
+          <text 
+            x="50" 
+            y="50" 
+            fontFamily="'Outfit', 'Noto Sans Telugu', sans-serif" 
+            fontSize="38" 
+            fontWeight="900" 
+            fill="#ffffff" 
+            textAnchor="middle" 
+            dominantBaseline="central"
+          >
+            అ
+          </text>
         </svg>
       );
     case 'hindi':
       return (
         <svg viewBox="0 0 100 100" width="80" height="80" style={{ display: 'inline-block' }}>
           <defs>
-            <linearGradient id="hinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#f97316" />
-              <stop offset="100%" stopColor="#ea580c" />
+            <linearGradient id="hinCircleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#8b5cf6" />
+              <stop offset="100%" stopColor="#6366f1" />
             </linearGradient>
-            <linearGradient id="hinBg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#fff7ed" />
-              <stop offset="100%" stopColor="#ffedd5" />
-            </linearGradient>
+            <filter id="hinShadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#4f46e5" floodOpacity="0.25"/>
+            </filter>
           </defs>
-          <rect width="100" height="100" rx="24" fill="url(#hinBg)"/>
-          <path d="M65,30 L70,35 L45,60 L38,62 L40,55 Z" fill="url(#hinGrad)" opacity="0.95"/>
-          <line x1="32" y1="68" x2="68" y2="68" stroke="#ea580c" strokeWidth="4.5" strokeLinecap="round"/>
-          <text x="46" y="44" fontFamily="'Outfit', 'Devanagari', sans-serif" fontSize="30" fontWeight="900" fill="url(#hinGrad)" textAnchor="middle" alignmentBaseline="middle">अ</text>
+          <circle cx="50" cy="50" r="44" fill="url(#hinCircleGrad)" filter="url(#hinShadow)"/>
+          <circle cx="50" cy="50" r="39" fill="none" stroke="rgba(255, 255, 255, 0.25)" strokeWidth="1.5"/>
+          <text 
+            x="50" 
+            y="50" 
+            fontFamily="'Outfit', 'Noto Sans Devanagari', sans-serif" 
+            fontSize="38" 
+            fontWeight="900" 
+            fill="#ffffff" 
+            textAnchor="middle" 
+            dominantBaseline="central"
+          >
+            अ
+          </text>
         </svg>
       );
     case 'english':
       return (
         <svg viewBox="0 0 100 100" width="80" height="80" style={{ display: 'inline-block' }}>
           <defs>
-            <linearGradient id="engGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#2563eb" />
-              <stop offset="100%" stopColor="#3b82f6" />
+            <linearGradient id="engCircleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#3b82f6" />
+              <stop offset="100%" stopColor="#1d4ed8" />
             </linearGradient>
-            <linearGradient id="engBg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#eff6ff" />
-              <stop offset="100%" stopColor="#dbeafe" />
-            </linearGradient>
+            <filter id="engShadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#1e3a8a" floodOpacity="0.25"/>
+            </filter>
           </defs>
-          <rect width="100" height="100" rx="24" fill="url(#engBg)"/>
-          <path d="M25,35 C25,25 75,25 75,35 C75,45 65,55 50,55 C45,55 40,58 35,62 V55 C25,55 25,45 25,35 Z" fill="none" stroke="url(#engGrad)" strokeWidth="4.5" strokeLinejoin="round"/>
-          <text x="50" y="38" fontFamily="'Outfit', sans-serif" fontSize="28" fontWeight="900" fill="url(#engGrad)" textAnchor="middle" alignmentBaseline="middle">A</text>
-          <line x1="25" y1="75" x2="75" y2="75" stroke="#3b82f6" strokeWidth="4" strokeLinecap="round"/>
+          <circle cx="50" cy="50" r="44" fill="url(#engCircleGrad)" filter="url(#engShadow)"/>
+          <circle cx="50" cy="50" r="39" fill="none" stroke="rgba(255, 255, 255, 0.25)" strokeWidth="1.5"/>
+          <text 
+            x="50" 
+            y="50" 
+            fontFamily="'Outfit', 'DM Sans', 'Jost', sans-serif" 
+            fontSize="42" 
+            fontWeight="800" 
+            fill="#ffffff" 
+            textAnchor="middle" 
+            dominantBaseline="central"
+          >
+            A
+          </text>
         </svg>
       );
     case 'mathematics':
@@ -115,84 +141,110 @@ const renderSubjectIcon = (subjectName) => {
       return (
         <svg viewBox="0 0 100 100" width="80" height="80" style={{ display: 'inline-block' }}>
           <defs>
-            <linearGradient id="matGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="matCircleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#818cf8" />
               <stop offset="100%" stopColor="#4f46e5" />
             </linearGradient>
-            <linearGradient id="matBg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#f5f7ff" />
-              <stop offset="100%" stopColor="#e0e7ff" />
-            </linearGradient>
+            <filter id="matShadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#4f46e5" floodOpacity="0.25"/>
+            </filter>
           </defs>
-          <rect width="100" height="100" rx="24" fill="url(#matBg)"/>
-          <text x="50" y="52" fontFamily="'Outfit', sans-serif" fontSize="34" fontWeight="900" fill="url(#matGrad)" textAnchor="middle" alignmentBaseline="middle">π</text>
-          <text x="25" y="32" fontFamily="'Outfit', sans-serif" fontSize="18" fontWeight="900" fill="#a5b4fc" textAnchor="middle" alignmentBaseline="middle">+</text>
-          <text x="75" y="32" fontFamily="'Outfit', sans-serif" fontSize="18" fontWeight="900" fill="#a5b4fc" textAnchor="middle" alignmentBaseline="middle">×</text>
-          <text x="75" y="72" fontFamily="'Outfit', sans-serif" fontSize="18" fontWeight="900" fill="#a5b4fc" textAnchor="middle" alignmentBaseline="middle">÷</text>
-          <text x="25" y="72" fontFamily="'Outfit', sans-serif" fontSize="18" fontWeight="900" fill="#a5b4fc" textAnchor="middle" alignmentBaseline="middle">=</text>
+          <circle cx="50" cy="50" r="44" fill="url(#matCircleGrad)" filter="url(#matShadow)"/>
+          <circle cx="50" cy="50" r="39" fill="none" stroke="rgba(255, 255, 255, 0.25)" strokeWidth="1.5"/>
+          <text x="50" y="52" fontFamily="'Outfit', sans-serif" fontSize="38" fontWeight="900" fill="#ffffff" textAnchor="middle" dominantBaseline="central">π</text>
+          <text x="28" y="28" fontFamily="'Outfit', sans-serif" fontSize="18" fontWeight="900" fill="rgba(255,255,255,0.4)" textAnchor="middle" dominantBaseline="central">+</text>
+          <text x="72" y="28" fontFamily="'Outfit', sans-serif" fontSize="18" fontWeight="900" fill="rgba(255,255,255,0.4)" textAnchor="middle" dominantBaseline="central">×</text>
+          <text x="72" y="72" fontFamily="'Outfit', sans-serif" fontSize="18" fontWeight="900" fill="rgba(255,255,255,0.4)" textAnchor="middle" dominantBaseline="central">÷</text>
+          <text x="28" y="72" fontFamily="'Outfit', sans-serif" fontSize="18" fontWeight="900" fill="rgba(255,255,255,0.4)" textAnchor="middle" dominantBaseline="central">=</text>
         </svg>
       );
     case 'physics':
       return (
         <svg viewBox="0 0 100 100" width="80" height="80" style={{ display: 'inline-block' }}>
           <defs>
-            <linearGradient id="phyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="phyCircleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#06b6d4" />
               <stop offset="100%" stopColor="#0891b2" />
             </linearGradient>
-            <linearGradient id="phyBg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#ecfeff" />
-              <stop offset="100%" stopColor="#cffafe" />
-            </linearGradient>
+            <filter id="phyShadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#0891b2" floodOpacity="0.25"/>
+            </filter>
           </defs>
-          <rect width="100" height="100" rx="24" fill="url(#phyBg)"/>
-          <ellipse cx="50" cy="50" rx="30" ry="10" fill="none" stroke="url(#phyGrad)" strokeWidth="3" transform="rotate(30, 50, 50)"/>
-          <ellipse cx="50" cy="50" rx="30" ry="10" fill="none" stroke="url(#phyGrad)" strokeWidth="3" transform="rotate(-30, 50, 50)"/>
-          <ellipse cx="50" cy="50" rx="30" ry="10" fill="none" stroke="url(#phyGrad)" strokeWidth="3" transform="rotate(90, 50, 50)"/>
-          <circle cx="50" cy="50" r="7" fill="#0891b2"/>
-          <circle cx="24" cy="35" r="3.5" fill="#22d3ee"/>
-          <circle cx="76" cy="65" r="3.5" fill="#22d3ee"/>
+          <circle cx="50" cy="50" r="44" fill="url(#phyCircleGrad)" filter="url(#phyShadow)"/>
+          <circle cx="50" cy="50" r="39" fill="none" stroke="rgba(255, 255, 255, 0.25)" strokeWidth="1.5"/>
+          <ellipse cx="50" cy="50" rx="26" ry="8" fill="none" stroke="#ffffff" strokeWidth="2.5" transform="rotate(30, 50, 50)"/>
+          <ellipse cx="50" cy="50" rx="26" ry="8" fill="none" stroke="#ffffff" strokeWidth="2.5" transform="rotate(-30, 50, 50)"/>
+          <ellipse cx="50" cy="50" rx="26" ry="8" fill="none" stroke="#ffffff" strokeWidth="2.5" transform="rotate(90, 50, 50)"/>
+          <circle cx="50" cy="50" r="6" fill="#ffffff"/>
+          <circle cx="28" cy="38" r="3" fill="#ffffff" opacity="0.8"/>
+          <circle cx="72" cy="62" r="3" fill="#ffffff" opacity="0.8"/>
         </svg>
       );
     case 'chemistry':
       return (
         <svg viewBox="0 0 100 100" width="80" height="80" style={{ display: 'inline-block' }}>
           <defs>
-            <linearGradient id="chGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="chCircleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#059669" />
               <stop offset="100%" stopColor="#10b981" />
             </linearGradient>
-            <linearGradient id="chBg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#f0fdf4" />
-              <stop offset="100%" stopColor="#dcfce7" />
-            </linearGradient>
+            <filter id="chShadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#10b981" floodOpacity="0.25"/>
+            </filter>
           </defs>
-          <rect width="100" height="100" rx="24" fill="url(#chBg)"/>
-          <path d="M40,25 H60 M45,25 V45 L32,70 C30,75 35,80 42,80 H58 C65,80 70,75 68,70 L55,45 V25" fill="none" stroke="url(#chGrad)" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <line x1="38" y1="62" x2="62" y2="62" stroke="#a7f3d0" strokeWidth="3"/>
-          <circle cx="44" cy="70" r="3" fill="#10b981"/>
-          <circle cx="56" cy="68" r="4.5" fill="#047857"/>
+          <circle cx="50" cy="50" r="44" fill="url(#chCircleGrad)" filter="url(#chShadow)"/>
+          <circle cx="50" cy="50" r="39" fill="none" stroke="rgba(255, 255, 255, 0.25)" strokeWidth="1.5"/>
+          <path d="M40,28 H60 M45,28 V45 L32,68 C30,73 35,78 41,78 H59 C65,78 70,73 68,68 L55,45 V28" fill="none" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+          <line x1="38" y1="62" x2="62" y2="62" stroke="rgba(255, 255, 255, 0.4)" strokeWidth="2.5"/>
+          <circle cx="44" cy="68" r="3" fill="#ffffff"/>
+          <circle cx="56" cy="66" r="4" fill="rgba(255, 255, 255, 0.8)"/>
         </svg>
       );
     case 'biology':
       return (
         <svg viewBox="0 0 100 100" width="80" height="80" style={{ display: 'inline-block' }}>
           <defs>
-            <linearGradient id="bioGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="bioCircleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#ec4899" />
-              <stop offset="100%" stopColor="#db2777" />
+              <stop offset="100%" stopColor="#be123c" />
             </linearGradient>
-            <linearGradient id="bioBg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#fdf2f8" />
-              <stop offset="100%" stopColor="#fce7f3" />
+            <filter id="bioShadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#be123c" floodOpacity="0.25"/>
+            </filter>
+            <linearGradient id="dna1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="100%" stopColor="#fbcfe8" />
+            </linearGradient>
+            <linearGradient id="dna2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#fbcfe8" />
+              <stop offset="100%" stopColor="#ffffff" opacity="0.8" />
             </linearGradient>
           </defs>
-          <rect width="100" height="100" rx="24" fill="url(#bioBg)"/>
-          <path d="M35,25 C45,35 55,35 65,25 M35,45 C45,55 55,55 65,45 M35,65 C45,75 55,75 65,65" fill="none" stroke="#fbcfe8" strokeWidth="3" strokeLinecap="round"/>
-          <path d="M65,35 C55,45 45,45 35,35 M65,55 C55,65 45,65 35,55 M65,75 C55,85 45,85 35,75" fill="none" stroke="url(#bioGrad)" strokeWidth="3" strokeLinecap="round"/>
-          <line x1="43" y1="33" x2="57" y2="33" stroke="#f472b6" strokeWidth="2.5"/>
-          <line x1="43" y1="53" x2="57" y2="53" stroke="#f472b6" strokeWidth="2.5"/>
-          <line x1="43" y1="73" x2="57" y2="73" stroke="#db2777" strokeWidth="2.5"/>
+          <circle cx="50" cy="50" r="44" fill="url(#bioCircleGrad)" filter="url(#bioShadow)"/>
+          <circle cx="50" cy="50" r="39" fill="none" stroke="rgba(255, 255, 255, 0.25)" strokeWidth="1.5"/>
+          
+          <g transform="translate(15, 15) scale(0.7)">
+            <line x1="30" y1="28" x2="70" y2="28" stroke="rgba(255,255,255,0.4)" strokeWidth="2.5" strokeDasharray="1 3"/>
+            <line x1="32" y1="38" x2="68" y2="38" stroke="rgba(255,255,255,0.4)" strokeWidth="2.5"/>
+            <line x1="38" y1="48" x2="62" y2="48" stroke="rgba(255,255,255,0.4)" strokeWidth="2.5"/>
+            <line x1="42" y1="58" x2="58" y2="58" stroke="rgba(255,255,255,0.4)" strokeWidth="2.5" strokeDasharray="1 3"/>
+            <line x1="38" y1="68" x2="62" y2="68" stroke="rgba(255,255,255,0.4)" strokeWidth="2.5"/>
+            <line x1="32" y1="78" x2="68" y2="78" stroke="rgba(255,255,255,0.4)" strokeWidth="2.5"/>
+            <circle cx="36" cy="38" r="3.5" fill="#ffffff"/>
+            <circle cx="64" cy="38" r="3.5" fill="#fbcfe8"/>
+            <circle cx="42" cy="48" r="3.5" fill="#fbcfe8"/>
+            <circle cx="58" cy="48" r="3.5" fill="#ffffff"/>
+            <circle cx="42" cy="68" r="3.5" fill="#ffffff"/>
+            <circle cx="58" cy="68" r="3.5" fill="#fbcfe8"/>
+            <circle cx="36" cy="78" r="3.5" fill="#fbcfe8"/>
+            <circle cx="64" cy="78" r="3.5" fill="#ffffff"/>
+            <path d="M30,22 Q50,48 70,22 Q50,48 30,72 Q50,96 70,72" fill="none" stroke="url(#dna1)" strokeWidth="5" strokeLinecap="round"/>
+            <path d="M70,22 Q50,48 30,22 Q50,48 70,72 Q50,96 30,72" fill="none" stroke="url(#dna2)" strokeWidth="4.5" strokeLinecap="round"/>
+            <circle cx="30" cy="22" r="5" fill="#ffffff"/>
+            <circle cx="70" cy="22" r="5" fill="#fbcfe8"/>
+            <circle cx="30" cy="72" r="5" fill="#fbcfe8"/>
+            <circle cx="70" cy="72" r="5" fill="#ffffff"/>
+          </g>
         </svg>
       );
     case 'social studies':
@@ -200,21 +252,21 @@ const renderSubjectIcon = (subjectName) => {
       return (
         <svg viewBox="0 0 100 100" width="80" height="80" style={{ display: 'inline-block' }}>
           <defs>
-            <linearGradient id="socGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="socCircleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#f59e0b" />
               <stop offset="100%" stopColor="#d97706" />
             </linearGradient>
-            <linearGradient id="socBg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#fef3c7" />
-              <stop offset="100%" stopColor="#fde68a" />
-            </linearGradient>
+            <filter id="socShadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#d97706" floodOpacity="0.25"/>
+            </filter>
           </defs>
-          <rect width="100" height="100" rx="24" fill="url(#socBg)"/>
-          <circle cx="50" cy="50" r="28" fill="none" stroke="url(#socGrad)" strokeWidth="4.5"/>
-          <ellipse cx="50" cy="50" rx="28" fill="none" stroke="#f59e0b" strokeWidth="2.5" opacity="0.6"/>
-          <ellipse cx="50" cy="50" rx="14" fill="none" stroke="#f59e0b" strokeWidth="2.5" opacity="0.6"/>
-          <line x1="22" y1="50" x2="78" y2="50" stroke="#f59e0b" strokeWidth="2.5" opacity="0.6"/>
-          <path d="M38,32 L62,68" stroke="url(#socGrad)" strokeWidth="3" strokeLinecap="round"/>
+          <circle cx="50" cy="50" r="44" fill="url(#socCircleGrad)" filter="url(#socShadow)"/>
+          <circle cx="50" cy="50" r="39" fill="none" stroke="rgba(255, 255, 255, 0.25)" strokeWidth="1.5"/>
+          <circle cx="50" cy="50" r="24" fill="none" stroke="#ffffff" strokeWidth="3.5"/>
+          <ellipse cx="50" cy="50" rx="24" ry="10" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" transform="rotate(90, 50, 50)"/>
+          <ellipse cx="50" cy="50" rx="24" ry="10" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"/>
+          <line x1="26" y1="50" x2="74" y2="50" stroke="rgba(255,255,255,0.7)" strokeWidth="2"/>
+          <path d="M40,36 L60,64" stroke="#ffffff" strokeWidth="3.5" strokeLinecap="round"/>
         </svg>
       );
     default:
@@ -230,7 +282,7 @@ function LandingPage() {
     { name: 'Telugu', desc: 'Regional Telugu grammar, alphabets, prose readings, and cultural poetry modules.', color: '#6366f1' },
     { name: 'Hindi', desc: 'Devanagari scripts, essential vocabulary, sentence constructs, and stories.', color: '#ea580c' },
     { name: 'English', desc: 'Tenses, sentence analysis, reading comprehension, active voice, and dialogue.', color: '#2563eb' },
-    { name: 'Mathematics', desc: 'Class 6-10 geometry equations, algebra constants, ratio divisions, and numbers.', color: '#4f46e5' },
+    { name: 'Maths', desc: 'Class 6-10 geometry equations, algebra constants, ratio divisions, and numbers.', color: '#4f46e5' },
     { name: 'Physics', desc: 'Laws of motion, sound speeds, gravity components, magnetism, and light optics.', color: '#06b6d4' },
     { name: 'Chemistry', desc: 'Periodic tables, molecular configurations, balancing chemical formulas, and gases.', color: '#059669' },
     { name: 'Biology', desc: 'Plant systems, animal cellular structures, genetics, and digestive pathways.', color: '#ec4899' },
@@ -283,7 +335,7 @@ function LandingPage() {
                   <i className="fa-solid fa-magnifying-glass search-icon"></i>
                   <input 
                     type="text" 
-                    placeholder="Search subjects, lessons, quizzes..."
+                    placeholder="Search subjects..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -302,7 +354,7 @@ function LandingPage() {
               <div className="image-animation-container">
                 <img 
                   src="/assets/hero_illustration.png" 
-                  alt="EduMasterPro Students Studying Online" 
+                  alt="LearnoQube Students Studying Online" 
                   className="hero-main-illustration"
                 />
               </div>
@@ -428,7 +480,7 @@ function LandingPage() {
             </div>
           )}
 
-          <div className="subjects-grid">
+          <div className="subjects-grid grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1">
             {filteredSubjects.map((sub, idx) => (
               <div className="subject-card" key={idx} style={{ borderBottom: `4px solid ${sub.color}` }}>
                 <div className="subject-card-top">
@@ -452,66 +504,6 @@ function LandingPage() {
 
 
 
-      {/* TESTIMONIALS SECTION */}
-      <section className="testimonials-section">
-        <div className="container">
-          <div className="section-header">
-            <span className="section-tag">Student Reviews</span>
-            <h2>Loved by <span>Students & Parents</span></h2>
-            <p>Real feedback from middle schoolers mastering science constants and regional languages seamlessly.</p>
-          </div>
-
-          <div className="testimonials-grid">
-            
-            {/* Testimonial 1 */}
-            <div className="testimonial-card">
-              <div className="quote-sign">“</div>
-              <p className="testimonial-text">
-                Studying Class 9 Physics constants in my native tongue, Telugu, helped clear up standard kinematics equations. The visual illustrations and quiz streak maps completely transformed my learning habits!
-              </p>
-              <div className="testimonial-profile">
-                <div className="profile-avatar color-purple-avatar">PM</div>
-                <div className="profile-info">
-                  <h4>Prasanth Meka</h4>
-                  <p>Class 9 Student</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Testimonial 2 */}
-            <div className="testimonial-card">
-              <div className="quote-sign">“</div>
-              <p className="testimonial-text">
-                The bilingually structured Hindi explanations for cell structures in Biology saved us hours of study before class exams. The auto-graded worksheets offer immediate explanations for incorrect selections!
-              </p>
-              <div className="testimonial-profile">
-                <div className="profile-avatar color-blue-avatar">SS</div>
-                <div className="profile-info">
-                  <h4>Surat S.</h4>
-                  <p>Parent of Class 8 Student</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Testimonial 3 */}
-            <div className="testimonial-card">
-              <div className="quote-sign">“</div>
-              <p className="testimonial-text">
-                Having access to detailed math chapter checklists and physics formula reference notes right inside my dashboard has saved so much prep time. Scoring a full 10/10 in coordinate geometry has never felt easier!
-              </p>
-              <div className="testimonial-profile">
-                <div className="profile-avatar color-emerald-avatar">AR</div>
-                <div className="profile-info">
-                  <h4>Ananya Rao</h4>
-                  <p>Class 10 Student</p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
       {/* CALL TO ACTION (CTA) REGISTRATION */}
       <section className="cta-container" id="contact">
         <div className="container">
@@ -525,7 +517,7 @@ function LandingPage() {
             <p>Join thousands of school students excelling in academic curriculum paths, climbing peer ranks, and maintaining daily study streaks. Setup your free student account now.</p>
             
             <div className="cta-btn-wrap">
-              <Link to="/register" className="btn-cta btn-white">Create Free Account</Link>
+              <Link to="/register" className="btn-cta btn-white">Create Account</Link>
             </div>
           </div>
         </div>

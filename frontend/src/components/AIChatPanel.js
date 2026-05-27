@@ -23,7 +23,7 @@ export default function AIChatPanel({ isOpen, onClose, initialData }) {
         {
           id: 'welcome',
           sender: 'assistant',
-          text: `Hi there! I'm your EduMasterPro AI Tutor! 🚀\n\nI can help you learn, solve doubts, summarize your notes, and translate explanations in English, Telugu, or Hindi!\n\nWhich subject are we studying today?`,
+          text: `Hi there! I'm your LearnoQube AI Tutor! 🚀\n\nI can help you learn, solve doubts, summarize your notes, and translate explanations in English, Telugu, or Hindi!\n\nWhich subject are we studying today?`,
           actions: true
         }
       ]);
@@ -239,7 +239,7 @@ export default function AIChatPanel({ isOpen, onClose, initialData }) {
           <div className="ai-chat-header-info">
             <img src="/assets/mascot.png" alt="Mascot" className="ai-chat-header-mascot" />
             <div>
-              <h3 className="ai-chat-header-title">EduMaster AI Tutor</h3>
+              <h3 className="ai-chat-header-title">LearnoQube AI Tutor</h3>
               <span className="ai-chat-header-subtitle">Online & Safe</span>
             </div>
           </div>

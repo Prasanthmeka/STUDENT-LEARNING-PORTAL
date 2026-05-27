@@ -1,4 +1,4 @@
-/* EduMasterPro Premium React Landing Page Stylesheet */
+/* LearnoQube Premium React Landing Page Stylesheet */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
 .landing-container {
@@ -437,7 +437,6 @@
 
 .subjects-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 30px;
 }
 

@@ -5,12 +5,8 @@ import PageHeader from '../components/layout/PageHeader';
 import { 
   CreditCard, 
   Check, 
-  Sparkles, 
-  BookOpen, 
   X, 
-  CheckCircle,
-  HelpCircle,
-  AlertCircle
+  CheckCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -326,7 +322,7 @@ const Subscription = () => {
               <div className="space-y-1.5">
                 <h3 className="font-black text-slate-850 dark:text-slate-100 text-lg tracking-tight font-sans">Payment Completed!</h3>
                 <p className="text-xs text-slate-400 font-semibold leading-normal">
-                  Your premium subscription upgrade was successfully processed. Welcome to the EduMasterPro premium workspace!
+                  Your premium subscription upgrade was successfully processed. Welcome to the LearnoQube premium workspace!
                 </p>
               </div>
 

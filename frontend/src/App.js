@@ -22,6 +22,10 @@ import AdminVideos from './pages/AdminVideos';
 import AdminAnalytics from './pages/AdminAnalytics';
 import AdminUsers from './pages/AdminUsers';
 import AdminSubjectPage from './pages/AdminSubjectPage';
+import UserSettings from './pages/UserSettings';
+import VideoUpload from './pages/VideoUpload';
+import MaterialUpload from './pages/MaterialUpload';
+import QuizCreate from './pages/QuizCreate';
 import Navigation from './components/Navigation';
 import Footer from './components/Footer';
 import './App.css';
@@ -80,6 +84,10 @@ function AppContent() {
           <Route path="/admin/analytics" element={<ProtectedRoute component={<AdminAnalytics />} requiredRole="admin" />} />
           <Route path="/admin/users" element={<ProtectedRoute component={<AdminUsers />} requiredRole="admin" />} />
           <Route path="/admin/subject/:subjectName" element={<ProtectedRoute component={<AdminSubjectPage />} requiredRole="admin" />} />
+          <Route path="/admin/subject/:subjectName/videos/upload" element={<ProtectedRoute component={<VideoUpload />} requiredRole="admin" />} />
+          <Route path="/admin/subject/:subjectName/materials/upload" element={<ProtectedRoute component={<MaterialUpload />} requiredRole="admin" />} />
+          <Route path="/admin/subject/:subjectName/quizzes/create" element={<ProtectedRoute component={<QuizCreate />} requiredRole="admin" />} />
+          <Route path="/admin/settings" element={<ProtectedRoute component={<UserSettings />} requiredRole="admin" />} />
           
           {/* Student Routes */}
           <Route path="/student/dashboard" element={<ProtectedRoute component={<StudentDashboard />} requiredRole="student" />} />

@@ -1,22 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { analyticsAPI, videoAPI, quizAPI, materialAPI } from '../services/api';
 import AdminLayout from '../layouts/AdminLayout';
 import { 
   GraduationCap, 
   Crown, 
-  TrendingUp, 
   AlertTriangle, 
   Search, 
-  Filter, 
   ArrowUpDown, 
   ChevronLeft, 
   ChevronRight, 
-  Download, 
-  Sparkles,
-  BookOpenCheck,
-  RefreshCw,
   Pencil,
   Trash2,
   X,
@@ -26,24 +19,9 @@ import {
   ClipboardList,
   FileDown,
   Activity,
-  PlusCircle,
   Upload
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  LineChart,
-  Line
-} from 'recharts';
 
 // Strict Subjects List validation
 const VALID_SUBJECTS = ['TELUGU', 'HINDI', 'ENGLISH', 'SOCIAL', 'PHYSICS', 'CHEMISTRY', 'BIOLOGY', 'MATHS'];
@@ -119,6 +97,56 @@ const AdminSubjectPage = () => {
   const { subjectName } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Reactive Theme Accent state
+  const [themeAccent, setThemeAccent] = useState(() => localStorage.getItem('admin_theme_accent') || 'purple');
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setThemeAccent(localStorage.getItem('admin_theme_accent') || 'purple');
+    };
+    window.addEventListener('admin-theme-changed', handleThemeChange);
+    return () => window.removeEventListener('admin-theme-changed', handleThemeChange);
+  }, []);
+
+  const getThemeColors = () => {
+    switch (themeAccent) {
+      case 'pink':
+        return {
+          primary: '#EC4899',
+          glow: 'from-pink-500 to-rose-500',
+          text: 'text-pink-650',
+          bg: 'bg-pink-600 hover:bg-pink-700 shadow-pink-600/20',
+          badgeText: 'bg-pink-100 text-pink-700 border border-pink-200'
+        };
+      case 'green':
+        return {
+          primary: '#10B981',
+          glow: 'from-emerald-500 to-green-500',
+          text: 'text-emerald-650',
+          bg: 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20',
+          badgeText: 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+        };
+      case 'orange':
+        return {
+          primary: '#F97316',
+          glow: 'from-orange-500 to-amber-500',
+          text: 'text-orange-650',
+          bg: 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/20',
+          badgeText: 'bg-orange-100 text-orange-700 border border-orange-200'
+        };
+      case 'purple':
+      default:
+        return {
+          primary: '#6366F1',
+          glow: 'from-indigo-500 to-purple-500',
+          text: 'text-[#6366F1]',
+          bg: 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20',
+          badgeText: 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+        };
+    }
+  };
+
+  const themeColors = getThemeColors();
 
   // Normalize active subject
   const currentSubject = (subjectName || '').toUpperCase();
@@ -392,7 +420,7 @@ const AdminSubjectPage = () => {
   const handleAddVideoSubmit = (e) => {
     e.preventDefault();
     if (!videoTitle.trim() || !videoUrl.trim() || !videoChapter.trim()) {
-      alert('Please fill in Title, URL/GitHub Link, and Chapter fields.');
+      alert('Please fill in Title, YouTube Video Link, and Chapter fields.');
       return;
     }
     const newVideo = {
@@ -539,7 +567,7 @@ const AdminSubjectPage = () => {
     const link = document.createElement('a');
     
     link.setAttribute('href', url);
-    link.setAttribute('download', `EduMasterPro_${currentSubject}_StudentList.csv`);
+    link.setAttribute('download', `LearnoQube_${currentSubject}_StudentList.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -566,7 +594,7 @@ const AdminSubjectPage = () => {
           </style>
         </head>
         <body>
-          <h1>EduMasterPro - ${currentSubject} Workspace</h1>
+          <h1>LearnoQube - ${currentSubject} Workspace</h1>
           <p>Subject Subscription Cohort List — Generated on ${new Date().toLocaleDateString()}</p>
           <table>
             <thead>
@@ -629,7 +657,7 @@ const AdminSubjectPage = () => {
     const link = document.createElement('a');
     
     link.setAttribute('href', url);
-    link.setAttribute('download', `EduMasterPro_${currentSubject}_VideoLectures.csv`);
+    link.setAttribute('download', `LearnoQube_${currentSubject}_VideoLectures.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -654,7 +682,7 @@ const AdminSubjectPage = () => {
           </style>
         </head>
         <body>
-          <h1>EduMasterPro - ${currentSubject} Video Lectures</h1>
+          <h1>LearnoQube - ${currentSubject} Video Lectures</h1>
           <p>Video Inventory list — Generated on ${new Date().toLocaleDateString()}</p>
           <table>
             <thead>
@@ -715,7 +743,7 @@ const AdminSubjectPage = () => {
     const link = document.createElement('a');
     
     link.setAttribute('href', url);
-    link.setAttribute('download', `EduMasterPro_${currentSubject}_StudyMaterials.csv`);
+    link.setAttribute('download', `LearnoQube_${currentSubject}_StudyMaterials.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -740,7 +768,7 @@ const AdminSubjectPage = () => {
           </style>
         </head>
         <body>
-          <h1>EduMasterPro - ${currentSubject} Study Materials</h1>
+          <h1>LearnoQube - ${currentSubject} Study Materials</h1>
           <p>Materials Inventory List — Generated on ${new Date().toLocaleDateString()}</p>
           <table>
             <thead>
@@ -803,7 +831,7 @@ const AdminSubjectPage = () => {
     const link = document.createElement('a');
     
     link.setAttribute('href', url);
-    link.setAttribute('download', `EduMasterPro_${currentSubject}_QuizzesList.csv`);
+    link.setAttribute('download', `LearnoQube_${currentSubject}_QuizzesList.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -828,7 +856,7 @@ const AdminSubjectPage = () => {
           </style>
         </head>
         <body>
-          <h1>EduMasterPro - ${currentSubject} Exam Quizzes</h1>
+          <h1>LearnoQube - ${currentSubject} Exam Quizzes</h1>
           <p>Quiz Assessment Inventory — Generated on ${new Date().toLocaleDateString()}</p>
           <table>
             <thead>
@@ -962,8 +990,7 @@ const AdminSubjectPage = () => {
         <div className="space-y-3">
           <span className="block text-[10px] font-black text-indigo-500 uppercase tracking-widest pl-1">Syllabus Quick Actions</span>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-            
-            {/* Quick Action 1: Upload Video */}
+                 {/* Quick Action 1: Upload Video */}
             <div className="bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas hover:shadow-lg transition-all duration-300 p-4 rounded-2xl flex flex-col justify-between hover:-translate-y-0.5 group">
               <div className="space-y-1">
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-650 text-white flex items-center justify-center shadow-md">
@@ -973,7 +1000,7 @@ const AdminSubjectPage = () => {
                 <p className="text-[9px] text-slate-400 dark:text-slate-500 leading-normal">Register live/recorded classes</p>
               </div>
               <button 
-                onClick={() => setIsAddVideoOpen(true)}
+                onClick={() => navigate(`/admin/subject/${subjectName.toLowerCase()}/videos/upload`)}
                 className="w-full mt-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-[9px] font-black tracking-wider rounded-xl transition-all duration-200"
               >
                 Upload Video
@@ -990,7 +1017,7 @@ const AdminSubjectPage = () => {
                 <p className="text-[9px] text-slate-400 dark:text-slate-500 leading-normal">Add PDFs, guides, assignments</p>
               </div>
               <button 
-                onClick={() => setIsAddMaterialOpen(true)}
+                onClick={() => navigate(`/admin/subject/${subjectName.toLowerCase()}/materials/upload`)}
                 className="w-full mt-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white text-[9px] font-black tracking-wider rounded-xl transition-all duration-200"
               >
                 Upload Materials
@@ -1000,14 +1027,14 @@ const AdminSubjectPage = () => {
             {/* Quick Action 3: Create Quiz */}
             <div className="bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas hover:shadow-lg transition-all duration-300 p-4 rounded-2xl flex flex-col justify-between hover:-translate-y-0.5 group">
               <div className="space-y-1">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-green-650 text-white flex items-center justify-center shadow-md">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-green-655 text-white flex items-center justify-center shadow-md">
                   <ClipboardList className="w-4 h-4" />
                 </div>
                 <h4 className="text-xs font-bold text-slate-800 dark:text-white mt-2 group-hover:text-emerald-500 transition-colors duration-205">Create Quiz</h4>
                 <p className="text-[9px] text-slate-400 dark:text-slate-500 leading-normal">Build custom MCQ syllabus exam</p>
               </div>
               <button 
-                onClick={() => { setActiveTab('quizzes'); alert('Opening inline Quiz Builder form below. Scroll down!'); }}
+                onClick={() => navigate(`/admin/subject/${subjectName.toLowerCase()}/quizzes/create`)}
                 className="w-full mt-3 py-1.5 bg-gradient-to-r from-emerald-500 to-green-650 hover:from-emerald-650 hover:to-green-700 text-white text-[9px] font-black tracking-wider rounded-xl transition-all duration-200"
               >
                 Create Quiz
@@ -1046,10 +1073,9 @@ const AdminSubjectPage = () => {
               >
                 Manage Users
               </button>
-            </div>
+            </div>  </div>
 
           </div>
-        </div>
 
 
         {/* ----------------------------------------------------
@@ -1057,7 +1083,7 @@ const AdminSubjectPage = () => {
         // ---------------------------------------------------- */}
         <div className="flex border-b border-slate-200 dark:border-indigo-950/20 gap-2 overflow-x-auto shrink-0 select-none no-scrollbar">
           {[
-            { id: 'inventory', label: 'Subscription Inventory', icon: GraduationCap },
+            { id: 'inventory', label: 'Manage Users', icon: GraduationCap },
             { id: 'videos', label: 'Video Lectures', icon: Play },
             { id: 'quizzes', label: 'Exam Quizzes', icon: ClipboardList },
             { id: 'materials', label: 'PDF Materials', icon: FileText },
@@ -1109,7 +1135,7 @@ const AdminSubjectPage = () => {
                   <div className="space-y-1">
                     <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">{currentSubject} Students</span>
                     <h3 className="text-base font-black text-slate-850 dark:text-white tracking-tight font-sans">
-                      Subscription Cohort List
+                      Manage Users Inventory
                     </h3>
                   </div>
                   <div className="flex items-center gap-2">
@@ -1303,134 +1329,6 @@ const AdminSubjectPage = () => {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-6"
             >
-              {/* 1. GORGEOUS INLINE UPLOAD FORM CARD */}
-              <div className="bg-white dark:bg-[#0f172a]/95 rounded-3xl border border-slate-205 dark:border-indigo-950/20 shadow-saas overflow-hidden p-6">
-                <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-indigo-950/20 mb-6">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20">
-                    <Upload className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Inline Video Lecture Upload</h3>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase mt-0.5">Syllabus category: {currentSubject}</p>
-                  </div>
-                </div>
-
-                <form onSubmit={handleAddVideoSubmit} className="space-y-4 text-xs font-bold">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-4">
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Video Title</label>
-                        <input 
-                          type="text" 
-                          placeholder="e.g. Grammar Fundamentals"
-                          value={videoTitle}
-                          onChange={(e) => setVideoTitle(e.target.value)}
-                          className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Video Type</label>
-                        <select 
-                          value={videoType}
-                          onChange={(e) => setVideoType(e.target.value)}
-                          className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-850 dark:text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer animate-none"
-                        >
-                          <option value="Recorded">Recorded Lecture</option>
-                          <option value="Live">Live Stream</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Video URL / GitHub Link</label>
-                        <input 
-                          type="url" 
-                          placeholder="e.g. https://youtube.com/watch?v=..."
-                          value={videoUrl}
-                          onChange={(e) => setVideoUrl(e.target.value)}
-                          className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Duration</label>
-                          <input 
-                            type="text" 
-                            placeholder="e.g. 45 mins"
-                            value={videoDuration}
-                            onChange={(e) => setVideoDuration(e.target.value)}
-                            className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Chapter/Unit</label>
-                          <input 
-                            type="text" 
-                            placeholder="e.g. 1"
-                            value={videoChapter}
-                            onChange={(e) => setVideoChapter(e.target.value)}
-                            className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Visibility Status</label>
-                        <select 
-                          value={videoVisibility}
-                          onChange={(e) => setVideoVisibility(e.target.value)}
-                          className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-850 dark:text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer animate-none"
-                        >
-                          <option value="Premium Only">Premium Only</option>
-                          <option value="Public">Public (Free)</option>
-                        </select>
-                      </div>
-                      
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Thumbnail Image</label>
-                        <div 
-                          onDragOver={(e) => { e.preventDefault(); setDragVideoActive(true); }}
-                          onDragLeave={() => setDragVideoActive(false)}
-                          onDrop={(e) => { e.preventDefault(); setDragVideoActive(false); if (e.dataTransfer.files[0]) setThumbnailFile(e.dataTransfer.files[0]); }}
-                          onClick={() => alert('Simulating thumbnail file selection.')}
-                          className={`border-2 border-dashed rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-205 min-h-[48px]
-                            ${dragVideoActive ? 'border-indigo-500 bg-indigo-500/10' : thumbnailFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 hover:bg-slate-50/50'}`}
-                        >
-                          <Upload className={`w-3.5 h-3.5 text-slate-400 ${thumbnailFile ? 'text-emerald-500' : ''}`} />
-                          <span className="text-[8px] text-slate-500 mt-1 truncate max-w-[150px]">
-                            {thumbnailFile ? thumbnailFile.name : 'Drop thumbnail image here'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Video Description</label>
-                    <textarea 
-                      rows="2"
-                      placeholder="Enter short lecture syllabus overview or topics covered..."
-                      value={videoDescription}
-                      onChange={(e) => setVideoDescription(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-end gap-3 pt-2">
-                    <button
-                      type="submit"
-                      className="py-2.5 px-6 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md text-[11px]"
-                    >
-                      Publish Video Lecture
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              {/* 2. PREMIUM ACTIVE GRID (RESPONSIVE CARDS) */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between pl-1">
                   <span className="block text-[10px] font-black text-indigo-500 uppercase tracking-widest">Active Video Lectures Grid</span>
@@ -1666,252 +1564,6 @@ const AdminSubjectPage = () => {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-6"
             >
-              {/* 1. QUIZ CREATOR FORM & DYNAMIC QUESTION BUILDER */}
-              <div className="bg-white dark:bg-[#0f172a]/95 rounded-3xl border border-slate-205 dark:border-indigo-950/20 shadow-saas overflow-hidden p-6">
-                <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-indigo-950/20 mb-6">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-green-650 text-white flex items-center justify-center shadow-md">
-                    <ClipboardList className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Syllabus Exam Creator</h3>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase mt-0.5">Syllabus category: {currentSubject}</p>
-                  </div>
-                </div>
-
-                <form onSubmit={handleAddQuizSubmit} className="space-y-6 text-xs font-bold">
-                  {/* Row 1: Basic Metadata */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Quiz Assessment Title</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. Chapter 3 Poetry Quiz"
-                        value={quizTitle}
-                        onChange={(e) => setQuizTitle(e.target.value)}
-                        className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                      />
-                    </div>
-                    
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Chapter/Unit</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. 3"
-                        value={quizChapter}
-                        onChange={(e) => setQuizChapter(e.target.value)}
-                        className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Difficulty</label>
-                      <select 
-                        value={quizDifficulty}
-                        onChange={(e) => setQuizDifficulty(e.target.value)}
-                        className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-850 dark:text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer animate-none"
-                      >
-                        <option value="Easy">Easy Level</option>
-                        <option value="Medium">Medium Level</option>
-                        <option value="Hard">Hard Level</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Duration Limit</label>
-                      <input 
-                        type="text" 
-                        placeholder="e.g. 20 mins"
-                        value={quizDuration}
-                        onChange={(e) => setQuizDuration(e.target.value)}
-                        className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Passing Threshold (%)</label>
-                      <input 
-                        type="number" 
-                        placeholder="e.g. 50"
-                        value={quizPassingMarks}
-                        onChange={(e) => setQuizPassingMarks(parseInt(e.target.value) || 50)}
-                        className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Assessment Type</label>
-                      <select 
-                        value={quizType}
-                        onChange={(e) => setQuizType(e.target.value)}
-                        className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-850 dark:text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer animate-none"
-                      >
-                        <option value="MCQ">Multiple Choice Only (MCQ)</option>
-                        <option value="Descriptive">Descriptive Writing</option>
-                        <option value="Mixed">Mixed MCQ & Descriptive</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Subject Category (Auto-filled)</label>
-                      <input 
-                        type="text" 
-                        value={currentSubject}
-                        disabled
-                        className="w-full p-3 rounded-xl border border-slate-200 bg-slate-105 dark:bg-slate-900/40 text-slate-500 cursor-not-allowed opacity-80"
-                      />
-                    </div>
-                  </div>
-
-                  {/* DYNAMIC QUESTION BUILDER */}
-                  <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-indigo-950/20">
-                    <div className="flex items-center justify-between">
-                      <span className="block text-[10px] font-black text-indigo-500 uppercase tracking-widest pl-1">Dynamic Questions Builder List</span>
-                      <button
-                        type="button"
-                        onClick={handleAddQuestionRow}
-                        className="flex items-center gap-1 py-1 px-3 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400 hover:bg-indigo-100/50 rounded-lg border border-indigo-100 dark:border-indigo-900/30 text-[10px]"
-                      >
-                        <PlusCircle className="w-3.5 h-3.5" />
-                        Add Question
-                      </button>
-                    </div>
-
-                    {questionsList.map((question, index) => (
-                      <div 
-                        key={index} 
-                        className="p-5 rounded-2xl bg-slate-50/50 dark:bg-slate-900/30 border border-slate-200 dark:border-indigo-950/20 relative space-y-4 shadow-sm"
-                      >
-                        {/* Header Row for Question Number and Remove */}
-                        <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-indigo-950/25">
-                          <span className="text-[10px] font-black uppercase text-indigo-500">Question #{index + 1}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveQuestionRow(index)}
-                            className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors duration-150"
-                            title="Remove Question"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-
-                        {/* Question Text */}
-                        <div className="space-y-1.5">
-                          <label className="text-[9px] text-slate-450 uppercase tracking-wider block">Question Text</label>
-                          <input 
-                            type="text" 
-                            placeholder="e.g. What is the definition of grammar in standard Telugu?"
-                            value={question.questionText}
-                            onChange={(e) => handleQuestionFieldChange(index, 'questionText', e.target.value)}
-                            className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500"
-                          />
-                        </div>
-
-                        {/* Options MCQ A, B, C, D */}
-                        {quizType !== 'Descriptive' && (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                              <label className="text-[9px] text-slate-450 uppercase tracking-wider block">Option A</label>
-                              <input 
-                                type="text" 
-                                placeholder="Choice Option A"
-                                value={question.optionA}
-                                onChange={(e) => handleQuestionFieldChange(index, 'optionA', e.target.value)}
-                                className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500"
-                              />
-                            </div>
-                            <div className="space-y-1.5">
-                              <label className="text-[9px] text-slate-450 uppercase tracking-wider block">Option B</label>
-                              <input 
-                                type="text" 
-                                placeholder="Choice Option B"
-                                value={question.optionB}
-                                onChange={(e) => handleQuestionFieldChange(index, 'optionB', e.target.value)}
-                                className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500"
-                              />
-                            </div>
-                            <div className="space-y-1.5">
-                              <label className="text-[9px] text-slate-450 uppercase tracking-wider block">Option C</label>
-                              <input 
-                                type="text" 
-                                placeholder="Choice Option C"
-                                value={question.optionC}
-                                onChange={(e) => handleQuestionFieldChange(index, 'optionC', e.target.value)}
-                                className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500"
-                              />
-                            </div>
-                            <div className="space-y-1.5">
-                              <label className="text-[9px] text-slate-450 uppercase tracking-wider block">Option D</label>
-                              <input 
-                                type="text" 
-                                placeholder="Choice Option D"
-                                value={question.optionD}
-                                onChange={(e) => handleQuestionFieldChange(index, 'optionD', e.target.value)}
-                                className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500"
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Correct Answer and Marks */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          {quizType !== 'Descriptive' && (
-                            <div className="space-y-1.5">
-                              <label className="text-[9px] text-slate-450 uppercase tracking-wider block">Correct Option</label>
-                              <select 
-                                value={question.correctAnswer}
-                                onChange={(e) => handleQuestionFieldChange(index, 'correctAnswer', e.target.value)}
-                                className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500 cursor-pointer animate-none"
-                              >
-                                <option value="A">Option A</option>
-                                <option value="B">Option B</option>
-                                <option value="C">Option C</option>
-                                <option value="D">Option D</option>
-                              </select>
-                            </div>
-                          )}
-
-                          <div className="space-y-1.5">
-                            <label className="text-[9px] text-slate-450 uppercase tracking-wider block">Marks Awarded</label>
-                            <input 
-                              type="number" 
-                              placeholder="5"
-                              value={question.marks}
-                              onChange={(e) => handleQuestionFieldChange(index, 'marks', parseInt(e.target.value) || 5)}
-                              className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Explanation */}
-                        <div className="space-y-1.5">
-                          <label className="text-[9px] text-slate-450 uppercase tracking-wider block">Answer Explanation / Rationale</label>
-                          <textarea 
-                            rows="2"
-                            placeholder="Provide feedback context displayed to students on quiz completion..."
-                            value={question.explanation}
-                            onChange={(e) => handleQuestionFieldChange(index, 'explanation', e.target.value)}
-                            className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Submit Button */}
-                  <div className="flex items-center justify-end gap-3 pt-2">
-                    <button
-                      type="submit"
-                      className="py-2.5 px-6 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-650 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md text-[11px]"
-                    >
-                      Publish Exam Assessment
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              {/* 2. EXAM ASSESSMENT DATABASE TABLE */}
               <div className="rounded-3xl bg-white dark:bg-[#0f172a]/95 border border-slate-200 dark:border-indigo-950/25 shadow-saas overflow-hidden">
                 <div className="p-6 border-b border-slate-100 dark:border-indigo-950/25 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -2080,7 +1732,7 @@ const AdminSubjectPage = () => {
             </motion.div>
           )}
 
-          {/* TAB 4: SUBJECT PDF STUDY MATERIALS */}
+          {/* TAB 4: SUBJECT STUDY MATERIALS */}
           {activeTab === 'materials' && (
             <motion.div 
               key="materials"
@@ -2089,125 +1741,6 @@ const AdminSubjectPage = () => {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-6"
             >
-              {/* 1. GORGEOUS INLINE UPLOAD FORM CARD */}
-              <div className="bg-white dark:bg-[#0f172a]/95 rounded-3xl border border-slate-205 dark:border-indigo-950/20 shadow-saas overflow-hidden p-6">
-                <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-indigo-950/20 mb-6">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-500 to-pink-650 text-white flex items-center justify-center shadow-md">
-                    <Upload className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Inline Study Material Upload</h3>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase mt-0.5">Syllabus category: {currentSubject}</p>
-                  </div>
-                </div>
-
-                <form onSubmit={handleAddMaterialSubmit} className="space-y-4 text-xs font-bold">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-4">
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Material Title</label>
-                        <input 
-                          type="text" 
-                          placeholder="e.g. Classical Poetry Notes"
-                          value={materialTitle}
-                          onChange={(e) => setMaterialTitle(e.target.value)}
-                          className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Material Type</label>
-                        <select 
-                          value={materialType}
-                          onChange={(e) => setMaterialType(e.target.value)}
-                          className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-855 dark:text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer animate-none"
-                        >
-                          <option value="PDF">PDF Document</option>
-                          <option value="Notes">Notes Study Pack</option>
-                          <option value="Assignment">Assignment Homework</option>
-                          <option value="Worksheet">Practice Worksheet</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Chapter/Unit</label>
-                          <input 
-                            type="text" 
-                            placeholder="e.g. 3"
-                            value={materialChapter}
-                            onChange={(e) => setMaterialChapter(e.target.value)}
-                            className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Visibility Status</label>
-                          <select 
-                            value={materialVisibility}
-                            onChange={(e) => setMaterialVisibility(e.target.value)}
-                            className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-855 dark:text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer animate-none"
-                          >
-                            <option value="Premium Only">Premium Only</option>
-                            <option value="Public">Public (Free)</option>
-                          </select>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Subject Category (Auto-filled)</label>
-                        <input 
-                          type="text" 
-                          value={currentSubject}
-                          disabled
-                          className="w-full p-3 rounded-xl border border-slate-200 bg-slate-105 dark:bg-slate-900/40 text-slate-500 cursor-not-allowed opacity-80"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-4 flex flex-col justify-between">
-                      <div className="space-y-1.5 flex-1 flex flex-col justify-between">
-                        <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Upload File</label>
-                        <div 
-                          onDragOver={(e) => { e.preventDefault(); setDragMaterialActive(true); }}
-                          onDragLeave={() => setDragMaterialActive(false)}
-                          onDrop={(e) => { e.preventDefault(); setDragMaterialActive(false); if (e.dataTransfer.files[0]) setMaterialFile(e.dataTransfer.files[0]); }}
-                          onClick={() => alert('Simulating PDF or zip file upload.')}
-                          className={`border-2 border-dashed rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-205 flex-1 min-h-[96px]
-                            ${dragMaterialActive ? 'border-purple-500 bg-purple-500/10' : materialFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-880 hover:border-purple-500/50 hover:bg-slate-50/50'}`}
-                        >
-                          <Upload className={`w-4 h-4 text-slate-400 ${materialFile ? 'text-emerald-500' : ''}`} />
-                          <span className="text-[8px] text-slate-500 mt-1 truncate max-w-[150px]">
-                            {materialFile ? materialFile.name : 'Drag & drop file or browse'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Material Description</label>
-                    <textarea 
-                      rows="2"
-                      placeholder="Enter short description of study resources, references, or instructions..."
-                      value={materialDescription}
-                      onChange={(e) => setMaterialDescription(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-end gap-3 pt-2">
-                    <button
-                      type="submit"
-                      className="py-2.5 px-6 rounded-xl bg-gradient-to-r from-purple-650 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-md text-[11px]"
-                    >
-                      Publish Study Material
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              {/* 2. MATERIALS INVENTORY TABLE */}
               <div className="rounded-3xl bg-white dark:bg-[#0f172a]/95 border border-slate-200 dark:border-indigo-950/25 shadow-saas overflow-hidden">
                 <div className="p-6 border-b border-slate-100 dark:border-indigo-950/25 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -2388,35 +1921,13 @@ const AdminSubjectPage = () => {
               </div>
             </motion.div>
           )}
-
           {/* TAB 5: SUBJECT PERFORMANCE GRAPHICS */}
           {activeTab === 'analytics' && (() => {
-            // Local Mock Datasets for Analytics
-            const passFailData = [
-              { quiz: 'Assessment 1', attempted: 120, passed: 101, failed: 19 },
-              { quiz: 'Assessment 2', attempted: 95, passed: 75, failed: 20 },
-              { quiz: 'Assessment 3', attempted: 140, passed: 110, failed: 30 }
-            ];
-
-            const gradeCurveData = [
-              { chapter: 'Unit 1', avgScore: 74, topScore: 98 },
-              { chapter: 'Unit 2', avgScore: 82, topScore: 100 },
-              { chapter: 'Unit 3', avgScore: 78, topScore: 95 },
-              { chapter: 'Unit 4', avgScore: 88, topScore: 100 }
-            ];
-
-            const growthData = [
-              { month: 'Jan', premium: 12, trial: 25 },
-              { month: 'Feb', premium: 18, trial: 22 },
-              { month: 'Mar', premium: 28, trial: 15 },
-              { month: 'Apr', premium: 36, trial: 10 }
-            ];
-
-            const completionData = [
-              { chapter: 'Unit 1', completionRate: 95 },
-              { chapter: 'Unit 2', completionRate: 88 },
-              { chapter: 'Unit 3', completionRate: 72 },
-              { chapter: 'Unit 4', completionRate: 40 }
+            const weeklyAnalytics = [
+              { week: 'Week 1', chapters: 'Chapter 1 & 2', attempts: 148, engagement: '92% Engagement', percentage: 90 },
+              { week: 'Week 2', chapters: 'Chapter 3 & 4', attempts: 112, engagement: '85% Engagement', percentage: 75 },
+              { week: 'Week 3', chapters: 'Chapter 5', attempts: 94, engagement: '78% Engagement', percentage: 60 },
+              { week: 'Week 4', chapters: 'Revision & Mock Exams', attempts: 68, engagement: '82% Engagement', percentage: 45 },
             ];
 
             return (
@@ -2427,158 +1938,46 @@ const AdminSubjectPage = () => {
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-6"
               >
-                {/* 1. EXISTING WEEKLY ATTEMPTS AREA CHART */}
                 <div className="p-6 rounded-3xl bg-white dark:bg-[#0f172a]/95 border border-slate-205 dark:border-indigo-950/20 shadow-saas space-y-6">
                   <div className="space-y-1">
-                    <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Syllabus Performance metrics</span>
-                    <h3 className="text-base font-black text-slate-805 dark:text-white tracking-tight font-sans">Syllabus Attempts Analytics</h3>
-                    <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">Historical quiz averages and overall student engagement curves weekly.</p>
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${themeColors.text}`}>Syllabus Performance metrics</span>
+                    <h3 className="text-base font-black text-slate-805 dark:text-white tracking-tight font-sans">Week-wise Syllabus Attempts Analytics</h3>
+                    <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">Detailed progress, quiz attempts, and student engagement metrics mapped week-by-week.</p>
                   </div>
 
-                  <div className="h-72 w-full pt-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart
-                        data={analyticsGraphData}
-                        margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  <div className="space-y-4 pt-2">
+                    {weeklyAnalytics.map((unit, idx) => (
+                      <div 
+                        key={idx} 
+                        className="p-5 rounded-2xl bg-slate-50/50 dark:bg-slate-900/40 border border-slate-100 dark:border-indigo-950/10 hover:border-indigo-500/20 dark:hover:border-indigo-400/20 hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-all duration-200 shadow-sm"
                       >
-                        <defs>
-                          <linearGradient id="colorGrade" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor={COLORS.indigo} stopOpacity={0.4}/>
-                            <stop offset="95%" stopColor={COLORS.indigo} stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
-                        <XAxis 
-                          dataKey="name" 
-                          tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: '700' }} 
-                          axisLine={false}
-                          tickLine={false}
-                        />
-                        <YAxis 
-                          tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: '700' }}
-                          axisLine={false}
-                          tickLine={false}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                            borderRadius: '12px',
-                            border: '1px solid rgba(255,255,255,0.08)',
-                            fontSize: '11px',
-                            color: 'white',
-                            fontWeight: 'bold'
-                          }}
-                        />
-                        <Area 
-                          type="monotone" 
-                          dataKey="avgGrade" 
-                          name="Average Grade %" 
-                          stroke={COLORS.indigo} 
-                          fillOpacity={1} 
-                          fill="url(#colorGrade)" 
-                          strokeWidth={3}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs font-black px-2 py-0.5 rounded ${themeColors.badgeText}`}>{unit.week}</span>
+                              <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300">{unit.chapters}</span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5">
+                              <span>📊 {unit.attempts} Quiz Attempts</span>
+                              <span>•</span>
+                              <span className="text-indigo-500">{unit.engagement}</span>
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className={`text-xs font-mono font-black ${themeColors.text}`}>{unit.percentage}% Completed</span>
+                          </div>
+                        </div>
 
-                {/* 2. RESPONSIVE GRID (4 ADDITIONAL GRAPHICS) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  
-                  {/* Chart A: Quiz Pass/Fail Bar Chart */}
-                  <div className="p-6 rounded-3xl bg-white dark:bg-[#0f172a]/95 border border-slate-200 dark:border-indigo-950/20 shadow-saas space-y-4">
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">A. Grade Threshold Ratio</span>
-                      <h4 className="text-xs font-black text-slate-808 dark:text-white font-sans">Quiz Pass vs Fail Ratio</h4>
-                      <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">Comparative metrics outlining attempted vs passed counts per assessment.</p>
-                    </div>
-                    <div className="h-56 w-full pt-2">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={passFailData} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-800/40" />
-                          <XAxis dataKey="quiz" tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: '700' }} axisLine={false} tickLine={false} />
-                          <YAxis tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: '700' }} axisLine={false} tickLine={false} />
-                          <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', fontSize: '11px', color: 'white' }} />
-                          <Legend wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', paddingTop: '10px' }} />
-                          <Bar dataKey="attempted" name="Total Attempts" fill={COLORS.indigo} radius={[4, 4, 0, 0]} barSize={12} />
-                          <Bar dataKey="passed" name="Passed" fill={COLORS.emerald} radius={[4, 4, 0, 0]} barSize={12} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
+                        {/* Progress Bar Container */}
+                        <div className="w-full bg-slate-200/60 dark:bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-200/20 dark:border-slate-900 relative">
+                          <div 
+                            className={`h-full bg-gradient-to-r ${themeColors.glow} rounded-full transition-all duration-500`}
+                            style={{ width: `${unit.percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-
-                  {/* Chart B: Student Performance Curve Line Chart */}
-                  <div className="p-6 rounded-3xl bg-white dark:bg-[#0f172a]/95 border border-slate-202 dark:border-indigo-950/20 shadow-saas space-y-4">
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">B. Assessment Curves</span>
-                      <h4 className="text-xs font-black text-slate-808 dark:text-white font-sans">Syllabus Class Grade Trajectory</h4>
-                      <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">Smooth grade trajectory visualizing class average vs top scorers per unit.</p>
-                    </div>
-                    <div className="h-56 w-full pt-2">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={gradeCurveData} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-800/40" />
-                          <XAxis dataKey="chapter" tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: '700' }} axisLine={false} tickLine={false} />
-                          <YAxis tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: '700' }} axisLine={false} tickLine={false} />
-                          <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', fontSize: '11px', color: 'white' }} />
-                          <Legend wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', paddingTop: '10px' }} />
-                          <Line type="monotone" dataKey="avgScore" name="Class Average" stroke={COLORS.indigo} strokeWidth={2.5} activeDot={{ r: 6 }} />
-                          <Line type="monotone" dataKey="topScore" name="Top Scorer" stroke={COLORS.purple} strokeWidth={2.5} strokeDasharray="5 5" />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-
-                  {/* Chart C: Subscription Growth Area Chart */}
-                  <div className="p-6 rounded-3xl bg-white dark:bg-[#0f172a]/95 border border-slate-200 dark:border-indigo-950/20 shadow-saas space-y-4">
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-black text-pink-500 uppercase tracking-widest">C. Conversion Funnel</span>
-                      <h4 className="text-xs font-black text-slate-808 dark:text-white font-sans">Premium Subscription Additions</h4>
-                      <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">Platform conversions showing premium plan upgrades monthly.</p>
-                    </div>
-                    <div className="h-56 w-full pt-2">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={growthData} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                          <defs>
-                            <linearGradient id="colorPremium" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor={COLORS.indigo} stopOpacity={0.3}/>
-                              <stop offset="95%" stopColor={COLORS.indigo} stopOpacity={0}/>
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" className="dark:stroke-slate-800/40" />
-                          <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: '700' }} axisLine={false} tickLine={false} />
-                          <YAxis tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: '700' }} axisLine={false} tickLine={false} />
-                          <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', fontSize: '11px', color: 'white' }} />
-                          <Legend wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', paddingTop: '10px' }} />
-                          <Area type="monotone" dataKey="premium" name="Premium Upgrades" stroke={COLORS.indigo} fillOpacity={1} fill="url(#colorPremium)" strokeWidth={2} />
-                          <Area type="monotone" dataKey="trial" name="Free trials active" stroke={COLORS.slateLight} fill="none" strokeWidth={1.5} />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-
-                  {/* Chart D: Chapter Completion Ratio Horizontal Bar Chart */}
-                  <div className="p-6 rounded-3xl bg-white dark:bg-[#0f172a]/95 border border-slate-200 dark:border-indigo-950/20 shadow-saas space-y-4">
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">D. Syllabus Progress Funnel</span>
-                      <h4 className="text-xs font-black text-slate-808 dark:text-white font-sans">Chapter Completion Ratios</h4>
-                      <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">Horizontal visual benchmarks detailing completion status per chapter.</p>
-                    </div>
-                    <div className="h-56 w-full pt-2">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart layout="vertical" data={completionData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" className="dark:stroke-slate-800/40" />
-                          <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 9 }} domain={[0, 100]} axisLine={false} tickLine={false} />
-                          <YAxis dataKey="chapter" type="category" tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: '700' }} axisLine={false} tickLine={false} />
-                          <Tooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.95)', borderRadius: '12px', fontSize: '11px', color: 'white' }} />
-                          <Legend wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', paddingTop: '10px' }} />
-                          <Bar dataKey="completionRate" name="Completion Rate (%)" fill={COLORS.purple} radius={[0, 4, 4, 0]} barSize={10} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-
                 </div>
               </motion.div>
             );
@@ -2752,10 +2151,10 @@ const AdminSubjectPage = () => {
 
                   {/* Field 4: Video URL */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Video URL / GitHub Link</label>
+                    <label className="text-[10px] text-slate-455 uppercase tracking-wider block">YouTube Video Link</label>
                     <input 
                       type="url" 
-                      placeholder="e.g. https://youtube.com/watch?v=..."
+                      placeholder="e.g. https://www.youtube.com/watch?v=..."
                       value={videoUrl}
                       onChange={(e) => setVideoUrl(e.target.value)}
                       className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all duration-200"
@@ -2797,24 +2196,6 @@ const AdminSubjectPage = () => {
                       <option value="Premium Only">Premium Only</option>
                       <option value="Public">Public (Free)</option>
                     </select>
-                  </div>
-                  
-                  {/* Field 5: Thumbnail Upload (Drag & Drop box) */}
-                  <div className="space-y-1.5 flex flex-col justify-between">
-                    <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Thumbnail Image</label>
-                    <div 
-                      onDragOver={(e) => { e.preventDefault(); setDragVideoActive(true); }}
-                      onDragLeave={() => setDragVideoActive(false)}
-                      onDrop={(e) => { e.preventDefault(); setDragVideoActive(false); if (e.dataTransfer.files[0]) setThumbnailFile(e.dataTransfer.files[0]); }}
-                      onClick={() => alert('Simulating browse. Thumbnail file selected.')}
-                      className={`border-2 border-dashed rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 min-h-[50px]
-                        ${dragVideoActive ? 'border-indigo-500 bg-indigo-500/10 shadow-[0_0_12px_rgba(99,102,241,0.2)]' : thumbnailFile ? 'border-emerald-500 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-800 hover:border-indigo-500/50 hover:bg-slate-50/50 dark:hover:bg-slate-900/50'}`}
-                    >
-                      <Upload className={`w-4 h-4 text-slate-400 dark:text-slate-500 ${thumbnailFile ? 'text-emerald-500' : ''}`} />
-                      <span className="text-[9px] text-slate-500 mt-1">
-                        {thumbnailFile ? `Selected: ${thumbnailFile.name}` : 'Drag & drop image or browse'}
-                      </span>
-                    </div>
                   </div>
 
                 </div>

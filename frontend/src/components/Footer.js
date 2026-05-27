@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Footer.css';
+import LearnoQubeLogo from './LearnoQubeLogo';
 
 function Footer() {
   return (
@@ -10,8 +11,11 @@ function Footer() {
           
           {/* Column 1: Brand Info */}
           <div className="footer-brand-col">
-            <div className="footer-logo-wrap">
-              <img src="/assets/logo.png" alt="EduMasterPro Logo" className="footer-logo-img" />
+            <div className="footer-logo-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <LearnoQubeLogo className="w-8 h-8 shrink-0" />
+              <span className="font-bold text-2xl tracking-wide bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
+                LearnoQube
+              </span>
             </div>
             <p className="footer-brand-desc">
               Smart learning platform for Class 6–10 students with Telugu, Hindi, Maths, Science, and AI-powered educational support.
@@ -51,7 +55,7 @@ function Footer() {
             <h4>Contact Info</h4>
             <div className="footer-contact-item">
               <i className="fa-solid fa-envelope"></i>
-              <p><b>Email:</b> <a href="mailto:contact@edumasterpro.edu">contact@edumasterpro.edu</a></p>
+              <p><b>Email:</b> <a href="mailto:contact@learnoqube.edu">contact@learnoqube.edu</a></p>
             </div>
             <div className="footer-contact-item">
               <i className="fa-solid fa-phone"></i>
@@ -67,7 +71,7 @@ function Footer() {
 
         {/* Footer Bottom Bar */}
         <div className="footer-bottom-bar">
-          <p className="mb-0">&copy; {new Date().getFullYear()} EduMasterPro Learning Platform. All rights reserved.</p>
+          <p className="mb-0">&copy; {new Date().getFullYear()} LearnoQube Learning Platform. All rights reserved.</p>
           <p className="mb-0">
             Designed with <i className="fa-solid fa-heart footer-heart"></i> for standard school excellence.
           </p>

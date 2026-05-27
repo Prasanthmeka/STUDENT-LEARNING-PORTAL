@@ -6,8 +6,7 @@ import {
   AlertTriangle,
   TrendingUp, 
   TrendingDown,
-  ArrowUpRight,
-  Sparkles
+  ArrowUpRight
 } from 'lucide-react';
 
 const AnalyticsCards = ({ totalTests = 0, testsPassed = 0, failedTests = 0, loading = false }) => {

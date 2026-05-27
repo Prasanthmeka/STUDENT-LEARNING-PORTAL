@@ -4,19 +4,23 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
   Bell, 
-  Sun, 
-  Moon, 
   User, 
   Settings, 
   LogOut, 
   Menu,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Sun,
+  Moon
 } from 'lucide-react';
 
-const Navbar = ({ isCollapsed, setIsMobileOpen }) => {
+const Navbar = ({ isCollapsed, setIsMobileOpen, searchQuery, setSearchQuery }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const [internalQuery, setInternalQuery] = useState('');
+  const query = searchQuery !== undefined ? searchQuery : internalQuery;
+  const setQuery = setSearchQuery !== undefined ? setSearchQuery : setInternalQuery;
 
   // Silhouette Vector Placeholder Avatar
   const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2364748b"><circle cx="12" cy="8" r="4"/><path d="M12 14c-6.1 0-8 4-8 4h16s-1.9-4-8-4z"/></svg>`;
@@ -53,7 +57,8 @@ const Navbar = ({ isCollapsed, setIsMobileOpen }) => {
     }
   }, []);
 
-  // Theme Switch Toggle Handler
+  // Theme Switch Toggle Handler (available for future use in UI)
+  // eslint-disable-next-line no-unused-vars
   const handleThemeToggle = () => {
     const nextDark = !isDarkMode;
     setIsDarkMode(nextDark);
@@ -101,7 +106,7 @@ const Navbar = ({ isCollapsed, setIsMobileOpen }) => {
   ];
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between h-20 px-6 bg-white/70 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 shadow-sm transition-all duration-300">
+    <header className="sticky top-0 z-30 shrink-0 flex items-center justify-between h-20 px-6 bg-white/70 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 shadow-sm transition-all duration-300">
       {/* Search Bar & Mobile Toggle */}
       <div className="flex items-center gap-4">
         {/* Mobile Hamburger Button */}
@@ -117,7 +122,9 @@ const Navbar = ({ isCollapsed, setIsMobileOpen }) => {
           <Search className="absolute top-1/2 left-3 w-4 h-4 -translate-y-1/2 text-slate-400" />
           <input 
             type="text" 
-            placeholder="Search quizzes, materials..." 
+            placeholder="Search subjects..." 
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
             className="w-64 pl-10 pr-4 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-indigo-500/10 transition-smooth"
           />
         </div>
@@ -135,13 +142,6 @@ const Navbar = ({ isCollapsed, setIsMobileOpen }) => {
           </span>
         </div>
 
-        {/* Dark/Light Mode Toggle */}
-        <button 
-          onClick={handleThemeToggle}
-          className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-smooth"
-        >
-          {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-        </button>
 
         {/* Notifications Center */}
         <div className="relative" ref={notificationRef}>
@@ -217,8 +217,12 @@ const Navbar = ({ isCollapsed, setIsMobileOpen }) => {
 
               <div className="p-1.5 space-y-0.5">
                 <a 
-                  href="#profile" 
-                  className="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-850 transition-smooth"
+                  href="/student/settings" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/student/settings');
+                  }}
+                  className="flex items-center gap-3 px-3.5 py-2.5 text-sm font-medium rounded-xl text-slate-600 dark:text-slate-300 hover:text-indigo-650 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-855 transition-smooth"
                 >
                   <User className="w-4 h-4" />
                   My Profile
@@ -234,6 +238,23 @@ const Navbar = ({ isCollapsed, setIsMobileOpen }) => {
                   <Settings className="w-4 h-4" />
                   Account Settings
                 </a>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleThemeToggle();
+                  }}
+                  className="flex items-center justify-between w-full px-3.5 py-2.5 text-sm font-medium rounded-xl text-slate-600 dark:text-slate-300 hover:text-indigo-650 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-850 transition-smooth"
+                >
+                  <div className="flex items-center gap-3">
+                    {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                    <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
+                  </div>
+                  {/* Premium Switch Toggle */}
+                  <div className={`w-8 h-4.5 rounded-full p-0.5 transition-colors duration-200 focus:outline-none ${isDarkMode ? 'bg-indigo-600' : 'bg-slate-350 dark:bg-slate-700'}`}>
+                    <div className={`w-3.5 h-3.5 rounded-full bg-white transition-transform duration-200 transform ${isDarkMode ? 'translate-x-3.5' : 'translate-x-0'}`} />
+                  </div>
+                </button>
                 <button 
                   onClick={handleLogout}
                   className="flex items-center gap-3 w-full px-3.5 py-2.5 text-sm font-medium rounded-xl text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-smooth"

@@ -3,12 +3,12 @@ import Sidebar from '../components/dashboard/Sidebar';
 import Navbar from '../components/dashboard/Navbar';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const StudentLayout = ({ children }) => {
+const StudentLayout = ({ children, searchQuery, setSearchQuery }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="h-screen bg-slate-50 flex font-sans overflow-hidden">
       {/* Sidebar Component */}
       <Sidebar 
         isCollapsed={isSidebarCollapsed}
@@ -19,7 +19,7 @@ const StudentLayout = ({ children }) => {
 
       {/* Main Dynamic Layout Wrapper */}
       <div 
-        className="flex-grow flex flex-col min-w-0 transition-all duration-300"
+        className="student-content-wrapper flex-grow flex flex-col h-screen min-w-0 overflow-hidden transition-all duration-300"
         style={{
           paddingLeft: isSidebarCollapsed ? '80px' : '260px'
         }}
@@ -27,7 +27,7 @@ const StudentLayout = ({ children }) => {
         {/* CSS Override for Mobile Responsiveness */}
         <style>{`
           @media (max-width: 768px) {
-            .flex-grow {
+            .student-content-wrapper {
               padding-left: 0px !important;
             }
           }
@@ -37,10 +37,12 @@ const StudentLayout = ({ children }) => {
         <Navbar 
           isCollapsed={isSidebarCollapsed}
           setIsMobileOpen={setIsMobileSidebarOpen}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
         />
 
         {/* Dynamic Inner Page Content with Fading Transition */}
-        <main className="flex-grow p-6 md:p-8 max-w-7xl mx-auto w-full overflow-x-hidden">
+        <main className="flex-grow overflow-y-auto p-6 md:p-8 max-w-7xl mx-auto w-full overflow-x-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               initial={{ opacity: 0, y: 15 }}

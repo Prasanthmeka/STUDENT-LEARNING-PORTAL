@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { materialAPI } from '../services/api';
 import StudentLayout from '../layouts/StudentLayout';
 import PageHeader from '../components/layout/PageHeader';
@@ -16,7 +15,6 @@ import {
 import { motion } from 'framer-motion';
 
 const StudentMaterials = () => {
-  const navigate = useNavigate();
 
   // Component States
   const [materials, setMaterials] = useState([]);

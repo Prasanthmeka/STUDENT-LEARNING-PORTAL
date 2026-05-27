@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Navigation.css';
+import LearnoQubeLogo from './LearnoQubeLogo';
 
 function Navigation() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -23,8 +24,11 @@ function Navigation() {
           {/* Logo Column */}
           <div className="col-lg-3 col-6 align-self-center">
             <div className="site-logo">
-              <Link to="/" className="site-logo-text">
-                <img src="/assets/logo.png" alt="EduMasterPro Logo" className="navbar-logo-img" />
+              <Link to="/" className="site-logo-text" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+                <LearnoQubeLogo className="w-8 h-8 shrink-0" />
+                <span className="font-bold text-2xl tracking-wide bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent transition-transform duration-300 hover:scale-[1.02]">
+                  LearnoQube
+                </span>
               </Link>
             </div>
           </div>
