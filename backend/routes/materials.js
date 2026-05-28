@@ -8,7 +8,20 @@ const router = express.Router();
 // Upload Study Material (Admin Only)
 router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) => {
   try {
-    const { title, description, file_name, github_url, file_type, subject } = req.body;
+    let { title, description, file_name, github_url, file_type, subject } = req.body;
+
+    // Capitalize subject to match DB and UI filters
+    if (subject) {
+      const subLower = subject.toLowerCase();
+      if (subLower === 'telugu') subject = 'Telugu';
+      else if (subLower === 'hindi') subject = 'Hindi';
+      else if (subLower === 'english') subject = 'English';
+      else if (subLower === 'maths') subject = 'Maths';
+      else if (subLower === 'physics') subject = 'Physics';
+      else if (subLower === 'chemistry') subject = 'Chemistry';
+      else if (subLower === 'biology') subject = 'Biology';
+      else if (subLower === 'social' || subLower === 'social studies') subject = 'Social';
+    }
 
     const { data, error } = await supabase
       .from('study_materials')

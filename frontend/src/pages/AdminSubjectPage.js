@@ -19,7 +19,8 @@ import {
   ClipboardList,
   FileDown,
   Activity,
-  Upload
+  Upload,
+  Video
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -188,6 +189,28 @@ const AdminSubjectPage = () => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
 
+  // View Quiz Student Attempts Modal States
+  const [showAttemptsModal, setShowAttemptsModal] = useState(false);
+  const [modalQuiz, setModalQuiz] = useState(null);
+  const [modalAttempts, setModalAttempts] = useState([]);
+  const [loadingAttempts, setLoadingAttempts] = useState(false);
+  const [resettingAttemptId, setResettingAttemptId] = useState(null);
+
+  // Video Player Modal States
+  const [activeVideoToPlay, setActiveVideoToPlay] = useState(null);
+  const [showPlayerModal, setShowPlayerModal] = useState(false);
+
+  const getYoutubeId = (url) => {
+    if (!url) return null;
+    const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+    return match ? match[1] : null;
+  };
+
+  const handlePlayVideo = (video) => {
+    setActiveVideoToPlay(video);
+    setShowPlayerModal(true);
+  };
+
   // Video Form Fields
   const [videoTitle, setVideoTitle] = useState('');
   const [videoType, setVideoType] = useState('Recorded');
@@ -250,18 +273,34 @@ const AdminSubjectPage = () => {
         const data = await response.json();
         // Filter quizzes by current subject (case-insensitive)
         const subjectQuizzes = data.filter(q => q.subject && q.subject.toUpperCase() === currentSubject.toUpperCase());
-        // Map database fields to the fields expected by the UI
-        const mappedQuizzes = subjectQuizzes.map(q => ({
-          id: q.id,
-          title: q.title,
-          questions: q.total_questions || 0,
-          passRate: `${q.passing_score || 50}%`,
-          limit: `${q.time_limit_minutes || 30} mins`,
-          attempts: 0,
-          failedRate: '0%',
-          status: q.is_published ? 'Active' : 'Draft',
-          chapter: q.chapter || '1',
-          difficulty: q.difficulty || 'Medium'
+        // Map database fields to the fields expected by the UI and resolve real attempts count
+        const mappedQuizzes = await Promise.all(subjectQuizzes.map(async q => {
+          let attemptsCount = 0;
+          try {
+            const attRes = await fetch(`http://localhost:5000/api/quizzes/${q.id}/all-attempts`, {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              }
+            });
+            if (attRes.ok) {
+              const attData = await attRes.json();
+              attemptsCount = attData.attempts ? attData.attempts.length : 0;
+            }
+          } catch (e) {
+            console.error('Error fetching attempts count for quiz:', q.id, e);
+          }
+          return {
+            id: q.id,
+            title: q.title,
+            questions: q.total_questions || 0,
+            passRate: `${q.passing_score || 50}%`,
+            limit: `${q.time_limit_minutes || 30} mins`,
+            attempts: attemptsCount,
+            failedRate: '0%',
+            status: q.is_published ? 'Active' : 'Draft',
+            chapter: q.chapter || '1',
+            difficulty: q.difficulty || 'Medium'
+          };
         }));
         setQuizzes(mappedQuizzes);
       }
@@ -288,6 +327,165 @@ const AdminSubjectPage = () => {
       loadRealQuizzes(); // Refresh the list
     } catch (error) {
       alert('Error deleting quiz: ' + error.message);
+    }
+  };
+
+  const openAttemptsModal = async (quiz) => {
+    setModalQuiz(quiz);
+    setShowAttemptsModal(true);
+    setLoadingAttempts(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/quizzes/${quiz.id}/all-attempts`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setModalAttempts(data.attempts || []);
+      } else {
+        setModalAttempts([]);
+      }
+    } catch (err) {
+      console.error('Error fetching quiz attempts:', err);
+      setModalAttempts([]);
+    } finally {
+      setLoadingAttempts(false);
+    }
+  };
+
+  const handleResetAttempt = async (attemptId) => {
+    if (!window.confirm('Are you sure you want to reset this student\'s attempt? This will permanently delete their score and answers, allowing them to retake the quiz.')) {
+      return;
+    }
+    setResettingAttemptId(attemptId);
+    try {
+      const response = await fetch(`http://localhost:5000/api/quizzes/attempt/${attemptId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        alert('Student attempt reset successfully.');
+        // Refresh attempts within the modal
+        if (modalQuiz) {
+          const res = await fetch(`http://localhost:5000/api/quizzes/${modalQuiz.id}/all-attempts`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setModalAttempts(data.attempts || []);
+          }
+        }
+        // Refresh parent quiz table
+        loadRealQuizzes();
+      } else {
+        const errData = await response.json();
+        alert('Error resetting attempt: ' + (errData.error || 'Failed response'));
+      }
+    } catch (err) {
+      alert('Error resetting attempt: ' + err.message);
+    } finally {
+      setResettingAttemptId(null);
+    }
+  };
+
+  const loadRealVideos = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/videos/admin', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const subjectVideos = data.filter(v => v.subject && v.subject.toUpperCase() === currentSubject.toUpperCase());
+        const mappedVideos = subjectVideos.map(v => ({
+          id: v.id,
+          title: v.title,
+          duration: v.duration_minutes ? `${v.duration_minutes} mins` : '45 mins',
+          type: v.video_type === 'live' ? 'Live' : 'Recorded',
+          url: v.video_type === 'live' ? v.live_stream_url : v.youtube_url,
+          visibility: 'Premium Only',
+          chapter: '1',
+          description: v.description || 'No description provided.'
+        }));
+        setVideos(mappedVideos);
+      }
+    } catch (err) {
+      console.error('Error fetching backend videos:', err);
+    }
+  };
+
+  const handleDeleteVideo = async (videoId) => {
+    if (!window.confirm('Are you sure you want to delete this video? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:5000/api/videos/${videoId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete video');
+      }
+      alert('Video deleted successfully');
+      loadRealVideos();
+    } catch (error) {
+      alert('Error deleting video: ' + error.message);
+    }
+  };
+
+  const loadRealMaterials = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/materials/admin', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const subjectMaterials = data.filter(m => m.subject && m.subject.toUpperCase() === currentSubject.toUpperCase());
+        const mappedMaterials = subjectMaterials.map(m => ({
+          id: m.id,
+          title: m.title,
+          size: '2.5 MB',
+          link: m.github_url,
+          type: m.file_type || 'PDF',
+          visibility: 'Premium Only',
+          chapter: '1',
+          downloads: 0
+        }));
+        setMaterials(mappedMaterials);
+      }
+    } catch (err) {
+      console.error('Error fetching backend materials:', err);
+    }
+  };
+
+  const handleDeleteMaterial = async (materialId) => {
+    if (!window.confirm('Are you sure you want to delete this material? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:5000/api/materials/${materialId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete material');
+      }
+      alert('Material deleted successfully');
+      loadRealMaterials();
+    } catch (error) {
+      alert('Error deleting material: ' + error.message);
     }
   };
 
@@ -333,20 +531,10 @@ const AdminSubjectPage = () => {
 
     setStudents(generatedStudents);
 
-    // Mock subject content lists
-    setVideos([
-      { id: 'v1', title: `Introduction to ${currentSubject} - Lecture 1`, duration: '45 mins', type: 'Recorded', url: 'https://youtube.com/watch?v=mock', visibility: 'Premium Only', chapter: '1', description: 'Overview of syllabus' },
-      { id: 'v2', title: `${currentSubject} Core Guidelines - Lecture 2`, duration: '50 mins', type: 'Recorded', url: 'https://youtube.com/watch?v=mock2', visibility: 'Premium Only', chapter: '2', description: 'Core principles' },
-      { id: 'v3', title: `Live Revision for ${currentSubject} Exams`, duration: '1h 15m', type: 'Live', url: 'https://zoom.us/mock', visibility: 'Public', chapter: '3', description: 'Revision session' }
-    ]);
-
-    // Fetch quizzes from database instead of mock
+    // Fetch quizzes, videos, and materials from database instead of mock
     loadRealQuizzes();
-
-    setMaterials([
-      { id: 'm1', title: `${currentSubject} Advanced Reference Notebook.pdf`, size: '4.2 MB', link: '#', type: 'PDF', visibility: 'Premium Only', chapter: '1', downloads: 140 },
-      { id: 'm2', title: `${currentSubject} Vocabulary Core Guidelines.pdf`, size: '2.8 MB', link: '#', type: 'PDF', visibility: 'Public', chapter: '2', downloads: 98 }
-    ]);
+    loadRealVideos();
+    loadRealMaterials();
 
     setLoading(false);
   }, [currentSubject, isValid, navigate]);
@@ -467,59 +655,89 @@ const AdminSubjectPage = () => {
   };
 
   // Custom Form Submit Handlers
-  const handleAddVideoSubmit = (e) => {
+  const handleAddVideoSubmit = async (e) => {
     e.preventDefault();
     if (!videoTitle.trim() || !videoUrl.trim() || !videoChapter.trim()) {
       alert('Please fill in Title, YouTube Video Link, and Chapter fields.');
       return;
     }
-    const newVideo = {
-      id: `v${Date.now()}`,
-      title: `${videoTitle} - Unit ${videoChapter}`,
-      duration: videoDuration || '45 mins',
-      type: videoType,
-      url: videoUrl,
-      visibility: videoVisibility,
-      chapter: videoChapter,
-      description: videoDescription
-    };
-    setVideos(prev => [newVideo, ...prev]);
-    setIsAddVideoOpen(false);
-    
-    // Reset Form Fields
-    setVideoTitle('');
-    setVideoUrl('');
-    setVideoDescription('');
-    setVideoDuration('45 mins');
-    setVideoChapter('');
-    setThumbnailFile(null);
+    try {
+      const response = await fetch('http://localhost:5000/api/videos', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: `${videoTitle} - Unit ${videoChapter}`,
+          description: videoDescription || 'No description provided.',
+          video_type: videoType.toLowerCase() === 'live' ? 'live' : 'recorded',
+          youtube_url: videoUrl,
+          subject: currentSubject,
+          is_published: true
+        })
+      });
+      if (response.ok) {
+        alert('Video uploaded successfully!');
+        setIsAddVideoOpen(false);
+        // Reset Form Fields
+        setVideoTitle('');
+        setVideoUrl('');
+        setVideoDescription('');
+        setVideoDuration('45 mins');
+        setVideoChapter('');
+        setThumbnailFile(null);
+        // Reload real videos list
+        loadRealVideos();
+      } else {
+        const errData = await response.json();
+        alert('Failed to upload video: ' + (errData.error || 'Server error'));
+      }
+    } catch (error) {
+      alert('Error uploading video: ' + error.message);
+    }
   };
 
-  const handleAddMaterialSubmit = (e) => {
+  const handleAddMaterialSubmit = async (e) => {
     e.preventDefault();
     if (!materialTitle.trim() || !materialChapter.trim()) {
       alert('Please fill in Title and Chapter fields.');
       return;
     }
-    const newMaterial = {
-      id: `m${Date.now()}`,
-      title: `${materialTitle} - Unit ${materialChapter}.${materialType.toLowerCase() === 'notes' ? 'pdf' : 'zip'}`,
-      size: materialFile ? `${(materialFile.size / (1024 * 1024)).toFixed(1)} MB` : '1.8 MB',
-      link: '#',
-      type: materialType,
-      visibility: materialVisibility,
-      chapter: materialChapter,
-      description: materialDescription,
-      downloads: 0
-    };
-    setMaterials(prev => [newMaterial, ...prev]);
-    setIsAddMaterialOpen(false);
-
-    // Reset Form Fields
-    setMaterialTitle('');
-    setMaterialDescription('');
-    setMaterialChapter('');
-    setMaterialFile(null);
+    try {
+      const response = await fetch('http://localhost:5000/api/materials', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: `${materialTitle} - Unit ${materialChapter}`,
+          description: materialDescription || 'No description provided.',
+          file_name: `${materialTitle.toLowerCase().replace(/ /g, '_')}_unit_${materialChapter}.${materialType.toLowerCase() === 'notes' ? 'pdf' : 'zip'}`,
+          github_url: 'https://github.com', // fallback URL
+          file_type: materialType === 'Notes' ? 'PDF' : 'ZIP',
+          subject: currentSubject,
+          is_published: true
+        })
+      });
+      if (response.ok) {
+        alert('Material uploaded successfully!');
+        setIsAddMaterialOpen(false);
+        // Reset Form Fields
+        setMaterialTitle('');
+        setMaterialDescription('');
+        setMaterialChapter('');
+        setMaterialFile(null);
+        // Reload real materials list
+        loadRealMaterials();
+      } else {
+        const errData = await response.json();
+        alert('Failed to upload material: ' + (errData.error || 'Server error'));
+      }
+    } catch (error) {
+      alert('Error uploading material: ' + error.message);
+    }
   };
 
   const triggerDeleteConfirm = (id, name) => {
@@ -541,37 +759,52 @@ const AdminSubjectPage = () => {
   };
 
   // Quiz Creator submit and question builder helpers
-  const handleAddQuizSubmit = (e) => {
+  const handleAddQuizSubmit = async (e) => {
     e.preventDefault();
     if (!quizTitle.trim() || !quizChapter.trim()) {
       alert('Please fill in Title and Chapter fields.');
       return;
     }
-    
-    // Construct new quiz record
-    const newQuiz = {
-      id: `q${Date.now()}`,
-      title: `${quizTitle} - ${quizChapter}`,
-      questions: questionsList.length,
-      passRate: '80%',
-      limit: quizDuration || '20 mins',
-      attempts: 0,
-      failedRate: '20%',
-      status: 'Active'
-    };
+    try {
+      const parsedDuration = parseInt(String(quizDuration).replace(/[^0-9]/g, ''), 10);
+      const timeLimit = isNaN(parsedDuration) ? 20 : parsedDuration;
 
-    setQuizzes(prev => [...prev, newQuiz]);
-    
-    // Reset Quiz Fields
-    setQuizTitle('');
-    setQuizChapter('');
-    setQuizDifficulty('Medium');
-    setQuizDuration('20 mins');
-    setQuizType('MCQ');
-    setQuestionsList([
-      { questionText: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: 'A', marks: 5, explanation: '' }
-    ]);
-    alert('Quiz created successfully and published!');
+      const response = await fetch('http://localhost:5000/api/quizzes', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: `${quizTitle} - Unit ${quizChapter}`,
+          description: `Assessment for Unit ${quizChapter}`,
+          total_questions: questionsList.length,
+          passing_score: quizPassingMarks,
+          time_limit_minutes: timeLimit,
+          subject: currentSubject,
+          questions: questionsList
+        })
+      });
+      if (response.ok) {
+        alert('Quiz created and published successfully!');
+        // Reload real quizzes list
+        loadRealQuizzes();
+        // Reset Quiz Fields
+        setQuizTitle('');
+        setQuizChapter('');
+        setQuizDifficulty('Medium');
+        setQuizDuration('20 mins');
+        setQuizType('MCQ');
+        setQuestionsList([
+          { questionText: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: 'A', marks: 5, explanation: '' }
+        ]);
+      } else {
+        const errData = await response.json();
+        alert('Failed to create quiz: ' + (errData.error || 'Server error'));
+      }
+    } catch (error) {
+      alert('Error creating quiz: ' + error.message);
+    }
   };
 
   const handleAddQuestionRow = () => {
@@ -1384,35 +1617,50 @@ const AdminSubjectPage = () => {
                   <span className="block text-[10px] font-black text-indigo-500 uppercase tracking-widest">Active Video Lectures Grid</span>
                   <span className="block text-[10px] font-bold text-slate-400">{videos.length} Lectures Available</span>
                 </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {videos.map((vid) => (
-                    <div key={vid.id} className="bg-white dark:bg-[#0f172a]/95 rounded-2xl border border-slate-200 dark:border-indigo-950/20 shadow-saas overflow-hidden flex flex-col justify-between group hover:shadow-lg transition-all duration-300">
-                      <div className="relative aspect-video bg-slate-900 flex items-center justify-center overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent z-10" />
-                        <Play className="w-10 h-10 text-white opacity-80 group-hover:scale-110 transition-transform duration-300 z-20 stroke-[1.5]" />
-                        <span className="absolute bottom-3 right-3 text-[9px] font-black bg-slate-950/90 text-white px-2 py-0.5 rounded-md z-20">{vid.duration}</span>
-                      </div>
-                      <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[8px] font-black uppercase text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-100 dark:border-indigo-900/30">{vid.type}</span>
-                            <span className="text-[8px] font-black uppercase text-purple-650 bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 rounded border border-purple-100 dark:border-purple-900/30">Unit {vid.chapter || '1'}</span>
-                          </div>
-                          <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-200 leading-snug group-hover:text-indigo-550 dark:group-hover:text-indigo-400 transition-colors duration-150">{vid.title}</h4>
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold leading-relaxed line-clamp-2">
-                            {vid.description || 'No lecture syllabus details populated.'}
-                          </p>
-                        </div>
-                        <button 
-                          onClick={() => alert(`Simulating play link: ${vid.url}`)}
-                          className="w-full mt-3 py-2 bg-slate-900 dark:bg-slate-950 hover:bg-slate-800 text-white text-[9px] font-black tracking-wider rounded-xl transition-all duration-205 border border-transparent dark:border-indigo-950/20"
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {videos.map((vid) => {
+                    const ytId = getYoutubeId(vid.url);
+                    const coverUrl = ytId 
+                      ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`
+                      : "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=640";
+                    return (
+                      <div key={vid.id} className="bg-white dark:bg-[#0f172a]/95 rounded-2xl border border-slate-200 dark:border-indigo-950/20 shadow-saas overflow-hidden flex flex-col justify-between group hover:shadow-lg transition-all duration-300">
+                        <div 
+                          onClick={() => handlePlayVideo(vid)}
+                          className="relative aspect-video bg-slate-900 flex items-center justify-center overflow-hidden cursor-pointer"
                         >
-                          Watch Lecture
-                        </button>
+                          <img 
+                            src={coverUrl} 
+                            alt={vid.title} 
+                            className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" 
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent z-10" />
+                          <div className="w-10 h-10 rounded-full bg-indigo-650/90 text-white flex items-center justify-center shadow-lg shadow-indigo-600/40 border border-indigo-500/20 scale-90 group-hover:scale-100 transition-all duration-300 z-20">
+                            <Play className="w-4 h-4 fill-white ml-0.5 stroke-[1.5]" />
+                          </div>
+                          <span className="absolute bottom-3 right-3 text-[9px] font-black bg-slate-950/90 text-white px-2 py-0.5 rounded-md z-20">{vid.duration}</span>
+                        </div>
+                        <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[8px] font-black uppercase text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-100 dark:border-indigo-900/30">{vid.type}</span>
+                              <span className="text-[8px] font-black uppercase text-purple-650 bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 rounded border border-purple-100 dark:border-purple-900/30">Unit {vid.chapter || '1'}</span>
+                            </div>
+                            <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-200 leading-snug group-hover:text-indigo-550 dark:group-hover:text-indigo-400 transition-colors duration-150">{vid.title}</h4>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold leading-relaxed line-clamp-2">
+                              {vid.description || 'No lecture syllabus details populated.'}
+                            </p>
+                          </div>
+                          <button 
+                            onClick={() => handlePlayVideo(vid)}
+                            className="w-full mt-3 py-2 bg-slate-900 dark:bg-slate-950 hover:bg-slate-800 text-white text-[9px] font-black tracking-wider rounded-xl transition-all duration-205 border border-transparent dark:border-indigo-950/20"
+                          >
+                            Watch Lecture
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1545,7 +1793,7 @@ const AdminSubjectPage = () => {
                                   <Play className="w-3.5 h-3.5" />
                                 </button>
                                 <button 
-                                  onClick={() => setVideos(prev => prev.filter(v => v.id !== vid.id))}
+                                  onClick={() => handleDeleteVideo(vid.id)}
                                   className="p-1.5 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-500 hover:text-rose-650 transition-colors duration-150"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -1716,14 +1964,16 @@ const AdminSubjectPage = () => {
                             <td className="py-3.5 px-6 text-center">
                               <div className="flex items-center justify-center gap-2">
                                 <button 
-                                  onClick={() => alert(`Simulating exam stats overview for: ${qz.title}`)}
+                                  onClick={() => openAttemptsModal(qz)}
                                   className="p-1.5 rounded-md hover:bg-[#e0e7ff] dark:hover:bg-indigo-950/30 text-slate-500 hover:text-indigo-650 transition-colors duration-150"
+                                  title="View Student Performance"
                                 >
                                   <Activity className="w-3.5 h-3.5" />
                                 </button>
                                 <button 
                                   onClick={() => handleDeleteQuiz(qz.id)}
                                   className="p-1.5 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-500 hover:text-rose-650 transition-colors duration-150"
+                                  title="Delete Quiz"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
@@ -1912,7 +2162,7 @@ const AdminSubjectPage = () => {
                                   <FileDown className="w-3.5 h-3.5" />
                                 </button>
                                 <button 
-                                  onClick={() => setMaterials(prev => prev.filter(m => m.id !== mat.id))}
+                                  onClick={() => handleDeleteMaterial(mat.id)}
                                   className="p-1.5 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-550 hover:text-rose-655 transition-colors duration-150"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -2042,7 +2292,7 @@ const AdminSubjectPage = () => {
       // ---------------------------------------------------- */}
       <AnimatePresence>
         {editingStudent && (
-          <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -2138,7 +2388,7 @@ const AdminSubjectPage = () => {
       // ---------------------------------------------------- */}
       <AnimatePresence>
         {isAddVideoOpen && (
-          <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -2288,7 +2538,7 @@ const AdminSubjectPage = () => {
       // ---------------------------------------------------- */}
       <AnimatePresence>
         {isAddMaterialOpen && (
-          <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -2434,7 +2684,7 @@ const AdminSubjectPage = () => {
       // ---------------------------------------------------- */}
       <AnimatePresence>
         {isDeleteOpen && studentToDelete && (
-          <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -2469,6 +2719,224 @@ const AdminSubjectPage = () => {
                   className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-red-650 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-md shadow-rose-600/10 transition-colors duration-150 text-[11px] font-bold"
                 >
                   Yes, Remove
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ----------------------------------------------------
+      // DIALOG COMPONENT: VIEW STUDENT QUIZ MARKS & ATTEMPTS MODAL
+      // ---------------------------------------------------- */}
+      <AnimatePresence>
+        {showAttemptsModal && modalQuiz && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="bg-white dark:bg-slate-955 rounded-3xl border border-slate-200 dark:border-slate-900 shadow-2xl max-w-4xl w-full p-6 relative overflow-hidden text-slate-800 dark:text-slate-200 my-8 flex flex-col max-h-[85vh]"
+            >
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 animate-pulse" />
+              
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-900 shrink-0">
+                <div>
+                  <h3 className="font-black text-slate-850 dark:text-slate-100 text-sm tracking-wide font-sans">
+                    Student Performance Overview
+                  </h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
+                    Assessment: {modalQuiz.title} ({modalQuiz.questions} Qs)
+                  </p>
+                </div>
+                <button 
+                  onClick={() => { setShowAttemptsModal(false); setModalQuiz(null); setModalAttempts([]); }}
+                  className="p-1 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto py-4 text-xs font-semibold">
+                {loadingAttempts ? (
+                  <div className="flex flex-col items-center justify-center py-16 space-y-3">
+                    <div className="w-8 h-8 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
+                    <span className="text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider text-[10px]">Loading student results...</span>
+                  </div>
+                ) : modalAttempts.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500 border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-center shadow-sm">
+                      <ClipboardList className="w-6 h-6 stroke-[1.5]" />
+                    </div>
+                    <div>
+                      <h4 className="text-slate-700 dark:text-slate-300 font-bold text-xs">No Attempts Recorded</h4>
+                      <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-1 max-w-xs font-semibold">
+                        No students have attempted this quiz assessment yet. Attempt statistics will appear here automatically.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto w-full rounded-2xl border border-slate-100 dark:border-slate-900">
+                    <table className="w-full border-collapse text-left text-xs font-sans">
+                      <thead>
+                        <tr className="bg-slate-50/70 dark:bg-slate-900/50 text-slate-500 uppercase tracking-widest text-[9px] font-black border-b border-slate-100 dark:border-slate-900 select-none">
+                          <th className="py-3 px-4">Student</th>
+                          <th className="py-3 px-4">Submitted At</th>
+                          <th className="py-3 px-4 text-center">Score</th>
+                          <th className="py-3 px-4 text-center">Percentage</th>
+                          <th className="py-3 px-4 text-center">Status</th>
+                          <th className="py-3 px-4 text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-900 text-slate-655 dark:text-slate-355">
+                        {modalAttempts.map((attempt) => {
+                          const studentName = attempt.users?.full_name || 'Anonymous Student';
+                          const studentEmail = attempt.users?.email || 'N/A';
+                          const isPassed = attempt.is_passed;
+                          const formattedDate = attempt.submitted_at 
+                            ? new Date(attempt.submitted_at).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })
+                            : 'N/A';
+                          
+                          return (
+                            <tr key={attempt.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/20 transition-all">
+                              <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-200">
+                                <div>
+                                  <span className="block text-xs">{studentName}</span>
+                                  <span className="block text-[10px] text-slate-400 dark:text-slate-500 font-medium normal-case">{studentEmail}</span>
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4 font-semibold text-slate-600 dark:text-slate-400 font-mono text-[11px]">
+                                {formattedDate}
+                              </td>
+                              <td className="py-3.5 px-4 text-center font-bold font-mono">
+                                {attempt.marks_obtained} / {attempt.total_marks}
+                              </td>
+                              <td className="py-3.5 px-4 text-center font-bold font-mono">
+                                <span className={isPassed ? 'text-emerald-600 dark:text-emerald-450' : 'text-rose-600 dark:text-rose-450'}>
+                                  {Math.round(attempt.percentage)}%
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-4 text-center">
+                                <span className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider text-center w-16
+                                  ${isPassed 
+                                    ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-450 border border-emerald-100 dark:border-emerald-900/30' 
+                                    : 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450 border border-rose-100 dark:border-rose-900/30'
+                                  }`}
+                                >
+                                  {isPassed ? 'Passed' : 'Failed'}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-4 text-center">
+                                <button
+                                  type="button"
+                                  disabled={resettingAttemptId === attempt.id}
+                                  onClick={() => handleResetAttempt(attempt.id)}
+                                  className="py-1 px-2.5 rounded-lg text-[10px] font-black uppercase border border-rose-200 hover:bg-rose-50 dark:border-rose-900/30 dark:hover:bg-rose-950/20 text-rose-600 hover:text-rose-700 dark:text-rose-400 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                                >
+                                  {resettingAttemptId === attempt.id ? 'Resetting...' : 'Reset'}
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-900 flex justify-end shrink-0 select-none">
+                <button
+                  type="button"
+                  onClick={() => { setShowAttemptsModal(false); setModalQuiz(null); setModalAttempts([]); }}
+                  className="py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-555 hover:bg-slate-50 dark:hover:bg-slate-900 text-[11px] font-bold transition-all"
+                >
+                  Close Performance Panel
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ----------------------------------------------------
+      // DIALOG COMPONENT: PREMIUM VIDEO PLAYER OVERLAY MODAL
+      // ---------------------------------------------------- */}
+      <AnimatePresence>
+        {showPlayerModal && activeVideoToPlay && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 overflow-y-auto">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-205 dark:border-indigo-950/20 shadow-2xl max-w-4xl w-full p-5 relative overflow-hidden text-slate-800 dark:text-slate-200 my-8"
+            >
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+              
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-900 shrink-0">
+                <div>
+                  <h3 className="font-black text-slate-850 dark:text-slate-100 text-sm tracking-wide font-sans">
+                    LMS Lecture Player
+                  </h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
+                    Course Topic: {activeVideoToPlay.title}
+                  </p>
+                </div>
+                <button 
+                  onClick={() => { setShowPlayerModal(false); setActiveVideoToPlay(null); }}
+                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Video Player Box */}
+              <div className="mt-4 aspect-video w-full rounded-2xl overflow-hidden bg-black border border-slate-200 dark:border-indigo-950/25 shadow-inner relative">
+                {getYoutubeId(activeVideoToPlay.url) ? (
+                  <iframe
+                    className="w-full h-full"
+                    src={`https://www.youtube.com/embed/${getYoutubeId(activeVideoToPlay.url)}?autoplay=1&rel=0`}
+                    title={activeVideoToPlay.title}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-slate-400">
+                    <Video className="w-12 h-12 stroke-[1.5] mb-2 text-indigo-500" />
+                    <span className="text-xs font-bold">Playback URL Unsupported</span>
+                    <p className="text-[10px] max-w-xs text-slate-500 mt-1">
+                      This lecture does not contain a standard valid YouTube link. Live stream link: {activeVideoToPlay.url}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 space-y-2 select-text font-semibold">
+                <span className="inline-block px-2.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-150 dark:border-indigo-900/30 text-[9px] font-black uppercase">
+                  {activeVideoToPlay.type} Lecture • {activeVideoToPlay.duration}
+                </span>
+                <h4 className="text-slate-800 dark:text-white text-sm font-black leading-tight font-sans">
+                  {activeVideoToPlay.title}
+                </h4>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed font-semibold">
+                  {activeVideoToPlay.description || 'No additional syllabus details populated for this lecture slot.'}
+                </p>
+              </div>
+
+              <div className="pt-3 mt-4 border-t border-slate-100 dark:border-slate-900 flex justify-end select-none">
+                <button
+                  type="button"
+                  onClick={() => { setShowPlayerModal(false); setActiveVideoToPlay(null); }}
+                  className="py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-555 hover:bg-slate-50 dark:hover:bg-slate-900 text-[11px] font-bold transition-all"
+                >
+                  Close Player
                 </button>
               </div>
             </motion.div>

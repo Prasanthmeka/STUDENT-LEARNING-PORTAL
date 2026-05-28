@@ -8,7 +8,23 @@ const router = express.Router();
 // Create YouTube Video (Admin Only)
 router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) => {
   try {
-    const { title, description, video_type, youtube_url, live_stream_url, subject } = req.body;
+    let { title, description, video_type, youtube_url, url, live_stream_url, subject } = req.body;
+
+    const finalYoutubeUrl = youtube_url || url;
+    const finalVideoType = String(video_type || 'recorded').toLowerCase();
+
+    // Capitalize subject to match DB and UI filters
+    if (subject) {
+      const subLower = subject.toLowerCase();
+      if (subLower === 'telugu') subject = 'Telugu';
+      else if (subLower === 'hindi') subject = 'Hindi';
+      else if (subLower === 'english') subject = 'English';
+      else if (subLower === 'maths') subject = 'Maths';
+      else if (subLower === 'physics') subject = 'Physics';
+      else if (subLower === 'chemistry') subject = 'Chemistry';
+      else if (subLower === 'biology') subject = 'Biology';
+      else if (subLower === 'social' || subLower === 'social studies') subject = 'Social';
+    }
 
     const { data, error } = await supabase
       .from('videos')
@@ -17,9 +33,9 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
           id: uuidv4(),
           title,
           description,
-          video_type,
-          youtube_url: video_type === 'recorded' ? youtube_url : null,
-          live_stream_url: video_type === 'live' ? live_stream_url : null,
+          video_type: finalVideoType,
+          youtube_url: finalVideoType === 'recorded' ? finalYoutubeUrl : null,
+          live_stream_url: finalVideoType === 'live' ? live_stream_url : null,
           subject,
           uploaded_by: req.user.id,
           is_published: true
