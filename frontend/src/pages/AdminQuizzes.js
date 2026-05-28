@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, ClipboardList } from 'lucide-react';
 import '../styles/AdminQuizzes.css';
 
 const AdminQuizzes = () => {
@@ -22,6 +24,8 @@ const AdminQuizzes = () => {
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [deletingQuizId, setDeletingQuizId] = useState(null);
   const [subjectFilter, setSubjectFilter] = useState('');
+  const [viewingQuizQuestions, setViewingQuizQuestions] = useState(null);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
 
   const [quizInfo, setQuizInfo] = useState({
     title: '',
@@ -60,6 +64,26 @@ const AdminQuizzes = () => {
       setMessage('Error loading quizzes: ' + error.message);
     } finally {
       setLoadingQuizzes(false);
+    }
+  };
+
+  const handleViewQuizQuestions = async (quizId) => {
+    setLoadingQuestions(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/quizzes/${quizId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch quiz details');
+      }
+      const data = await response.json();
+      setViewingQuizQuestions(data);
+    } catch (error) {
+      alert('Error loading quiz details: ' + error.message);
+    } finally {
+      setLoadingQuestions(false);
     }
   };
 
@@ -697,7 +721,14 @@ const AdminQuizzes = () => {
                 {filteredQuizzes.map((quiz) => (
                   <div key={quiz.id} className="quiz-card">
                     <div className="quiz-card-header">
-                      <h3>{quiz.title}</h3>
+                      <h3 
+                        className="cursor-pointer hover:text-purple-400 hover:underline transition-all duration-150"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handleViewQuizQuestions(quiz.id)}
+                        title="Click to view quiz questions"
+                      >
+                        {quiz.title}
+                      </h3>
                       <span className={`status-badge ${quiz.is_published ? 'published' : 'draft'}`}>
                         {quiz.is_published ? '✓ Published' : 'Draft'}
                       </span>
@@ -818,6 +849,158 @@ const AdminQuizzes = () => {
                 </div>
               </div>
             )}
+
+            {/* View Quiz Questions Modal */}
+            <AnimatePresence>
+              {(viewingQuizQuestions || loadingQuestions) && (
+                <div className="modal-overlay" style={{ zIndex: 9999 }}>
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                    className="modal-content"
+                    style={{ maxWidth: '800px', width: '90%', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '15px', marginBottom: '15px', flexShrink: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(76, 175, 80, 0.1)', border: '1px solid rgba(76, 175, 80, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <ClipboardList className="w-5 h-5 text-emerald-500" style={{ width: '20px', height: '20px' }} />
+                        </div>
+                        <div>
+                          <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#fff', fontWeight: 800 }}>
+                            {loadingQuestions ? 'Loading Quiz Details...' : viewingQuizQuestions?.title}
+                          </h3>
+                          <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#a0aec0' }}>
+                            {loadingQuestions ? 'Please wait...' : `Subject: ${viewingQuizQuestions?.subject || 'N/A'} • ${viewingQuizQuestions?.time_limit_minutes || 30} mins`}
+                          </p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => { setViewingQuizQuestions(null); }}
+                        style={{ background: 'transparent', border: 'none', color: '#a0aec0', cursor: 'pointer', padding: '5px' }}
+                        className="hover:text-white"
+                      >
+                        <X style={{ width: '20px', height: '20px' }} />
+                      </button>
+                    </div>
+
+                    <div style={{ flex: 1, overflowY: 'auto', paddingRight: '5px', fontSize: '0.9rem' }}>
+                      {loadingQuestions ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 0' }}>
+                          <div style={{ width: '32px', height: '32px', borderRadius: '50%', border: '4px solid #667eea', borderTopColor: 'transparent', animation: 'spin 1s linear infinite' }} />
+                          <span style={{ marginTop: '12px', color: '#a0aec0', fontSize: '0.85rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}>Loading questions...</span>
+                        </div>
+                      ) : !viewingQuizQuestions || !viewingQuizQuestions.questions || viewingQuizQuestions.questions.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '40px 0', color: '#a0aec0' }}>
+                          No questions found in this quiz.
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                          {viewingQuizQuestions.description && (
+                            <div style={{ padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)', color: '#cbd5e0', lineHeight: '1.5' }}>
+                              <strong style={{ color: '#fff', display: 'block', marginBottom: '5px' }}>Description / Instructions:</strong>
+                              {viewingQuizQuestions.description}
+                            </div>
+                          )}
+                          
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            {viewingQuizQuestions.questions.map((q, idx) => (
+                              <div key={q.id || idx} style={{ padding: '20px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '10px' }}>
+                                  <span style={{ padding: '2px 8px', borderRadius: '4px', background: 'rgba(102, 126, 234, 0.15)', color: '#8c9eff', fontSize: '0.75rem', fontWeight: 'bold', border: '1px solid rgba(102, 126, 234, 0.2)' }}>
+                                    Question {idx + 1}
+                                  </span>
+                                  <span style={{ fontSize: '0.8rem', color: '#718096', fontWeight: 'bold' }}>
+                                    {q.marks || 1} Marks • {q.question_type === 'multiple_choice' ? 'MCQ' : q.question_type === 'true_false' ? 'True/False' : 'Short Answer'}
+                                  </span>
+                                </div>
+
+                                <h4 style={{ margin: '10px 0 15px 0', fontSize: '0.95rem', color: '#fff', fontWeight: 'bold', lineHeight: '1.4' }}>
+                                  {q.question_text}
+                                </h4>
+
+                                {/* MCQ options */}
+                                {q.question_type === 'multiple_choice' && (
+                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+                                    {(q.quiz_options || q.options || []).map((opt, oIdx) => {
+                                      const isCorrect = opt.is_correct;
+                                      return (
+                                        <div 
+                                          key={opt.id || oIdx} 
+                                          style={{ 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            justifyContent: 'space-between', 
+                                            padding: '12px 15px', 
+                                            borderRadius: '8px', 
+                                            border: isCorrect ? '1px solid rgba(76, 175, 80, 0.4)' : '1px solid rgba(255,255,255,0.08)', 
+                                            background: isCorrect ? 'rgba(76, 175, 80, 0.08)' : 'rgba(0,0,0,0.1)', 
+                                            color: isCorrect ? '#4caf50' : '#e2e8f0', 
+                                            fontSize: '0.85rem' 
+                                          }}
+                                        >
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <span style={{ 
+                                              width: '20px', 
+                                              height: '20px', 
+                                              borderRadius: '50%', 
+                                              display: 'flex', 
+                                              alignItems: 'center', 
+                                              justifyContent: 'center', 
+                                              fontWeight: 'bold', 
+                                              fontSize: '0.75rem', 
+                                              background: isCorrect ? '#4caf50' : 'rgba(255,255,255,0.1)', 
+                                              color: isCorrect ? '#fff' : '#a0aec0' 
+                                            }}>
+                                              {String.fromCharCode(65 + oIdx)}
+                                            </span>
+                                            <span>{opt.option_text}</span>
+                                          </div>
+                                          {isCorrect && (
+                                            <span style={{ fontSize: '0.7rem', fontWeight: 900, background: 'rgba(76, 175, 80, 0.2)', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                              Correct
+                                            </span>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+
+                                {/* True/False and Short Answer */}
+                                {q.question_type !== 'multiple_choice' && (
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 15px', borderRadius: '8px', border: '1px solid rgba(76, 175, 80, 0.4)', background: 'rgba(76, 175, 80, 0.08)', color: '#4caf50', fontSize: '0.85rem', marginTop: '10px' }}>
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#a0aec0' }}>Correct Answer:</span>
+                                    <strong style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>{q.correct_answer}</strong>
+                                  </div>
+                                )}
+
+                                {q.explanation && (
+                                  <div style={{ marginTop: '12px', fontSize: '0.8rem', color: '#718096', fontStyle: 'italic' }}>
+                                    <strong>Explanation:</strong> {q.explanation}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '15px', marginTop: '15px', display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
+                      <button
+                        type="button"
+                        onClick={() => { setViewingQuizQuestions(null); }}
+                        style={{ padding: '8px 20px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', background: 'transparent', color: '#fff', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer' }}
+                        className="hover:bg-white/10 transition-colors"
+                      >
+                        Close Preview
+                      </button>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </div>

@@ -261,6 +261,13 @@ const AdminSubjectPage = () => {
   const [quizSearch, setQuizSearch] = useState('');
   const [quizStatusFilter, setQuizStatusFilter] = useState('All');
   const [quizPage, setQuizPage] = useState(1);
+  const [viewingQuizQuestions, setViewingQuizQuestions] = useState(null);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [modalResponses, setModalResponses] = useState([]);
+  const [selectedAttemptForResponse, setSelectedAttemptForResponse] = useState(null);
+  const [showResponseModal, setShowResponseModal] = useState(false);
+  const [loadingResponseDetail, setLoadingResponseDetail] = useState(false);
+  const [viewingQuizForResponse, setViewingQuizForResponse] = useState(null);
 
   const loadRealQuizzes = async () => {
     try {
@@ -330,6 +337,26 @@ const AdminSubjectPage = () => {
     }
   };
 
+  const handleViewQuizQuestions = async (quizId) => {
+    setLoadingQuestions(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/quizzes/${quizId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch quiz details');
+      }
+      const data = await response.json();
+      setViewingQuizQuestions(data);
+    } catch (error) {
+      alert('Error loading quiz details: ' + error.message);
+    } finally {
+      setLoadingQuestions(false);
+    }
+  };
+
   const openAttemptsModal = async (quiz) => {
     setModalQuiz(quiz);
     setShowAttemptsModal(true);
@@ -343,14 +370,39 @@ const AdminSubjectPage = () => {
       if (response.ok) {
         const data = await response.json();
         setModalAttempts(data.attempts || []);
+        setModalResponses(data.responses || []);
       } else {
         setModalAttempts([]);
+        setModalResponses([]);
       }
     } catch (err) {
       console.error('Error fetching quiz attempts:', err);
       setModalAttempts([]);
+      setModalResponses([]);
     } finally {
       setLoadingAttempts(false);
+    }
+  };
+
+  const handleViewStudentResponse = async (attempt) => {
+    setLoadingResponseDetail(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/quizzes/${attempt.quiz_id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch quiz details');
+      }
+      const fullQuiz = await response.json();
+      setViewingQuizForResponse(fullQuiz);
+      setSelectedAttemptForResponse(attempt);
+      setShowResponseModal(true);
+    } catch (e) {
+      alert("Error loading response details: " + e.message);
+    } finally {
+      setLoadingResponseDetail(false);
     }
   };
 
@@ -1942,7 +1994,13 @@ const AdminSubjectPage = () => {
                                   <ClipboardList className="w-3.5 h-3.5 text-emerald-600" />
                                 </div>
                                 <div>
-                                  <span>{qz.title}</span>
+                                  <span 
+                                    className="cursor-pointer hover:text-indigo-600 hover:underline transition-colors duration-150"
+                                    onClick={() => handleViewQuizQuestions(qz.id)}
+                                    title="Click to view quiz questions"
+                                  >
+                                    {qz.title}
+                                  </span>
                                   <span className="block text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase mt-0.5">Unit {qz.chapter || '1'} • {qz.difficulty || 'Medium'}</span>
                                 </div>
                               </div>
@@ -2807,7 +2865,13 @@ const AdminSubjectPage = () => {
                             <tr key={attempt.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/20 transition-all">
                               <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-200">
                                 <div>
-                                  <span className="block text-xs">{studentName}</span>
+                                  <span 
+                                    className="block text-xs cursor-pointer hover:text-indigo-650 hover:underline transition-colors"
+                                    onClick={() => handleViewStudentResponse(attempt)}
+                                    title="Click to view student response"
+                                  >
+                                    {studentName}
+                                  </span>
                                   <span className="block text-[10px] text-slate-400 dark:text-slate-500 font-medium normal-case">{studentEmail}</span>
                                 </div>
                               </td>
@@ -2835,11 +2899,21 @@ const AdminSubjectPage = () => {
                               <td className="py-3.5 px-4 text-center">
                                 <button
                                   type="button"
+                                  disabled={loadingResponseDetail}
+                                  onClick={() => handleViewStudentResponse(attempt)}
+                                  className="py-1 rounded-lg text-[10px] font-black uppercase border border-indigo-205 hover:bg-indigo-50 dark:border-indigo-900/30 dark:hover:bg-indigo-950/20 text-indigo-650 hover:text-indigo-700 dark:text-indigo-400 transition-all mr-1.5 cursor-pointer disabled:opacity-50"
+                                  style={{ width: '82px', height: '28px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                  Response
+                                </button>
+                                <button
+                                  type="button"
                                   disabled={resettingAttemptId === attempt.id}
                                   onClick={() => handleResetAttempt(attempt.id)}
-                                  className="py-1 px-2.5 rounded-lg text-[10px] font-black uppercase border border-rose-200 hover:bg-rose-50 dark:border-rose-900/30 dark:hover:bg-rose-950/20 text-rose-600 hover:text-rose-700 dark:text-rose-400 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                                  className="py-1 rounded-lg text-[10px] font-black uppercase border border-rose-200 hover:bg-rose-50 dark:border-rose-900/30 dark:hover:bg-rose-950/20 text-rose-600 hover:text-rose-700 dark:text-rose-400 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                                  style={{ width: '82px', height: '28px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                                 >
-                                  {resettingAttemptId === attempt.id ? 'Resetting...' : 'Reset'}
+                                  {resettingAttemptId === attempt.id ? '⏳...' : 'Reset'}
                                 </button>
                               </td>
                             </tr>
@@ -2858,6 +2932,378 @@ const AdminSubjectPage = () => {
                   className="py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-555 hover:bg-slate-50 dark:hover:bg-slate-900 text-[11px] font-bold transition-all"
                 >
                   Close Performance Panel
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ----------------------------------------------------
+      // DIALOG COMPONENT: VIEW QUIZ QUESTIONS MODAL
+      // ---------------------------------------------------- */}
+      <AnimatePresence>
+        {(viewingQuizQuestions || loadingQuestions) && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200 dark:border-slate-900 shadow-2xl max-w-4xl w-full p-6 relative overflow-hidden text-slate-800 dark:text-slate-200 my-8 flex flex-col max-h-[85vh]"
+            >
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 animate-pulse" />
+              
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-900 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-slate-900 border border-emerald-100 dark:border-indigo-950/40 flex items-center justify-center font-bold text-xs text-emerald-650 dark:text-emerald-400 shadow-sm shrink-0">
+                    <ClipboardList className="w-5 h-5 text-emerald-650 dark:text-emerald-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-slate-850 dark:text-slate-100 text-sm tracking-wide font-sans">
+                      {loadingQuestions ? 'Loading Quiz Details...' : viewingQuizQuestions?.title}
+                    </h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
+                      {loadingQuestions ? 'Please wait...' : `Subject: ${viewingQuizQuestions?.subject || 'N/A'} • ${viewingQuizQuestions?.time_limit_minutes || 30} mins`}
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => { setViewingQuizQuestions(null); }}
+                  className="p-1 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto py-4 text-xs font-semibold">
+                {loadingQuestions ? (
+                  <div className="flex flex-col items-center justify-center py-16 space-y-3">
+                    <div className="w-8 h-8 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
+                    <span className="text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider text-[10px]">Loading questions...</span>
+                  </div>
+                ) : !viewingQuizQuestions || !viewingQuizQuestions.questions || viewingQuizQuestions.questions.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <span className="text-slate-400 dark:text-slate-500">No questions found in this quiz.</span>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {viewingQuizQuestions.description && (
+                      <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800/60 text-slate-600 dark:text-slate-350 font-medium">
+                        <strong className="text-slate-800 dark:text-slate-100 block mb-1">Description / Instructions:</strong>
+                        {viewingQuizQuestions.description}
+                      </div>
+                    )}
+                    
+                    <div className="space-y-4">
+                      {viewingQuizQuestions.questions.map((q, idx) => (
+                        <div key={q.id || idx} className="p-5 rounded-2xl border border-slate-150 dark:border-slate-850/60 bg-slate-50/50 dark:bg-slate-900/20 hover:border-indigo-500/30 transition-all">
+                          <div className="flex items-start justify-between gap-4">
+                            <span className="inline-block px-2.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-400 border border-indigo-150 dark:border-indigo-900/30 text-[9px] font-black uppercase tracking-wider">
+                              Question {idx + 1}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                              {q.marks || 1} Marks • {q.question_type === 'multiple_choice' ? 'MCQ' : q.question_type === 'true_false' ? 'True/False' : 'Short Answer'}
+                            </span>
+                          </div>
+
+                          <h4 className="text-slate-850 dark:text-slate-100 font-extrabold text-xs leading-snug mt-3 mb-4 select-text">
+                            {q.question_text}
+                          </h4>
+
+                          {/* Render Options if MCQ */}
+                          {q.question_type === 'multiple_choice' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-1">
+                              {(q.quiz_options || q.options || []).map((opt, oIdx) => {
+                                const isCorrect = opt.is_correct;
+                                return (
+                                  <div 
+                                    key={opt.id || oIdx} 
+                                    className={`flex items-center justify-between p-3 rounded-xl border text-xs font-semibold select-text transition-all
+                                      ${isCorrect 
+                                        ? 'bg-emerald-50/40 dark:bg-emerald-950/10 border-emerald-350 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400' 
+                                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-300'
+                                      }`}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0
+                                        ${isCorrect 
+                                          ? 'bg-emerald-500 text-white' 
+                                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                                        }`}
+                                      >
+                                        {String.fromCharCode(65 + oIdx)}
+                                      </span>
+                                      <span>{opt.option_text}</span>
+                                    </div>
+                                    {isCorrect && (
+                                      <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-450 uppercase tracking-wider shrink-0 bg-emerald-100/50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded-md">
+                                        Correct
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* Render for True/False and Short Answer */}
+                          {q.question_type !== 'multiple_choice' && (
+                            <div className="mt-3 p-3 bg-emerald-50/40 dark:bg-emerald-950/10 border border-emerald-250 dark:border-emerald-900/40 rounded-xl flex items-center justify-between">
+                              <span className="text-[10px] text-emerald-755 dark:text-emerald-455 font-bold uppercase tracking-wider">Correct Answer:</span>
+                              <strong className="text-emerald-700 dark:text-emerald-400 font-mono text-xs">{q.correct_answer}</strong>
+                            </div>
+                          )}
+
+                          {q.explanation && (
+                            <div className="mt-3 text-[10px] text-slate-450 dark:text-slate-500 font-semibold italic pl-1 leading-relaxed">
+                              <strong>Explanation:</strong> {q.explanation}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-900 flex justify-end shrink-0 select-none">
+                <button
+                  type="button"
+                  onClick={() => { setViewingQuizQuestions(null); }}
+                  className="py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-555 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-slate-700 dark:hover:text-slate-100 text-[11px] font-bold transition-all cursor-pointer"
+                >
+                  Close Preview
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ----------------------------------------------------
+      // DIALOG COMPONENT: VIEW STUDENT QUIZ RESPONSE MODAL
+      // ---------------------------------------------------- */}
+      <AnimatePresence>
+        {(showResponseModal && selectedAttemptForResponse && viewingQuizForResponse) && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200 dark:border-slate-900 shadow-2xl max-w-4xl w-full p-6 relative overflow-hidden text-slate-805 dark:text-slate-200 my-8 flex flex-col max-h-[85vh]"
+            >
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-indigo-500 animate-pulse" />
+              
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-900 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-slate-900 border border-indigo-105 dark:border-indigo-950/40 flex items-center justify-center font-bold text-xs text-indigo-650 dark:text-indigo-400 shadow-sm shrink-0">
+                    <ClipboardList className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-slate-850 dark:text-slate-100 text-sm tracking-wide font-sans">
+                      Student Response: {selectedAttemptForResponse.users?.full_name || 'Anonymous Student'}
+                    </h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5 font-sans">
+                      Quiz: {viewingQuizForResponse.title} • Score: {selectedAttemptForResponse.marks_obtained} / {selectedAttemptForResponse.total_marks} ({Math.round(selectedAttemptForResponse.percentage)}%)
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => { setShowResponseModal(false); setSelectedAttemptForResponse(null); setViewingQuizForResponse(null); }}
+                  className="p-1 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto py-4 text-xs font-semibold">
+                <div className="space-y-6">
+                  {/* Attempt Summary Stats Card */}
+                  <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800/60 grid grid-cols-2 sm:grid-cols-4 gap-4 text-slate-600 dark:text-slate-300 font-bold select-none">
+                    <div>
+                      <span className="text-[9px] text-slate-400 uppercase tracking-wider block">Student Email</span>
+                      <span className="text-xs text-slate-800 dark:text-slate-100 block mt-0.5 truncate">{selectedAttemptForResponse.users?.email || 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-slate-400 uppercase tracking-wider block">Submitted At</span>
+                      <span className="text-xs text-slate-800 dark:text-slate-100 block mt-0.5 font-mono">
+                        {new Date(selectedAttemptForResponse.submitted_at).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-slate-400 uppercase tracking-wider block">Marks Obtained</span>
+                      <span className="text-xs text-slate-800 dark:text-slate-100 block mt-0.5 font-mono">{selectedAttemptForResponse.marks_obtained} / {selectedAttemptForResponse.total_marks} Marks</span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-slate-400 uppercase tracking-wider block">Result Status</span>
+                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider text-center mt-0.5
+                        ${selectedAttemptForResponse.is_passed 
+                          ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-450 border border-emerald-100 dark:border-emerald-900/30' 
+                          : 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450 border border-rose-100 dark:border-rose-900/30'
+                        }`}
+                      >
+                        {selectedAttemptForResponse.is_passed ? 'Passed' : 'Failed'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {viewingQuizForResponse.questions.map((q, idx) => {
+                      // Find student response for this question
+                      const response = modalResponses.find(r => r.quiz_attempt_id === selectedAttemptForResponse.id && r.question_id === q.id);
+                      
+                      const isGradedCorrect = response ? response.is_correct : false;
+                      const marksAwarded = response ? response.marks_obtained : 0;
+                      
+                      // For Multiple Choice, identify selected options
+                      let selectedOptionIds = [];
+                      if (q.question_type === 'multiple_choice' && response) {
+                        if (response.selected_option_id) {
+                          selectedOptionIds.push(response.selected_option_id);
+                        } else if (response.text_response) {
+                          // Try to parse array from text_response (JSON list)
+                          try {
+                            const parsed = JSON.parse(response.text_response);
+                            if (Array.isArray(parsed)) {
+                              selectedOptionIds = parsed;
+                            }
+                          } catch (e) {
+                            // Non-array text response
+                          }
+                        }
+                      }
+
+                      return (
+                        <div 
+                          key={q.id || idx} 
+                          className={`p-5 rounded-2xl border transition-all
+                            ${response 
+                              ? isGradedCorrect 
+                                ? 'border-emerald-150 dark:border-emerald-950/40 bg-emerald-50/5 dark:bg-emerald-950/5' 
+                                : 'border-rose-150 dark:border-rose-955/40 bg-rose-50/5 dark:bg-rose-950/5'
+                              : 'border-slate-150 dark:border-slate-850/60 bg-slate-50/50 dark:bg-slate-900/20'
+                            }`}
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <span className="inline-block px-2.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-655 dark:text-indigo-400 border border-indigo-150 dark:border-indigo-900/30 text-[9px] font-black uppercase tracking-wider font-sans">
+                              Question {idx + 1}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                                Type: {q.question_type === 'multiple_choice' ? 'MCQ' : q.question_type === 'true_false' ? 'True/False' : 'Short Answer'}
+                              </span>
+                              <span className={`inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider
+                                ${response
+                                  ? isGradedCorrect
+                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                                    : 'bg-rose-500/10 text-rose-600 dark:text-rose-455 border border-rose-500/20'
+                                  : 'bg-slate-500/10 text-slate-500'
+                                }`}
+                              >
+                                {response ? `${marksAwarded} / ${q.marks || 1} Marks` : `Unanswered (0 / ${q.marks || 1})`}
+                              </span>
+                            </div>
+                          </div>
+
+                          <h4 className="text-slate-850 dark:text-slate-100 font-extrabold text-xs leading-snug mt-3 mb-4 select-text">
+                            {q.question_text}
+                          </h4>
+
+                          {/* Render Options if MCQ */}
+                          {q.question_type === 'multiple_choice' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-1">
+                              {(q.quiz_options || q.options || []).map((opt, oIdx) => {
+                                const isCorrectOption = opt.is_correct;
+                                const isSelectedOption = selectedOptionIds.includes(opt.id);
+                                
+                                return (
+                                  <div 
+                                    key={opt.id || oIdx} 
+                                    className={`flex items-center justify-between p-3 rounded-xl border text-xs font-semibold select-text transition-all
+                                      ${isCorrectOption 
+                                        ? 'bg-emerald-50/40 dark:bg-emerald-955/10 border-emerald-350 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400' 
+                                        : isSelectedOption
+                                          ? 'bg-rose-50/40 dark:bg-rose-955/10 border-rose-350 dark:border-rose-900/40 text-rose-700 dark:text-rose-450'
+                                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-300'
+                                      }`}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0
+                                        ${isCorrectOption 
+                                          ? 'bg-emerald-500 text-white' 
+                                          : isSelectedOption
+                                            ? 'bg-rose-500 text-white'
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                                        }`}
+                                      >
+                                        {String.fromCharCode(65 + oIdx)}
+                                      </span>
+                                      <span>{opt.option_text}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0 animate-none">
+                                      {isSelectedOption && (
+                                        <span className={`text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded
+                                          ${isCorrectOption 
+                                            ? 'bg-emerald-100/50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-450' 
+                                            : 'bg-rose-100/50 dark:bg-rose-950/30 text-rose-650 dark:text-rose-450'
+                                          }`}
+                                        >
+                                          Student Choice
+                                        </span>
+                                      )}
+                                      {isCorrectOption && (
+                                        <span className="text-[8px] font-black text-emerald-600 dark:text-emerald-450 uppercase tracking-wider bg-emerald-100/50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded-md">
+                                          Correct Option
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* Render for True/False and Short Answer */}
+                          {q.question_type !== 'multiple_choice' && (
+                            <div className="space-y-2 mt-3">
+                              <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-850 rounded-xl flex items-center justify-between text-xs">
+                                <span className="text-[10px] text-slate-450 dark:text-slate-500 font-bold uppercase tracking-wider">Student's Selection:</span>
+                                <strong className={`font-mono text-xs ${isGradedCorrect ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-455'}`}>
+                                  {response && response.text_response ? response.text_response : 'N/A (No Answer)'}
+                                </strong>
+                              </div>
+                              <div className="p-3 bg-emerald-50/40 dark:bg-emerald-955/10 border border-emerald-250 dark:border-emerald-900/40 rounded-xl flex items-center justify-between text-xs">
+                                <span className="text-[10px] text-emerald-755 dark:text-emerald-455 font-bold uppercase tracking-wider">Correct Answer:</span>
+                                <strong className="text-emerald-700 dark:text-emerald-400 font-mono text-xs">{q.correct_answer}</strong>
+                              </div>
+                            </div>
+                          )}
+
+                          {q.explanation && (
+                            <div className="mt-3 text-[10px] text-slate-450 dark:text-slate-550 font-semibold italic pl-1 leading-relaxed select-text">
+                              <strong>Explanation:</strong> {q.explanation}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-900 flex justify-end shrink-0 select-none">
+                <button
+                  type="button"
+                  onClick={() => { setShowResponseModal(false); setSelectedAttemptForResponse(null); setViewingQuizForResponse(null); }}
+                  className="py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-555 hover:bg-slate-50 dark:hover:bg-slate-900 hover:text-slate-700 dark:hover:text-slate-100 text-[11px] font-bold transition-all cursor-pointer"
+                >
+                  Close Response Panel
                 </button>
               </div>
             </motion.div>
