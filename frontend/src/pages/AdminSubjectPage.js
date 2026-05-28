@@ -19,7 +19,8 @@ import {
   ClipboardList,
   FileDown,
   Activity,
-  Upload
+  Upload,
+  Video
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -194,6 +195,21 @@ const AdminSubjectPage = () => {
   const [modalAttempts, setModalAttempts] = useState([]);
   const [loadingAttempts, setLoadingAttempts] = useState(false);
   const [resettingAttemptId, setResettingAttemptId] = useState(null);
+
+  // Video Player Modal States
+  const [activeVideoToPlay, setActiveVideoToPlay] = useState(null);
+  const [showPlayerModal, setShowPlayerModal] = useState(false);
+
+  const getYoutubeId = (url) => {
+    if (!url) return null;
+    const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+    return match ? match[1] : null;
+  };
+
+  const handlePlayVideo = (video) => {
+    setActiveVideoToPlay(video);
+    setShowPlayerModal(true);
+  };
 
   // Video Form Fields
   const [videoTitle, setVideoTitle] = useState('');
@@ -639,59 +655,89 @@ const AdminSubjectPage = () => {
   };
 
   // Custom Form Submit Handlers
-  const handleAddVideoSubmit = (e) => {
+  const handleAddVideoSubmit = async (e) => {
     e.preventDefault();
     if (!videoTitle.trim() || !videoUrl.trim() || !videoChapter.trim()) {
       alert('Please fill in Title, YouTube Video Link, and Chapter fields.');
       return;
     }
-    const newVideo = {
-      id: `v${Date.now()}`,
-      title: `${videoTitle} - Unit ${videoChapter}`,
-      duration: videoDuration || '45 mins',
-      type: videoType,
-      url: videoUrl,
-      visibility: videoVisibility,
-      chapter: videoChapter,
-      description: videoDescription
-    };
-    setVideos(prev => [newVideo, ...prev]);
-    setIsAddVideoOpen(false);
-    
-    // Reset Form Fields
-    setVideoTitle('');
-    setVideoUrl('');
-    setVideoDescription('');
-    setVideoDuration('45 mins');
-    setVideoChapter('');
-    setThumbnailFile(null);
+    try {
+      const response = await fetch('http://localhost:5000/api/videos', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: `${videoTitle} - Unit ${videoChapter}`,
+          description: videoDescription || 'No description provided.',
+          video_type: videoType.toLowerCase() === 'live' ? 'live' : 'recorded',
+          youtube_url: videoUrl,
+          subject: currentSubject,
+          is_published: true
+        })
+      });
+      if (response.ok) {
+        alert('Video uploaded successfully!');
+        setIsAddVideoOpen(false);
+        // Reset Form Fields
+        setVideoTitle('');
+        setVideoUrl('');
+        setVideoDescription('');
+        setVideoDuration('45 mins');
+        setVideoChapter('');
+        setThumbnailFile(null);
+        // Reload real videos list
+        loadRealVideos();
+      } else {
+        const errData = await response.json();
+        alert('Failed to upload video: ' + (errData.error || 'Server error'));
+      }
+    } catch (error) {
+      alert('Error uploading video: ' + error.message);
+    }
   };
 
-  const handleAddMaterialSubmit = (e) => {
+  const handleAddMaterialSubmit = async (e) => {
     e.preventDefault();
     if (!materialTitle.trim() || !materialChapter.trim()) {
       alert('Please fill in Title and Chapter fields.');
       return;
     }
-    const newMaterial = {
-      id: `m${Date.now()}`,
-      title: `${materialTitle} - Unit ${materialChapter}.${materialType.toLowerCase() === 'notes' ? 'pdf' : 'zip'}`,
-      size: materialFile ? `${(materialFile.size / (1024 * 1024)).toFixed(1)} MB` : '1.8 MB',
-      link: '#',
-      type: materialType,
-      visibility: materialVisibility,
-      chapter: materialChapter,
-      description: materialDescription,
-      downloads: 0
-    };
-    setMaterials(prev => [newMaterial, ...prev]);
-    setIsAddMaterialOpen(false);
-
-    // Reset Form Fields
-    setMaterialTitle('');
-    setMaterialDescription('');
-    setMaterialChapter('');
-    setMaterialFile(null);
+    try {
+      const response = await fetch('http://localhost:5000/api/materials', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: `${materialTitle} - Unit ${materialChapter}`,
+          description: materialDescription || 'No description provided.',
+          file_name: `${materialTitle.toLowerCase().replace(/ /g, '_')}_unit_${materialChapter}.${materialType.toLowerCase() === 'notes' ? 'pdf' : 'zip'}`,
+          github_url: 'https://github.com', // fallback URL
+          file_type: materialType === 'Notes' ? 'PDF' : 'ZIP',
+          subject: currentSubject,
+          is_published: true
+        })
+      });
+      if (response.ok) {
+        alert('Material uploaded successfully!');
+        setIsAddMaterialOpen(false);
+        // Reset Form Fields
+        setMaterialTitle('');
+        setMaterialDescription('');
+        setMaterialChapter('');
+        setMaterialFile(null);
+        // Reload real materials list
+        loadRealMaterials();
+      } else {
+        const errData = await response.json();
+        alert('Failed to upload material: ' + (errData.error || 'Server error'));
+      }
+    } catch (error) {
+      alert('Error uploading material: ' + error.message);
+    }
   };
 
   const triggerDeleteConfirm = (id, name) => {
@@ -713,37 +759,52 @@ const AdminSubjectPage = () => {
   };
 
   // Quiz Creator submit and question builder helpers
-  const handleAddQuizSubmit = (e) => {
+  const handleAddQuizSubmit = async (e) => {
     e.preventDefault();
     if (!quizTitle.trim() || !quizChapter.trim()) {
       alert('Please fill in Title and Chapter fields.');
       return;
     }
-    
-    // Construct new quiz record
-    const newQuiz = {
-      id: `q${Date.now()}`,
-      title: `${quizTitle} - ${quizChapter}`,
-      questions: questionsList.length,
-      passRate: '80%',
-      limit: quizDuration || '20 mins',
-      attempts: 0,
-      failedRate: '20%',
-      status: 'Active'
-    };
+    try {
+      const parsedDuration = parseInt(String(quizDuration).replace(/[^0-9]/g, ''), 10);
+      const timeLimit = isNaN(parsedDuration) ? 20 : parsedDuration;
 
-    setQuizzes(prev => [...prev, newQuiz]);
-    
-    // Reset Quiz Fields
-    setQuizTitle('');
-    setQuizChapter('');
-    setQuizDifficulty('Medium');
-    setQuizDuration('20 mins');
-    setQuizType('MCQ');
-    setQuestionsList([
-      { questionText: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: 'A', marks: 5, explanation: '' }
-    ]);
-    alert('Quiz created successfully and published!');
+      const response = await fetch('http://localhost:5000/api/quizzes', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: `${quizTitle} - Unit ${quizChapter}`,
+          description: `Assessment for Unit ${quizChapter}`,
+          total_questions: questionsList.length,
+          passing_score: quizPassingMarks,
+          time_limit_minutes: timeLimit,
+          subject: currentSubject,
+          questions: questionsList
+        })
+      });
+      if (response.ok) {
+        alert('Quiz created and published successfully!');
+        // Reload real quizzes list
+        loadRealQuizzes();
+        // Reset Quiz Fields
+        setQuizTitle('');
+        setQuizChapter('');
+        setQuizDifficulty('Medium');
+        setQuizDuration('20 mins');
+        setQuizType('MCQ');
+        setQuestionsList([
+          { questionText: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswer: 'A', marks: 5, explanation: '' }
+        ]);
+      } else {
+        const errData = await response.json();
+        alert('Failed to create quiz: ' + (errData.error || 'Server error'));
+      }
+    } catch (error) {
+      alert('Error creating quiz: ' + error.message);
+    }
   };
 
   const handleAddQuestionRow = () => {
@@ -1556,35 +1617,50 @@ const AdminSubjectPage = () => {
                   <span className="block text-[10px] font-black text-indigo-500 uppercase tracking-widest">Active Video Lectures Grid</span>
                   <span className="block text-[10px] font-bold text-slate-400">{videos.length} Lectures Available</span>
                 </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {videos.map((vid) => (
-                    <div key={vid.id} className="bg-white dark:bg-[#0f172a]/95 rounded-2xl border border-slate-200 dark:border-indigo-950/20 shadow-saas overflow-hidden flex flex-col justify-between group hover:shadow-lg transition-all duration-300">
-                      <div className="relative aspect-video bg-slate-900 flex items-center justify-center overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent z-10" />
-                        <Play className="w-10 h-10 text-white opacity-80 group-hover:scale-110 transition-transform duration-300 z-20 stroke-[1.5]" />
-                        <span className="absolute bottom-3 right-3 text-[9px] font-black bg-slate-950/90 text-white px-2 py-0.5 rounded-md z-20">{vid.duration}</span>
-                      </div>
-                      <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[8px] font-black uppercase text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-100 dark:border-indigo-900/30">{vid.type}</span>
-                            <span className="text-[8px] font-black uppercase text-purple-650 bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 rounded border border-purple-100 dark:border-purple-900/30">Unit {vid.chapter || '1'}</span>
-                          </div>
-                          <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-200 leading-snug group-hover:text-indigo-550 dark:group-hover:text-indigo-400 transition-colors duration-150">{vid.title}</h4>
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold leading-relaxed line-clamp-2">
-                            {vid.description || 'No lecture syllabus details populated.'}
-                          </p>
-                        </div>
-                        <button 
-                          onClick={() => alert(`Simulating play link: ${vid.url}`)}
-                          className="w-full mt-3 py-2 bg-slate-900 dark:bg-slate-950 hover:bg-slate-800 text-white text-[9px] font-black tracking-wider rounded-xl transition-all duration-205 border border-transparent dark:border-indigo-950/20"
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {videos.map((vid) => {
+                    const ytId = getYoutubeId(vid.url);
+                    const coverUrl = ytId 
+                      ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`
+                      : "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=640";
+                    return (
+                      <div key={vid.id} className="bg-white dark:bg-[#0f172a]/95 rounded-2xl border border-slate-200 dark:border-indigo-950/20 shadow-saas overflow-hidden flex flex-col justify-between group hover:shadow-lg transition-all duration-300">
+                        <div 
+                          onClick={() => handlePlayVideo(vid)}
+                          className="relative aspect-video bg-slate-900 flex items-center justify-center overflow-hidden cursor-pointer"
                         >
-                          Watch Lecture
-                        </button>
+                          <img 
+                            src={coverUrl} 
+                            alt={vid.title} 
+                            className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" 
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent z-10" />
+                          <div className="w-10 h-10 rounded-full bg-indigo-650/90 text-white flex items-center justify-center shadow-lg shadow-indigo-600/40 border border-indigo-500/20 scale-90 group-hover:scale-100 transition-all duration-300 z-20">
+                            <Play className="w-4 h-4 fill-white ml-0.5 stroke-[1.5]" />
+                          </div>
+                          <span className="absolute bottom-3 right-3 text-[9px] font-black bg-slate-950/90 text-white px-2 py-0.5 rounded-md z-20">{vid.duration}</span>
+                        </div>
+                        <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[8px] font-black uppercase text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-100 dark:border-indigo-900/30">{vid.type}</span>
+                              <span className="text-[8px] font-black uppercase text-purple-650 bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 rounded border border-purple-100 dark:border-purple-900/30">Unit {vid.chapter || '1'}</span>
+                            </div>
+                            <h4 className="font-extrabold text-xs text-slate-800 dark:text-slate-200 leading-snug group-hover:text-indigo-550 dark:group-hover:text-indigo-400 transition-colors duration-150">{vid.title}</h4>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold leading-relaxed line-clamp-2">
+                              {vid.description || 'No lecture syllabus details populated.'}
+                            </p>
+                          </div>
+                          <button 
+                            onClick={() => handlePlayVideo(vid)}
+                            className="w-full mt-3 py-2 bg-slate-900 dark:bg-slate-950 hover:bg-slate-800 text-white text-[9px] font-black tracking-wider rounded-xl transition-all duration-205 border border-transparent dark:border-indigo-950/20"
+                          >
+                            Watch Lecture
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -2782,6 +2858,85 @@ const AdminSubjectPage = () => {
                   className="py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-555 hover:bg-slate-50 dark:hover:bg-slate-900 text-[11px] font-bold transition-all"
                 >
                   Close Performance Panel
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ----------------------------------------------------
+      // DIALOG COMPONENT: PREMIUM VIDEO PLAYER OVERLAY MODAL
+      // ---------------------------------------------------- */}
+      <AnimatePresence>
+        {showPlayerModal && activeVideoToPlay && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 overflow-y-auto">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-205 dark:border-indigo-950/20 shadow-2xl max-w-4xl w-full p-5 relative overflow-hidden text-slate-800 dark:text-slate-200 my-8"
+            >
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+              
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-900 shrink-0">
+                <div>
+                  <h3 className="font-black text-slate-850 dark:text-slate-100 text-sm tracking-wide font-sans">
+                    LMS Lecture Player
+                  </h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
+                    Course Topic: {activeVideoToPlay.title}
+                  </p>
+                </div>
+                <button 
+                  onClick={() => { setShowPlayerModal(false); setActiveVideoToPlay(null); }}
+                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Video Player Box */}
+              <div className="mt-4 aspect-video w-full rounded-2xl overflow-hidden bg-black border border-slate-200 dark:border-indigo-950/25 shadow-inner relative">
+                {getYoutubeId(activeVideoToPlay.url) ? (
+                  <iframe
+                    className="w-full h-full"
+                    src={`https://www.youtube.com/embed/${getYoutubeId(activeVideoToPlay.url)}?autoplay=1&rel=0`}
+                    title={activeVideoToPlay.title}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-slate-400">
+                    <Video className="w-12 h-12 stroke-[1.5] mb-2 text-indigo-500" />
+                    <span className="text-xs font-bold">Playback URL Unsupported</span>
+                    <p className="text-[10px] max-w-xs text-slate-500 mt-1">
+                      This lecture does not contain a standard valid YouTube link. Live stream link: {activeVideoToPlay.url}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 space-y-2 select-text font-semibold">
+                <span className="inline-block px-2.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-150 dark:border-indigo-900/30 text-[9px] font-black uppercase">
+                  {activeVideoToPlay.type} Lecture • {activeVideoToPlay.duration}
+                </span>
+                <h4 className="text-slate-800 dark:text-white text-sm font-black leading-tight font-sans">
+                  {activeVideoToPlay.title}
+                </h4>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-relaxed font-semibold">
+                  {activeVideoToPlay.description || 'No additional syllabus details populated for this lecture slot.'}
+                </p>
+              </div>
+
+              <div className="pt-3 mt-4 border-t border-slate-100 dark:border-slate-900 flex justify-end select-none">
+                <button
+                  type="button"
+                  onClick={() => { setShowPlayerModal(false); setActiveVideoToPlay(null); }}
+                  className="py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-555 hover:bg-slate-50 dark:hover:bg-slate-900 text-[11px] font-bold transition-all"
+                >
+                  Close Player
                 </button>
               </div>
             </motion.div>
