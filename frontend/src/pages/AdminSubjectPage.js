@@ -188,6 +188,13 @@ const AdminSubjectPage = () => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
 
+  // View Quiz Student Attempts Modal States
+  const [showAttemptsModal, setShowAttemptsModal] = useState(false);
+  const [modalQuiz, setModalQuiz] = useState(null);
+  const [modalAttempts, setModalAttempts] = useState([]);
+  const [loadingAttempts, setLoadingAttempts] = useState(false);
+  const [resettingAttemptId, setResettingAttemptId] = useState(null);
+
   // Video Form Fields
   const [videoTitle, setVideoTitle] = useState('');
   const [videoType, setVideoType] = useState('Recorded');
@@ -250,18 +257,34 @@ const AdminSubjectPage = () => {
         const data = await response.json();
         // Filter quizzes by current subject (case-insensitive)
         const subjectQuizzes = data.filter(q => q.subject && q.subject.toUpperCase() === currentSubject.toUpperCase());
-        // Map database fields to the fields expected by the UI
-        const mappedQuizzes = subjectQuizzes.map(q => ({
-          id: q.id,
-          title: q.title,
-          questions: q.total_questions || 0,
-          passRate: `${q.passing_score || 50}%`,
-          limit: `${q.time_limit_minutes || 30} mins`,
-          attempts: 0,
-          failedRate: '0%',
-          status: q.is_published ? 'Active' : 'Draft',
-          chapter: q.chapter || '1',
-          difficulty: q.difficulty || 'Medium'
+        // Map database fields to the fields expected by the UI and resolve real attempts count
+        const mappedQuizzes = await Promise.all(subjectQuizzes.map(async q => {
+          let attemptsCount = 0;
+          try {
+            const attRes = await fetch(`http://localhost:5000/api/quizzes/${q.id}/all-attempts`, {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              }
+            });
+            if (attRes.ok) {
+              const attData = await attRes.json();
+              attemptsCount = attData.attempts ? attData.attempts.length : 0;
+            }
+          } catch (e) {
+            console.error('Error fetching attempts count for quiz:', q.id, e);
+          }
+          return {
+            id: q.id,
+            title: q.title,
+            questions: q.total_questions || 0,
+            passRate: `${q.passing_score || 50}%`,
+            limit: `${q.time_limit_minutes || 30} mins`,
+            attempts: attemptsCount,
+            failedRate: '0%',
+            status: q.is_published ? 'Active' : 'Draft',
+            chapter: q.chapter || '1',
+            difficulty: q.difficulty || 'Medium'
+          };
         }));
         setQuizzes(mappedQuizzes);
       }
@@ -288,6 +311,69 @@ const AdminSubjectPage = () => {
       loadRealQuizzes(); // Refresh the list
     } catch (error) {
       alert('Error deleting quiz: ' + error.message);
+    }
+  };
+
+  const openAttemptsModal = async (quiz) => {
+    setModalQuiz(quiz);
+    setShowAttemptsModal(true);
+    setLoadingAttempts(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/quizzes/${quiz.id}/all-attempts`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setModalAttempts(data.attempts || []);
+      } else {
+        setModalAttempts([]);
+      }
+    } catch (err) {
+      console.error('Error fetching quiz attempts:', err);
+      setModalAttempts([]);
+    } finally {
+      setLoadingAttempts(false);
+    }
+  };
+
+  const handleResetAttempt = async (attemptId) => {
+    if (!window.confirm('Are you sure you want to reset this student\'s attempt? This will permanently delete their score and answers, allowing them to retake the quiz.')) {
+      return;
+    }
+    setResettingAttemptId(attemptId);
+    try {
+      const response = await fetch(`http://localhost:5000/api/quizzes/attempt/${attemptId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        alert('Student attempt reset successfully.');
+        // Refresh attempts within the modal
+        if (modalQuiz) {
+          const res = await fetch(`http://localhost:5000/api/quizzes/${modalQuiz.id}/all-attempts`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setModalAttempts(data.attempts || []);
+          }
+        }
+        // Refresh parent quiz table
+        loadRealQuizzes();
+      } else {
+        const errData = await response.json();
+        alert('Error resetting attempt: ' + (errData.error || 'Failed response'));
+      }
+    } catch (err) {
+      alert('Error resetting attempt: ' + err.message);
+    } finally {
+      setResettingAttemptId(null);
     }
   };
 
@@ -1802,14 +1888,16 @@ const AdminSubjectPage = () => {
                             <td className="py-3.5 px-6 text-center">
                               <div className="flex items-center justify-center gap-2">
                                 <button 
-                                  onClick={() => alert(`Simulating exam stats overview for: ${qz.title}`)}
+                                  onClick={() => openAttemptsModal(qz)}
                                   className="p-1.5 rounded-md hover:bg-[#e0e7ff] dark:hover:bg-indigo-950/30 text-slate-500 hover:text-indigo-650 transition-colors duration-150"
+                                  title="View Student Performance"
                                 >
                                   <Activity className="w-3.5 h-3.5" />
                                 </button>
                                 <button 
                                   onClick={() => handleDeleteQuiz(qz.id)}
                                   className="p-1.5 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-500 hover:text-rose-650 transition-colors duration-150"
+                                  title="Delete Quiz"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
@@ -2128,7 +2216,7 @@ const AdminSubjectPage = () => {
       // ---------------------------------------------------- */}
       <AnimatePresence>
         {editingStudent && (
-          <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -2224,7 +2312,7 @@ const AdminSubjectPage = () => {
       // ---------------------------------------------------- */}
       <AnimatePresence>
         {isAddVideoOpen && (
-          <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -2374,7 +2462,7 @@ const AdminSubjectPage = () => {
       // ---------------------------------------------------- */}
       <AnimatePresence>
         {isAddMaterialOpen && (
-          <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -2520,7 +2608,7 @@ const AdminSubjectPage = () => {
       // ---------------------------------------------------- */}
       <AnimatePresence>
         {isDeleteOpen && studentToDelete && (
-          <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -2555,6 +2643,145 @@ const AdminSubjectPage = () => {
                   className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-red-650 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-md shadow-rose-600/10 transition-colors duration-150 text-[11px] font-bold"
                 >
                   Yes, Remove
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ----------------------------------------------------
+      // DIALOG COMPONENT: VIEW STUDENT QUIZ MARKS & ATTEMPTS MODAL
+      // ---------------------------------------------------- */}
+      <AnimatePresence>
+        {showAttemptsModal && modalQuiz && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="bg-white dark:bg-slate-955 rounded-3xl border border-slate-200 dark:border-slate-900 shadow-2xl max-w-4xl w-full p-6 relative overflow-hidden text-slate-800 dark:text-slate-200 my-8 flex flex-col max-h-[85vh]"
+            >
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 animate-pulse" />
+              
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-900 shrink-0">
+                <div>
+                  <h3 className="font-black text-slate-850 dark:text-slate-100 text-sm tracking-wide font-sans">
+                    Student Performance Overview
+                  </h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
+                    Assessment: {modalQuiz.title} ({modalQuiz.questions} Qs)
+                  </p>
+                </div>
+                <button 
+                  onClick={() => { setShowAttemptsModal(false); setModalQuiz(null); setModalAttempts([]); }}
+                  className="p-1 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto py-4 text-xs font-semibold">
+                {loadingAttempts ? (
+                  <div className="flex flex-col items-center justify-center py-16 space-y-3">
+                    <div className="w-8 h-8 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
+                    <span className="text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider text-[10px]">Loading student results...</span>
+                  </div>
+                ) : modalAttempts.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500 border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-center shadow-sm">
+                      <ClipboardList className="w-6 h-6 stroke-[1.5]" />
+                    </div>
+                    <div>
+                      <h4 className="text-slate-700 dark:text-slate-300 font-bold text-xs">No Attempts Recorded</h4>
+                      <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-1 max-w-xs font-semibold">
+                        No students have attempted this quiz assessment yet. Attempt statistics will appear here automatically.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto w-full rounded-2xl border border-slate-100 dark:border-slate-900">
+                    <table className="w-full border-collapse text-left text-xs font-sans">
+                      <thead>
+                        <tr className="bg-slate-50/70 dark:bg-slate-900/50 text-slate-500 uppercase tracking-widest text-[9px] font-black border-b border-slate-100 dark:border-slate-900 select-none">
+                          <th className="py-3 px-4">Student</th>
+                          <th className="py-3 px-4">Submitted At</th>
+                          <th className="py-3 px-4 text-center">Score</th>
+                          <th className="py-3 px-4 text-center">Percentage</th>
+                          <th className="py-3 px-4 text-center">Status</th>
+                          <th className="py-3 px-4 text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-900 text-slate-655 dark:text-slate-355">
+                        {modalAttempts.map((attempt) => {
+                          const studentName = attempt.users?.full_name || 'Anonymous Student';
+                          const studentEmail = attempt.users?.email || 'N/A';
+                          const isPassed = attempt.is_passed;
+                          const formattedDate = attempt.submitted_at 
+                            ? new Date(attempt.submitted_at).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })
+                            : 'N/A';
+                          
+                          return (
+                            <tr key={attempt.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/20 transition-all">
+                              <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-200">
+                                <div>
+                                  <span className="block text-xs">{studentName}</span>
+                                  <span className="block text-[10px] text-slate-400 dark:text-slate-500 font-medium normal-case">{studentEmail}</span>
+                                </div>
+                              </td>
+                              <td className="py-3.5 px-4 font-semibold text-slate-600 dark:text-slate-400 font-mono text-[11px]">
+                                {formattedDate}
+                              </td>
+                              <td className="py-3.5 px-4 text-center font-bold font-mono">
+                                {attempt.marks_obtained} / {attempt.total_marks}
+                              </td>
+                              <td className="py-3.5 px-4 text-center font-bold font-mono">
+                                <span className={isPassed ? 'text-emerald-600 dark:text-emerald-450' : 'text-rose-600 dark:text-rose-450'}>
+                                  {Math.round(attempt.percentage)}%
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-4 text-center">
+                                <span className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider text-center w-16
+                                  ${isPassed 
+                                    ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-450 border border-emerald-100 dark:border-emerald-900/30' 
+                                    : 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450 border border-rose-100 dark:border-rose-900/30'
+                                  }`}
+                                >
+                                  {isPassed ? 'Passed' : 'Failed'}
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-4 text-center">
+                                <button
+                                  type="button"
+                                  disabled={resettingAttemptId === attempt.id}
+                                  onClick={() => handleResetAttempt(attempt.id)}
+                                  className="py-1 px-2.5 rounded-lg text-[10px] font-black uppercase border border-rose-200 hover:bg-rose-50 dark:border-rose-900/30 dark:hover:bg-rose-950/20 text-rose-600 hover:text-rose-700 dark:text-rose-400 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                                >
+                                  {resettingAttemptId === attempt.id ? 'Resetting...' : 'Reset'}
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-900 flex justify-end shrink-0 select-none">
+                <button
+                  type="button"
+                  onClick={() => { setShowAttemptsModal(false); setModalQuiz(null); setModalAttempts([]); }}
+                  className="py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-555 hover:bg-slate-50 dark:hover:bg-slate-900 text-[11px] font-bold transition-all"
+                >
+                  Close Performance Panel
                 </button>
               </div>
             </motion.div>
