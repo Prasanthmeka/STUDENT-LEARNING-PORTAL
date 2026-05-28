@@ -291,6 +291,102 @@ const AdminSubjectPage = () => {
     }
   };
 
+  const loadRealVideos = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/videos/admin', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const subjectVideos = data.filter(v => v.subject && v.subject.toUpperCase() === currentSubject.toUpperCase());
+        const mappedVideos = subjectVideos.map(v => ({
+          id: v.id,
+          title: v.title,
+          duration: v.duration_minutes ? `${v.duration_minutes} mins` : '45 mins',
+          type: v.video_type === 'live' ? 'Live' : 'Recorded',
+          url: v.video_type === 'live' ? v.live_stream_url : v.youtube_url,
+          visibility: 'Premium Only',
+          chapter: '1',
+          description: v.description || 'No description provided.'
+        }));
+        setVideos(mappedVideos);
+      }
+    } catch (err) {
+      console.error('Error fetching backend videos:', err);
+    }
+  };
+
+  const handleDeleteVideo = async (videoId) => {
+    if (!window.confirm('Are you sure you want to delete this video? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:5000/api/videos/${videoId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete video');
+      }
+      alert('Video deleted successfully');
+      loadRealVideos();
+    } catch (error) {
+      alert('Error deleting video: ' + error.message);
+    }
+  };
+
+  const loadRealMaterials = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/materials/admin', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const subjectMaterials = data.filter(m => m.subject && m.subject.toUpperCase() === currentSubject.toUpperCase());
+        const mappedMaterials = subjectMaterials.map(m => ({
+          id: m.id,
+          title: m.title,
+          size: '2.5 MB',
+          link: m.github_url,
+          type: m.file_type || 'PDF',
+          visibility: 'Premium Only',
+          chapter: '1',
+          downloads: 0
+        }));
+        setMaterials(mappedMaterials);
+      }
+    } catch (err) {
+      console.error('Error fetching backend materials:', err);
+    }
+  };
+
+  const handleDeleteMaterial = async (materialId) => {
+    if (!window.confirm('Are you sure you want to delete this material? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:5000/api/materials/${materialId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete material');
+      }
+      alert('Material deleted successfully');
+      loadRealMaterials();
+    } catch (error) {
+      alert('Error deleting material: ' + error.message);
+    }
+  };
+
   // Generate deterministic student dataset for this specific subject
   useEffect(() => {
     if (!isValid) {
@@ -333,20 +429,10 @@ const AdminSubjectPage = () => {
 
     setStudents(generatedStudents);
 
-    // Mock subject content lists
-    setVideos([
-      { id: 'v1', title: `Introduction to ${currentSubject} - Lecture 1`, duration: '45 mins', type: 'Recorded', url: 'https://youtube.com/watch?v=mock', visibility: 'Premium Only', chapter: '1', description: 'Overview of syllabus' },
-      { id: 'v2', title: `${currentSubject} Core Guidelines - Lecture 2`, duration: '50 mins', type: 'Recorded', url: 'https://youtube.com/watch?v=mock2', visibility: 'Premium Only', chapter: '2', description: 'Core principles' },
-      { id: 'v3', title: `Live Revision for ${currentSubject} Exams`, duration: '1h 15m', type: 'Live', url: 'https://zoom.us/mock', visibility: 'Public', chapter: '3', description: 'Revision session' }
-    ]);
-
-    // Fetch quizzes from database instead of mock
+    // Fetch quizzes, videos, and materials from database instead of mock
     loadRealQuizzes();
-
-    setMaterials([
-      { id: 'm1', title: `${currentSubject} Advanced Reference Notebook.pdf`, size: '4.2 MB', link: '#', type: 'PDF', visibility: 'Premium Only', chapter: '1', downloads: 140 },
-      { id: 'm2', title: `${currentSubject} Vocabulary Core Guidelines.pdf`, size: '2.8 MB', link: '#', type: 'PDF', visibility: 'Public', chapter: '2', downloads: 98 }
-    ]);
+    loadRealVideos();
+    loadRealMaterials();
 
     setLoading(false);
   }, [currentSubject, isValid, navigate]);
@@ -1545,7 +1631,7 @@ const AdminSubjectPage = () => {
                                   <Play className="w-3.5 h-3.5" />
                                 </button>
                                 <button 
-                                  onClick={() => setVideos(prev => prev.filter(v => v.id !== vid.id))}
+                                  onClick={() => handleDeleteVideo(vid.id)}
                                   className="p-1.5 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-500 hover:text-rose-650 transition-colors duration-150"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -1912,7 +1998,7 @@ const AdminSubjectPage = () => {
                                   <FileDown className="w-3.5 h-3.5" />
                                 </button>
                                 <button 
-                                  onClick={() => setMaterials(prev => prev.filter(m => m.id !== mat.id))}
+                                  onClick={() => handleDeleteMaterial(mat.id)}
                                   className="p-1.5 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-550 hover:text-rose-655 transition-colors duration-150"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
