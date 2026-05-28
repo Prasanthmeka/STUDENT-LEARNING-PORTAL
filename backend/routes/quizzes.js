@@ -8,7 +8,7 @@ const { extractTextFromDocument, parseQuestionsFromText } = require('../utils/do
 const router = express.Router();
 
 // Setup multer for file uploads
-const upload = multer({ 
+const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
     const allowedMimes = [
@@ -27,9 +27,47 @@ const upload = multer({
 // Create Quiz (Admin Only)
 router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) => {
   try {
-    const { title, description, total_questions, passing_score, time_limit_minutes, subject, questions } = req.body;
+    let {
+      title,
+      description,
+      total_questions,
+      passing_score,
+      passing_marks,
+      time_limit_minutes,
+      duration,
+      subject,
+      questions
+    } = req.body;
 
     const quizId = uuidv4();
+
+    // Map passing marks/score
+    const finalPassingScore = passing_score !== undefined ? passing_score : (passing_marks !== undefined ? passing_marks : 50);
+
+    // Map time limit / duration
+    let finalTimeLimit = time_limit_minutes;
+    if (finalTimeLimit === undefined && duration !== undefined) {
+      const parsedDuration = parseInt(String(duration).replace(/[^0-9]/g, ''), 10);
+      finalTimeLimit = isNaN(parsedDuration) ? 30 : parsedDuration;
+    }
+    if (finalTimeLimit === undefined) {
+      finalTimeLimit = 30;
+    }
+
+    // Capitalize subject to match DB and UI filters
+    if (subject) {
+      const subLower = subject.toLowerCase();
+      if (subLower === 'telugu') subject = 'Telugu';
+      else if (subLower === 'hindi') subject = 'Hindi';
+      else if (subLower === 'english') subject = 'English';
+      else if (subLower === 'maths') subject = 'Maths';
+      else if (subLower === 'physics') subject = 'Physics';
+      else if (subLower === 'chemistry') subject = 'Chemistry';
+      else if (subLower === 'biology') subject = 'Biology';
+      else if (subLower === 'social' || subLower === 'social studies') subject = 'Social';
+    }
+
+    const finalTotalQuestions = total_questions !== undefined ? total_questions : (questions ? questions.length : 0);
 
     const { data: quizData, error: quizError } = await supabase
       .from('quizzes')
@@ -37,13 +75,13 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
         {
           id: quizId,
           title,
-          description,
+          description: description || '',
           created_by: req.user.id,
-          total_questions,
-          passing_score,
-          time_limit_minutes,
+          total_questions: finalTotalQuestions,
+          passing_score: finalPassingScore,
+          time_limit_minutes: finalTimeLimit,
           subject,
-          is_published: false
+          is_published: true // Manual quizzes are published immediately
         }
       ])
       .select();
@@ -54,15 +92,55 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
 
     // Insert questions if provided
     if (questions && questions.length > 0) {
-      const questionsData = questions.map((q, idx) => ({
-        id: uuidv4(),
-        quiz_id: quizId,
-        question_text: q.question_text,
-        question_type: q.question_type || 'multiple_choice',
-        marks: q.marks || 1,
-        correct_answer: q.correct_answer,
-        order_number: idx + 1
-      }));
+      const questionsData = [];
+      const optionsData = [];
+
+      questions.forEach((q, idx) => {
+        const questionId = uuidv4();
+
+        const questionText = q.question_text || q.questionText || '';
+        const questionType = q.question_type || q.questionType || 'multiple_choice';
+        const marks = q.marks !== undefined ? q.marks : 1;
+        const correctAnswer = q.correct_answer || q.correctAnswer || 'A';
+
+        questionsData.push({
+          id: questionId,
+          quiz_id: quizId,
+          question_text: questionText,
+          question_type: questionType,
+          marks: marks,
+          correct_answer: correctAnswer,
+          order_number: idx + 1
+        });
+
+        // Map options for MCQ
+        if (questionType === 'multiple_choice') {
+          let opts = [];
+          if (q.options) {
+            opts = q.options.map(opt => ({
+              text: opt.text || opt.option_text || '',
+              is_correct: opt.is_correct || false
+            }));
+          } else {
+            // Check for flat properties from frontend (optionA, optionB, etc.)
+            const correctLetters = String(correctAnswer).split(',').map(s => s.trim().toUpperCase());
+            if (q.optionA !== undefined) opts.push({ text: q.optionA, is_correct: correctLetters.includes('A') });
+            if (q.optionB !== undefined) opts.push({ text: q.optionB, is_correct: correctLetters.includes('B') });
+            if (q.optionC !== undefined) opts.push({ text: q.optionC, is_correct: correctLetters.includes('C') });
+            if (q.optionD !== undefined) opts.push({ text: q.optionD, is_correct: correctLetters.includes('D') });
+          }
+
+          opts.forEach((opt, oIdx) => {
+            optionsData.push({
+              id: uuidv4(),
+              question_id: questionId,
+              option_text: opt.text,
+              is_correct: opt.is_correct,
+              order_number: oIdx + 1
+            });
+          });
+        }
+      });
 
       const { error: questionsError } = await supabase
         .from('quiz_questions')
@@ -71,22 +149,6 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
       if (questionsError) {
         return res.status(400).json({ error: questionsError.message });
       }
-
-      // Insert options for multiple choice questions
-      let optionsData = [];
-      questions.forEach((q, qIdx) => {
-        if (q.question_type === 'multiple_choice' && q.options) {
-          q.options.forEach((opt, oIdx) => {
-            optionsData.push({
-              id: uuidv4(),
-              question_id: questionsData[qIdx].id,
-              option_text: opt.text,
-              is_correct: opt.is_correct || false,
-              order_number: oIdx + 1
-            });
-          });
-        }
-      });
 
       if (optionsData.length > 0) {
         const { error: optionsError } = await supabase
@@ -97,6 +159,33 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
           return res.status(400).json({ error: optionsError.message });
         }
       }
+    }
+
+    // Automatically enable the quiz for all existing students
+    try {
+      const { data: studentsData } = await supabase
+        .from('users')
+        .select('id')
+        .eq('role', 'student');
+
+      if (studentsData && studentsData.length > 0) {
+        const permissionsData = studentsData.map(student => ({
+          id: uuidv4(),
+          quiz_id: quizId,
+          student_id: student.id,
+          granted_at: new Date()
+        }));
+
+        const { error: permError } = await supabase
+          .from('quiz_permissions')
+          .insert(permissionsData);
+
+        if (permError) {
+          console.error('Error automatically enabling quiz for students:', permError);
+        }
+      }
+    } catch (permErr) {
+      console.error('Error in automatic quiz enablement:', permErr);
     }
 
     res.status(201).json({ message: 'Quiz created successfully', quiz: quizData[0] });
@@ -293,11 +382,11 @@ router.post('/:id/submit', authenticateToken, authorizeRole(['student']), async 
 
       if (question.question_type === 'multiple_choice') {
         const correctOptions = question.quiz_options.filter(o => o.is_correct).map(o => o.id);
-        
+
         if (correctOptions.length > 1) {
           // Multiple select mode
           const selectedOptionIds = Array.isArray(answer.option_id) ? answer.option_id : [answer.option_id].filter(Boolean);
-          
+
           if (selectedOptionIds.length === correctOptions.length && selectedOptionIds.every(id => correctOptions.includes(id))) {
             isCorrect = true;
           }
@@ -466,7 +555,7 @@ router.get('/:id/my-attempts', authenticateToken, authorizeRole(['student', 'adm
         marksObtained: latestAttempt.marks_obtained,
         percentage: latestAttempt.percentage,
         isPassed: latestAttempt.is_passed,
-        timeTaken: latestAttempt.started_at && latestAttempt.submitted_at 
+        timeTaken: latestAttempt.started_at && latestAttempt.submitted_at
           ? Math.round((new Date(latestAttempt.submitted_at) - new Date(latestAttempt.started_at)) / 1000)
           : 0
       };
@@ -507,7 +596,7 @@ router.get('/:id/all-attempts', authenticateToken, authorizeRole(['admin']), asy
     // Fetch all responses for these attempts to show exactly what they answered
     const attemptIds = attempts.map(a => a.id);
     let allResponses = [];
-    
+
     if (attemptIds.length > 0) {
       const { data: responses, error: respError } = await supabase
         .from('student_responses')
@@ -517,7 +606,7 @@ router.get('/:id/all-attempts', authenticateToken, authorizeRole(['admin']), asy
           quiz_options(option_text, is_correct)
         `)
         .in('quiz_attempt_id', attemptIds);
-        
+
       if (!respError && responses) {
         allResponses = responses;
       }
@@ -536,7 +625,7 @@ router.delete('/attempt/:attemptId', authenticateToken, authorizeRole(['admin'])
     await supabase.from('student_responses').delete().eq('quiz_attempt_id', req.params.attemptId);
     // Then delete attempt
     const { error } = await supabase.from('quiz_attempts').delete().eq('id', req.params.attemptId);
-    
+
     if (error) return res.status(400).json({ error: error.message });
     res.json({ message: 'Attempt deleted successfully, student can retake.' });
   } catch (err) {
@@ -555,7 +644,7 @@ router.post('/extract-questions', authenticateToken, authorizeRole(['admin']), u
     const fs = require('fs');
     const path = require('path');
     const tempDir = path.join(__dirname, '../temp');
-    
+
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
     }
@@ -566,7 +655,7 @@ router.post('/extract-questions', authenticateToken, authorizeRole(['admin']), u
     try {
       // Extract text from document
       const text = await extractTextFromDocument(tempFilePath, req.file.mimetype);
-      
+
       // Parse questions from text (with AI generation fallback if requested)
       let questions = [];
       if (req.body.use_ai === 'true' || req.body.use_ai === true) {
@@ -583,7 +672,7 @@ router.post('/extract-questions', authenticateToken, authorizeRole(['admin']), u
         const numbersStr = req.body.question_numbers;
         const requestedNumbers = new Set();
         const parts = numbersStr.split(',');
-        
+
         parts.forEach(part => {
           part = part.trim();
           if (part.includes('-')) {
@@ -610,12 +699,12 @@ router.post('/extract-questions', authenticateToken, authorizeRole(['admin']), u
       fs.unlinkSync(tempFilePath);
 
       if (questions.length === 0) {
-        return res.status(400).json({ 
-          error: 'No questions found. Please ensure questions are in numbered format (1., 2., etc.) with options (A), B), etc.)' 
+        return res.status(400).json({
+          error: 'No questions found. Please ensure questions are in numbered format (1., 2., etc.) with options (A), B), etc.)'
         });
       }
 
-      res.json({ 
+      res.json({
         success: true,
         questions_count: questions.length,
         questions,
@@ -718,8 +807,35 @@ router.post('/from-document', authenticateToken, authorizeRole(['admin']), async
       }
     }
 
-    res.status(201).json({ 
-      message: 'Quiz created successfully from document', 
+    // Automatically enable the quiz for all existing students
+    try {
+      const { data: studentsData } = await supabase
+        .from('users')
+        .select('id')
+        .eq('role', 'student');
+
+      if (studentsData && studentsData.length > 0) {
+        const permissionsData = studentsData.map(student => ({
+          id: uuidv4(),
+          quiz_id: quizId,
+          student_id: student.id,
+          granted_at: new Date()
+        }));
+
+        const { error: permError } = await supabase
+          .from('quiz_permissions')
+          .insert(permissionsData);
+
+        if (permError) {
+          console.error('Error automatically enabling quiz for students:', permError);
+        }
+      }
+    } catch (permErr) {
+      console.error('Error in automatic quiz enablement:', permErr);
+    }
+
+    res.status(201).json({
+      message: 'Quiz created successfully from document',
       quiz: quizData[0],
       questions_count: questions.length
     });
@@ -728,12 +844,13 @@ router.post('/from-document', authenticateToken, authorizeRole(['admin']), async
   }
 });
 
-// Admin: Get all quizzes (published and unpublished)
+// Admin: Get all quizzes created by this admin (published and unpublished)
 router.get('/admin/all-quizzes', authenticateToken, authorizeRole(['admin']), async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('quizzes')
       .select('*')
+      .eq('created_by', req.user.id)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -762,7 +879,71 @@ router.delete('/:id', authenticateToken, authorizeRole(['admin']), async (req, r
       return res.status(404).json({ error: 'Quiz not found' });
     }
 
-    // Delete quiz (cascading deletes will handle questions, options, attempts, responses)
+    // Verify admin is the creator of the quiz
+    if (quizData.created_by !== req.user.id) {
+      return res.status(403).json({ error: 'You are not authorized to delete this quiz' });
+    }
+
+    // To prevent PostgreSQL foreign key constraint errors, we manually delete all related records in order:
+    
+    // 1. Fetch all quiz attempts
+    const { data: attempts } = await supabase
+      .from('quiz_attempts')
+      .select('id')
+      .eq('quiz_id', quizId);
+    
+    const attemptIds = attempts?.map(a => a.id) || [];
+
+    // 2. Fetch all quiz questions
+    const { data: questions } = await supabase
+      .from('quiz_questions')
+      .select('id')
+      .eq('quiz_id', quizId);
+    
+    const questionIds = questions?.map(q => q.id) || [];
+
+    // 3. Delete student responses linked to attempts or questions
+    if (attemptIds.length > 0) {
+      await supabase
+        .from('student_responses')
+        .delete()
+        .in('quiz_attempt_id', attemptIds);
+    }
+    
+    if (questionIds.length > 0) {
+      await supabase
+        .from('student_responses')
+        .delete()
+        .in('question_id', questionIds);
+    }
+
+    // 4. Delete quiz attempts
+    await supabase
+      .from('quiz_attempts')
+      .delete()
+      .eq('quiz_id', quizId);
+
+    // 5. Delete quiz permissions
+    await supabase
+      .from('quiz_permissions')
+      .delete()
+      .eq('quiz_id', quizId);
+
+    // 6. Delete quiz options
+    if (questionIds.length > 0) {
+      await supabase
+        .from('quiz_options')
+        .delete()
+        .in('question_id', questionIds);
+    }
+
+    // 7. Delete quiz questions
+    await supabase
+      .from('quiz_questions')
+      .delete()
+      .eq('quiz_id', quizId);
+
+    // 8. Finally delete the quiz itself
     const { error: deleteError } = await supabase
       .from('quizzes')
       .delete()
@@ -772,7 +953,7 @@ router.delete('/:id', authenticateToken, authorizeRole(['admin']), async (req, r
       return res.status(400).json({ error: deleteError.message });
     }
 
-    res.json({ message: `Quiz "${quizData.title}" has been deleted successfully` });
+    res.json({ message: `Quiz "${quizData.title}" and all related student records have been deleted successfully` });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -856,7 +1037,7 @@ router.post('/:id/enable-for-students', authenticateToken, authorizeRole(['admin
     // Insert one by one and skip duplicates
     let successCount = 0;
     let skippedCount = 0;
-    
+
     for (const studentId of student_ids) {
       const permissionId = uuidv4();
       const { error } = await supabase
@@ -867,7 +1048,7 @@ router.post('/:id/enable-for-students', authenticateToken, authorizeRole(['admin
           student_id: studentId,
           granted_at: new Date()
         }]);
-      
+
       if (error) {
         // Check if it's a unique constraint error (already exists)
         if (error.code === '23505' || error.message.includes('duplicate') || error.message.includes('unique')) {
@@ -882,7 +1063,7 @@ router.post('/:id/enable-for-students', authenticateToken, authorizeRole(['admin
     }
 
     const skippedMessage = skippedCount > 0 ? ` (${skippedCount} already had access)` : '';
-    res.json({ 
+    res.json({
       message: `Quiz enabled for ${successCount} students${skippedMessage}`,
       quiz: quizData.title,
       students_enabled: successCount,
@@ -980,6 +1161,34 @@ router.put('/:id/publish', authenticateToken, authorizeRole(['admin']), async (r
       return res.status(400).json({ error: updateError.message });
     }
 
+    // Automatically enable the quiz for all existing students upon publication
+    try {
+      const { data: studentsData } = await supabase
+        .from('users')
+        .select('id')
+        .eq('role', 'student');
+
+      if (studentsData && studentsData.length > 0) {
+        const permissionsData = studentsData.map(student => ({
+          id: uuidv4(),
+          quiz_id: quizId,
+          student_id: student.id,
+          granted_at: new Date()
+        }));
+
+        // Insert individually to gracefully skip any pre-existing permissions
+        for (const perm of permissionsData) {
+          await supabase
+            .from('quiz_permissions')
+            .insert([perm])
+            .select()
+            .maybeSingle();
+        }
+      }
+    } catch (permErr) {
+      console.error('Error automatically enabling quiz on publish:', permErr);
+    }
+
     res.json({ message: `Quiz "${quizData.title}" has been published successfully` });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -1014,7 +1223,7 @@ router.post('/:id/enable-for-all-students', authenticateToken, authorizeRole(['a
     }
 
     if (!studentsData || studentsData.length === 0) {
-      return res.json({ 
+      return res.json({
         message: 'No students found to enable quiz for',
         quiz: quizData.title,
         students_enabled: 0
@@ -1024,7 +1233,7 @@ router.post('/:id/enable-for-all-students', authenticateToken, authorizeRole(['a
     // Insert permissions for all students (skip duplicates)
     let successCount = 0;
     let skippedCount = 0;
-    
+
     for (const student of studentsData) {
       const permissionId = uuidv4();
       const { error } = await supabase
@@ -1035,7 +1244,7 @@ router.post('/:id/enable-for-all-students', authenticateToken, authorizeRole(['a
           student_id: student.id,
           granted_at: new Date()
         }]);
-      
+
       if (error) {
         // Check if it's a unique constraint error (already exists)
         if (error.code === '23505' || error.message.includes('duplicate') || error.message.includes('unique')) {
@@ -1049,7 +1258,7 @@ router.post('/:id/enable-for-all-students', authenticateToken, authorizeRole(['a
     }
 
     const skippedMessage = skippedCount > 0 ? ` (${skippedCount} already had access)` : '';
-    res.json({ 
+    res.json({
       message: `Quiz enabled for all ${successCount} students${skippedMessage}`,
       quiz: quizData.title,
       students_enabled: successCount,
