@@ -239,6 +239,58 @@ const AdminSubjectPage = () => {
   const [quizStatusFilter, setQuizStatusFilter] = useState('All');
   const [quizPage, setQuizPage] = useState(1);
 
+  const loadRealQuizzes = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/quizzes/admin/all-quizzes', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        // Filter quizzes by current subject (case-insensitive)
+        const subjectQuizzes = data.filter(q => q.subject && q.subject.toUpperCase() === currentSubject.toUpperCase());
+        // Map database fields to the fields expected by the UI
+        const mappedQuizzes = subjectQuizzes.map(q => ({
+          id: q.id,
+          title: q.title,
+          questions: q.total_questions || 0,
+          passRate: `${q.passing_score || 50}%`,
+          limit: `${q.time_limit_minutes || 30} mins`,
+          attempts: 0,
+          failedRate: '0%',
+          status: q.is_published ? 'Active' : 'Draft',
+          chapter: q.chapter || '1',
+          difficulty: q.difficulty || 'Medium'
+        }));
+        setQuizzes(mappedQuizzes);
+      }
+    } catch (err) {
+      console.error('Error fetching backend quizzes in AdminSubjectPage:', err);
+    }
+  };
+
+  const handleDeleteQuiz = async (quizId) => {
+    if (!window.confirm('Are you sure you want to delete this quiz? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:5000/api/quizzes/${quizId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete quiz');
+      }
+      alert('Quiz deleted successfully');
+      loadRealQuizzes(); // Refresh the list
+    } catch (error) {
+      alert('Error deleting quiz: ' + error.message);
+    }
+  };
+
   // Generate deterministic student dataset for this specific subject
   useEffect(() => {
     if (!isValid) {
@@ -288,10 +340,8 @@ const AdminSubjectPage = () => {
       { id: 'v3', title: `Live Revision for ${currentSubject} Exams`, duration: '1h 15m', type: 'Live', url: 'https://zoom.us/mock', visibility: 'Public', chapter: '3', description: 'Revision session' }
     ]);
 
-    setQuizzes([
-      { id: 'q1', title: `${currentSubject} General Assessment 1`, questions: 15, passRate: '84%', limit: '20 mins', attempts: 120, failedRate: '16%', status: 'Active', chapter: '1', difficulty: 'Medium' },
-      { id: 'q2', title: `${currentSubject} Revision Quiz 2`, questions: 20, passRate: '79%', limit: '30 mins', attempts: 95, failedRate: '21%', status: 'Active', chapter: '2', difficulty: 'Hard' }
-    ]);
+    // Fetch quizzes from database instead of mock
+    loadRealQuizzes();
 
     setMaterials([
       { id: 'm1', title: `${currentSubject} Advanced Reference Notebook.pdf`, size: '4.2 MB', link: '#', type: 'PDF', visibility: 'Premium Only', chapter: '1', downloads: 140 },
@@ -1672,7 +1722,7 @@ const AdminSubjectPage = () => {
                                   <Activity className="w-3.5 h-3.5" />
                                 </button>
                                 <button 
-                                  onClick={() => setQuizzes(prev => prev.filter(q => q.id !== qz.id))}
+                                  onClick={() => handleDeleteQuiz(qz.id)}
                                   className="p-1.5 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-500 hover:text-rose-650 transition-colors duration-150"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />

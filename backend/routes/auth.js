@@ -40,6 +40,34 @@ router.post('/register', async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    // Automatically grant permissions to all existing published quizzes for the newly registered student
+    try {
+      const { data: publishedQuizzes } = await supabase
+        .from('quizzes')
+        .select('id')
+        .eq('is_published', true);
+
+      if (publishedQuizzes && publishedQuizzes.length > 0) {
+        const { v4: uuidv4 } = require('uuid');
+        const permissionsData = publishedQuizzes.map(quiz => ({
+          id: uuidv4(),
+          quiz_id: quiz.id,
+          student_id: data[0].id,
+          granted_at: new Date()
+        }));
+
+        const { error: permError } = await supabase
+          .from('quiz_permissions')
+          .insert(permissionsData);
+
+        if (permError) {
+          console.error('Error automatically enabling quizzes for new student:', permError);
+        }
+      }
+    } catch (permErr) {
+      console.error('Error in automatic quiz permission assignment during registration:', permErr);
+    }
+
     res.status(201).json({
       message: 'User registered successfully',
       user: data[0],

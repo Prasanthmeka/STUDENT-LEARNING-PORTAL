@@ -219,9 +219,8 @@ const QuizCreate = () => {
       setUploadedFile(e.target.files[0]);
     }
   };
-
-  // --- SIMULATED FILE GENERATION ---
-  const handleGenerateFromFile = (e) => {
+  // --- BACKEND-INTEGRATED FILE GENERATION ---
+  const handleGenerateFromFile = async (e) => {
     e.preventDefault();
     if (!uploadedFile) {
       setErrorMessage('Please upload a file before triggering extraction.');
@@ -232,7 +231,6 @@ const QuizCreate = () => {
       return;
     }
 
-    let limit = 5;
     if (!randomGeneration) {
       const parseResult = parseRangeInput(rangeInput);
       if (!parseResult.valid) {
@@ -240,46 +238,99 @@ const QuizCreate = () => {
         setErrorMessage(parseResult.error);
         return;
       }
-      limit = parseResult.questions.length;
-    } else {
-      const rCount = parseInt(randomCount, 10);
-      limit = Math.max(1, isNaN(rCount) ? 5 : rCount);
     }
 
     setErrorMessage('');
     setRangeError('');
     setIsExtracting(true);
-    setExtractionProgress(10);
+    setExtractionProgress(15);
 
-    // Beautiful simulated scanning progress
     const timer = setInterval(() => {
-      setExtractionProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(timer);
-          setIsExtracting(false);
-          setShowPreview(true);
-          
-          const sampleQuestions = [];
-          for (let i = 0; i < limit; i++) {
-            sampleQuestions.push({
-              questionText: `Generated Question #${i + 1} from ${uploadedFile.name}: What is the primary curriculum concept discussed in Unit ${quizChapter}?`,
-              optionA: `A) Core definition of ${currentSubject}`,
-              optionB: `B) Practical laboratory application guide`,
-              optionC: `C) Standard computational algorithm`,
-              optionD: `D) Basic historical civil outline`,
-              correctAnswer: i % 4 === 0 ? 'A' : i % 4 === 1 ? 'B' : i % 4 === 2 ? 'C' : 'D',
-              marks: 5,
-              explanation: `Explanation for generated Question #${i + 1}: The correct answer represents standard educational guidelines.`
-            });
-          }
-          setGeneratedQuestions(sampleQuestions);
-          return 100;
-        }
-        return prev + 15;
-      });
-    }, 300);
-  };
+      setExtractionProgress(prev => (prev < 85 ? prev + 12 : prev));
+    }, 200);
 
+    try {
+      const formData = new FormData();
+      formData.append('file', uploadedFile);
+      formData.append('subject', currentSubject);
+      
+      if (randomGeneration) {
+        formData.append('use_ai', 'true');
+        formData.append('question_numbers', randomCount);
+      } else {
+        formData.append('use_ai', 'false');
+        if (rangeInput) {
+          formData.append('question_numbers', rangeInput);
+        }
+      }
+
+      const response = await fetch('http://localhost:5000/api/quizzes/extract-questions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formData
+      });
+
+      clearInterval(timer);
+      setExtractionProgress(95);
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to extract questions');
+      }
+
+      // Map backend question format to frontend format
+      const mappedQuestions = (data.questions || []).map((q) => {
+        const optionA = q.options?.[0]?.text || '';
+        const optionB = q.options?.[1]?.text || '';
+        const optionC = q.options?.[2]?.text || '';
+        const optionD = q.options?.[3]?.text || '';
+
+        let correctAnswer = 'A';
+        if (q.options && q.options.length > 0) {
+          const correctLetters = q.options
+            .map((opt, optIdx) => opt.is_correct ? String.fromCharCode(65 + optIdx) : null)
+            .filter(Boolean);
+          if (correctLetters.length > 0) {
+            correctAnswer = correctLetters.join(', ');
+          } else if (q.correct_answer) {
+            correctAnswer = q.correct_answer;
+          }
+        } else if (q.correct_answer) {
+          correctAnswer = q.correct_answer;
+        }
+
+        return {
+          questionText: q.question_text || '',
+          optionA,
+          optionB,
+          optionC,
+          optionD,
+          correctAnswer,
+          marks: q.marks || 5,
+          explanation: q.explanation || ''
+        };
+      });
+
+      if (mappedQuestions.length === 0) {
+        throw new Error('No questions could be extracted from this document.');
+      }
+
+      setGeneratedQuestions(mappedQuestions);
+      setExtractionProgress(100);
+      setTimeout(() => {
+        setIsExtracting(false);
+        setShowPreview(true);
+      }, 300);
+
+    } catch (err) {
+      clearInterval(timer);
+      setErrorMessage(err.message);
+      setIsExtracting(false);
+    }
+  };
   // --- PREVIEW METHODS ---
   const handlePreviewFieldChange = (index, field, value) => {
     setGeneratedQuestions(prev => prev.map((q, i) => {
@@ -622,17 +673,14 @@ const QuizCreate = () => {
                     {/* Question Config */}
                     <div className="md:col-span-4 space-y-4">
                       <div className="space-y-1.5">
-                        <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Correct Answer</label>
-                        <select 
+                        <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Correct Answer (e.g. A, C)</label>
+                        <input 
+                          type="text"
                           value={q.correctAnswer}
                           onChange={(e) => handleManualFieldChange(idx, 'correctAnswer', e.target.value)}
-                          className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-855 bg-slate-50/50 dark:bg-slate-955/50 text-slate-755 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer custom-select"
-                        >
-                          <option value="A">Option A</option>
-                          <option value="B">Option B</option>
-                          <option value="C">Option C</option>
-                          <option value="D">Option D</option>
-                        </select>
+                          placeholder="e.g. A, C"
+                          className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-855 bg-slate-50/50 dark:bg-slate-955/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+                        />
                       </div>
 
                       <div className="space-y-1.5">
@@ -1063,17 +1111,14 @@ const QuizCreate = () => {
                     {/* Extras */}
                     <div className="md:col-span-4 space-y-4">
                       <div className="space-y-1.5">
-                        <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Correct Answer</label>
-                        <select 
+                        <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Correct Answer (e.g. A, C)</label>
+                        <input 
+                          type="text"
                           value={q.correctAnswer}
                           onChange={(e) => handlePreviewFieldChange(idx, 'correctAnswer', e.target.value)}
-                          className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-855 bg-slate-50/50 dark:bg-slate-955/50 text-slate-755 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer custom-select"
-                        >
-                          <option value="A">Option A</option>
-                          <option value="B">Option B</option>
-                          <option value="C">Option C</option>
-                          <option value="D">Option D</option>
-                        </select>
+                          placeholder="e.g. A, C"
+                          className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-855 bg-slate-50/50 dark:bg-slate-955/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+                        />
                       </div>
 
                       <div className="space-y-1.5">
