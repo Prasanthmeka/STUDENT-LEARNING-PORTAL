@@ -69,14 +69,17 @@ const CoursesGrid = ({ courses = [], loading = false, searchQuery = '' }) => {
     );
   }
 
-  // Restrict to standard 8 subjects & filter based on search query
+  // Restrict to standard 8 subjects & filter based on search query and subscription list
   const allowedSubjects = ['TELUGU', 'HINDI', 'ENGLISH', 'SOCIAL', 'PHYSICS', 'CHEMISTRY', 'MATHS', 'BIOLOGY', 'SOCIAL STUDIES'];
+  const subscribed = JSON.parse(localStorage.getItem('subscribedSubjects') || '[]');
+
   const filteredCourses = courses.filter(course => {
     const isAllowed = allowedSubjects.includes(course.subject?.toUpperCase());
     const matchesSearch = searchQuery 
       ? course.subject?.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
-    return isAllowed && matchesSearch;
+    const isSubscribed = subscribed.some(s => s.toLowerCase() === course.subject?.toLowerCase());
+    return isAllowed && matchesSearch && isSubscribed;
   });
 
   const formatSubjectName = (subject) => {
@@ -85,6 +88,32 @@ const CoursesGrid = ({ courses = [], loading = false, searchQuery = '' }) => {
     if (lower === 'social studies' || lower === 'social') return 'Social Studies';
     return subject.charAt(0).toUpperCase() + lower.slice(1);
   };
+
+  if (filteredCourses.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="font-black text-slate-800 dark:text-white text-xl tracking-tight font-sans">Active Courses</h3>
+          <p className="text-xs font-semibold text-slate-400 mt-0.5">Pick up right where you left off</p>
+        </div>
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-8 text-center shadow-saas max-w-lg mx-auto">
+          <div className="w-16 h-16 rounded-full bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 flex items-center justify-center text-indigo-500 mx-auto mb-4">
+            <span className="text-2xl">📚</span>
+          </div>
+          <h4 className="font-extrabold text-slate-800 dark:text-white text-lg leading-tight">No Active Subject Subscriptions</h4>
+          <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+            You haven't subscribed to any subjects yet. Customize your curriculum by selecting subjects on the subscription plan page to activate your dashboard.
+          </p>
+          <a
+            href="/student/subscription"
+            className="inline-flex items-center gap-2 mt-5 py-2.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-750 text-white font-bold text-xs tracking-wide transition-smooth shadow-md shadow-indigo-600/10 shrink-0"
+          >
+            Customize Curriculum & Subscribe
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

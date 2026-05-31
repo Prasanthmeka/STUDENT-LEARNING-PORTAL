@@ -9,6 +9,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { subscriptionAPI } from '../services/api';
 
 const Subscription = () => {
   const navigate = useNavigate();
@@ -48,18 +49,31 @@ const Subscription = () => {
     }
   };
 
-  const handleConfirmPurchase = () => {
+  const handleConfirmPurchase = async () => {
     if (selectedSubjects.length === 0) {
       alert('Please select at least one subject to proceed.');
       return;
     }
-    setShowSubjectModal(false);
-    setShowSuccessModal(true);
+    
+    try {
+      // Securely save the subscription choices on the backend
+      await subscriptionAPI.createSubscription({
+        subscription_type: 'premium',
+        plan_name: selectedPlanName,
+        subjects: selectedSubjects
+      });
 
-    // Save active plan to localStorage
-    localStorage.setItem('activePlan', selectedPlanName);
-    localStorage.setItem('subscribedSubjects', JSON.stringify(selectedSubjects));
-    setCurrentPlan(selectedPlanName);
+      setShowSubjectModal(false);
+      setShowSuccessModal(true);
+
+      // Save active plan to localStorage
+      localStorage.setItem('activePlan', selectedPlanName);
+      localStorage.setItem('subscribedSubjects', JSON.stringify(selectedSubjects));
+      setCurrentPlan(selectedPlanName);
+    } catch (err) {
+      console.error('Failed to create subscription on backend:', err);
+      alert(err.response?.data?.error || err.message || 'Failed to complete subscription. Please try again.');
+    }
   };
 
   const expiryDate = new Date();

@@ -68,22 +68,28 @@ router.get('/', authenticateToken, authorizeRole(['student']), async (req, res) 
       subjectMap[sub].completed = Math.min(completedQuizzes, subjectMap[sub].lessons);
     });
 
-    const coursesArray = Object.keys(subjectMap).map(sub => {
-      const course = subjectMap[sub];
-      const percentage = course.lessons > 0 ? Math.round((course.completed / course.lessons) * 100) : 0;
-      
-      return {
-        id: sub.toLowerCase(),
-        title: course.title,
-        subject: sub === 'Social' ? 'Social Studies' : sub,
-        instructor: course.instructor,
-        lessonsCompleted: course.completed,
-        totalLessons: course.lessons,
-        progress: percentage,
-        icon: course.icon,
-        thumbnail: `/assets/courses/${sub.toLowerCase()}.jpg` // Illustrative path
-      };
-    });
+    // Extract subscribed subjects list securely from local JSON
+    const { getSubscribedSubjects } = require('../utils/subscriptionHelper');
+    const subscribedSubjects = getSubscribedSubjects(studentId, req.headers);
+
+    const coursesArray = Object.keys(subjectMap)
+      .filter(sub => subscribedSubjects.some(s => s.toLowerCase() === sub.toLowerCase()))
+      .map(sub => {
+        const course = subjectMap[sub];
+        const percentage = course.lessons > 0 ? Math.round((course.completed / course.lessons) * 100) : 0;
+        
+        return {
+          id: sub.toLowerCase(),
+          title: course.title,
+          subject: sub === 'Social' ? 'Social Studies' : sub,
+          instructor: course.instructor,
+          lessonsCompleted: course.completed,
+          totalLessons: course.lessons,
+          progress: percentage,
+          icon: course.icon,
+          thumbnail: `/assets/courses/${sub.toLowerCase()}.jpg` // Illustrative path
+        };
+      });
 
     res.json(coursesArray);
   } catch (err) {

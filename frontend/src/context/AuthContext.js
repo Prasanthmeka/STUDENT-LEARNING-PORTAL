@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { authAPI } from '../services/api';
+import { authAPI, subscriptionAPI } from '../services/api';
 
 export const AuthContext = createContext();
 
@@ -21,10 +21,31 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.getProfile();
       setUser(response.data);
+
+      // Load active subscriptions securely for student
+      if (response.data && response.data.role === 'student') {
+        try {
+          const subResp = await subscriptionAPI.getMySubscription();
+          if (subResp.data) {
+            localStorage.setItem('subscribedSubjects', JSON.stringify(subResp.data.subscribed_subjects || []));
+            localStorage.setItem('activePlan', subResp.data.active_plan || 'Free Trial');
+          } else {
+            localStorage.setItem('subscribedSubjects', JSON.stringify([]));
+            localStorage.setItem('activePlan', 'Free Trial');
+          }
+        } catch (subErr) {
+          console.log('No active subscription found on backend, using Free Trial.');
+          localStorage.setItem('subscribedSubjects', JSON.stringify([]));
+          localStorage.setItem('activePlan', 'Free Trial');
+        }
+      }
     } catch (error) {
       console.error('Failed to fetch user:', error);
       localStorage.removeItem('token');
+      localStorage.removeItem('subscribedSubjects');
+      localStorage.removeItem('activePlan');
       setToken(null);
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -56,6 +77,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('subscribedSubjects');
+    localStorage.removeItem('activePlan');
     setToken(null);
     setUser(null);
   };

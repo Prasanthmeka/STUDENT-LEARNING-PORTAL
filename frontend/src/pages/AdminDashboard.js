@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { analyticsAPI } from '../services/api';
+import { analyticsAPI, userAPI } from '../services/api';
 import AdminLayout from '../layouts/AdminLayout';
 import { 
   GraduationCap, 
@@ -138,12 +138,36 @@ const AdminDashboard = () => {
   };
 
   // Delete Action Handler
-  const handleDeleteStudent = (studentId, studentName) => {
+  const handleDeleteStudent = async (studentId, studentName) => {
     if (window.confirm(`Are you sure you want to remove student "${studentName}"? This action cannot be undone.`)) {
-      setData(prev => ({
-        ...prev,
-        students: prev.students.filter(s => s.id !== studentId)
-      }));
+      if (isRealBackend) {
+        try {
+          await userAPI.deleteUser(studentId);
+          setData(prev => ({
+            ...prev,
+            students: prev.students.filter(s => s.id !== studentId),
+            summary: {
+              ...prev.summary,
+              totalStudents: Math.max(0, prev.summary.totalStudents - 1)
+            }
+          }));
+          alert(`Student "${studentName}" has been successfully removed.`);
+        } catch (error) {
+          console.error('Failed to delete student:', error);
+          alert(error.response?.data?.error || 'Failed to remove student. Please try again.');
+        }
+      } else {
+        // Fallback for mock/offline data
+        setData(prev => ({
+          ...prev,
+          students: prev.students.filter(s => s.id !== studentId),
+          summary: {
+            ...prev.summary,
+            totalStudents: Math.max(0, prev.summary.totalStudents - 1)
+          }
+        }));
+        alert(`Student "${studentName}" has been successfully removed (mock state only).`);
+      }
     }
   };
 
@@ -1029,7 +1053,7 @@ const AdminDashboard = () => {
       // ---------------------------------------------------- */}
       <AnimatePresence>
         {editingStudent && (
-          <div className="fixed inset-0 z-55 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}

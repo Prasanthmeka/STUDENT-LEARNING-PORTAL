@@ -10,6 +10,11 @@ API.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  
+  const subscribedSubjects = localStorage.getItem('subscribedSubjects');
+  if (subscribedSubjects) {
+    config.headers['X-Subscribed-Subjects'] = subscribedSubjects;
+  }
   return config;
 });
 
@@ -89,6 +94,11 @@ export const aiAPI = {
   generateQuiz: (materialId, text, count, subject) => API.post('/ai/generate-quiz', { materialId, text, count, subject }),
   explainAnswer: (attemptId) => API.post('/ai/explain-answer', { attemptId }),
   getRecommendations: () => API.post('/ai/recommendations')
+};
+
+// User/Student APIs
+export const userAPI = {
+  deleteUser: (id) => API.delete(`/users/${id}`)
 };
 
 export default API;

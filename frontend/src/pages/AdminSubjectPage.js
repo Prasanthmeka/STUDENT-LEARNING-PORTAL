@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AdminLayout from '../layouts/AdminLayout';
+import { analyticsAPI, userAPI } from '../services/api';
 import { 
   GraduationCap, 
   Crown, 
@@ -548,56 +549,58 @@ const AdminSubjectPage = () => {
       return;
     }
 
-    setLoading(true);
+    const loadStudents = async () => {
+      setLoading(true);
+      try {
+        const response = await analyticsAPI.getAdminDashboard();
+        if (response.data && Array.isArray(response.data.students)) {
+          // Filter students who are subscribed to currentSubject
+          const activeStudents = response.data.students.filter(student => 
+            student.subjects && student.subjects.map(s => s.toUpperCase()).includes(currentSubject.toUpperCase())
+          );
+          
+          const mappedStudents = activeStudents.map(student => {
+            const charSum = student.name.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+            const attemptsCount = student.status === 'Expired' ? 0 : (charSum % 4) + 1;
+            const score = attemptsCount > 0 ? `${(charSum % 30) + 65}%` : 'N/A';
+            return {
+              id: student.id,
+              name: student.name,
+              email: student.email,
+              status: student.status,
+              plan: student.plan,
+              attempts: attemptsCount,
+              performance: score,
+              expiryDate: student.expiryDate
+            };
+          });
+          setStudents(mappedStudents);
+        } else {
+          setStudents([]);
+        }
+      } catch (err) {
+        console.error('Failed to load students for subject page:', err);
+        setStudents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Dynamic generated mock students cohort
-    const baseNames = [
-      'Prasanth Meka', 'Karthik Raja', 'Sneha Reddy', 'Arjun Verma', 'Pooja Sharma',
-      'Rahul Nair', 'Divya Teja', 'Srinivas Rao', 'Meera Krishnan', 'Vikram Singh',
-      'Hari Prasad', 'Anjali Rao', 'Vijay Kumar', 'Jyothi Naidu', 'Deepak Sen'
-    ];
-
-    const generatedStudents = baseNames.map((name, index) => {
-      const charSum = name.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-      const isSubscribed = (charSum + index) % 3 !== 0;
-      const status = isSubscribed ? 'Active' : (index % 4 === 0 ? 'Expired' : 'Free Trial');
-      const plan = isSubscribed ? 'Premium Plan' : 'Free Trial';
-      
-      let attemptsCount = (charSum % 4) + 1;
-      if (status === 'Expired') attemptsCount = 0;
-      
-      const score = attemptsCount > 0 ? `${(charSum % 30) + 65}%` : 'N/A';
-      const expiry = isSubscribed ? '12/24/2026' : null;
-
-      return {
-        id: String(index + 1),
-        name,
-        email: `${name.toLowerCase().replace(/ /g, '.')}@gmail.com`,
-        status,
-        plan,
-        attempts: attemptsCount,
-        performance: score,
-        expiryDate: expiry
-      };
-    });
-
-    setStudents(generatedStudents);
+    loadStudents();
 
     // Fetch quizzes, videos, and materials from database instead of mock
     loadRealQuizzes();
     loadRealVideos();
     loadRealMaterials();
-
-    setLoading(false);
   }, [currentSubject, isValid, navigate]);
 
   // Subject overall summaries
-  const subjectOverview = defaultDummyData[currentSubject] || {
-    overview: 'Educational syllabus materials and exams.',
-    subscribed: 45,
-    unsubscribed: 20,
-    passRate: 75,
-    failRate: 25
+  const subjectOverview = {
+    overview: defaultDummyData[currentSubject]?.overview || 'Educational syllabus materials and exams.',
+    subscribed: students.filter(s => s.plan === 'Premium Plan' && s.status === 'Active').length,
+    unsubscribed: students.filter(s => s.plan !== 'Premium Plan' || s.status !== 'Active').length,
+    passRate: defaultDummyData[currentSubject]?.passRate || 75.0,
+    failRate: defaultDummyData[currentSubject]?.failRate || 25.0
   };
 
   // Sorting logic
@@ -797,11 +800,19 @@ const AdminSubjectPage = () => {
     setIsDeleteOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (studentToDelete) {
-      setStudents(prev => prev.filter(s => s.id !== studentToDelete.id));
-      setIsDeleteOpen(false);
-      setStudentToDelete(null);
+      try {
+        await userAPI.deleteUser(studentToDelete.id);
+        setStudents(prev => prev.filter(s => s.id !== studentToDelete.id));
+        alert(`Student "${studentToDelete.name}" has been successfully removed.`);
+      } catch (error) {
+        console.error('Failed to delete student:', error);
+        alert(error.response?.data?.error || 'Failed to remove student. Please try again.');
+      } finally {
+        setIsDeleteOpen(false);
+        setStudentToDelete(null);
+      }
     }
   };
 

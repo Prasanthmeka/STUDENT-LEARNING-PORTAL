@@ -63,7 +63,7 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   // Format Date and Time

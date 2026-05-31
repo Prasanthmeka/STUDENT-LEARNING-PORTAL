@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const supabase = require('../utils/supabase');
+const { sendWelcomeEmail } = require('../utils/email');
 
 const router = express.Router();
 
@@ -66,6 +67,14 @@ router.post('/register', async (req, res) => {
       }
     } catch (permErr) {
       console.error('Error in automatic quiz permission assignment during registration:', permErr);
+    }
+
+    // Asynchronously dispatch the student welcome confirmation email
+    try {
+      sendWelcomeEmail(data[0].email, data[0].full_name)
+        .catch(err => console.error('Asynchronous welcome email dispatch failed:', err));
+    } catch (emailErr) {
+      console.error('Error in triggering welcome email:', emailErr);
     }
 
     res.status(201).json({

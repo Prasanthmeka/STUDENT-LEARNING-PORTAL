@@ -33,7 +33,7 @@ const AdminSidebar = ({
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   const handleDashboardClick = () => {

@@ -255,10 +255,14 @@ router.get('/', async (req, res) => {
         });
       }
 
-      // Extract quiz data from permissions and attach attempt info
+      // Extract subscribed subjects list securely from local JSON
+      const { getSubscribedSubjects } = require('../utils/subscriptionHelper');
+      const subscribedSubjects = getSubscribedSubjects(userId, req.headers);
+
+      // Extract quiz data from permissions and attach attempt info, filtered by subject subscription list
       const quizzes = (permittedQuizzes || [])
         .map(p => p.quizzes)
-        .filter(q => q && q.is_published)
+        .filter(q => q && q.is_published && subscribedSubjects.some(s => s.toLowerCase() === q.subject?.toLowerCase()))
         .map(q => {
           const attempt = attemptsMap[q.id] || null;
           return {
@@ -283,7 +287,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get Quiz Details with Questions
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const { data: quizData, error: quizError } = await supabase
       .from('quizzes')
@@ -291,8 +295,17 @@ router.get('/:id', async (req, res) => {
       .eq('id', req.params.id)
       .single();
 
-    if (quizError) {
+    if (quizError || !quizData) {
       return res.status(404).json({ error: 'Quiz not found' });
+    }
+
+    // Security guard for students
+    if (req.user && req.user.role === 'student') {
+      const { isSubscribedToSubject } = require('../utils/subscriptionHelper');
+      const isSubscribed = isSubscribedToSubject(req.user.id, quizData.subject, req.headers);
+      if (!isSubscribed) {
+        return res.status(403).json({ error: 'Access denied. You are not subscribed to this subject.' });
+      }
     }
 
     const { data: questionsData, error: questionsError } = await supabase

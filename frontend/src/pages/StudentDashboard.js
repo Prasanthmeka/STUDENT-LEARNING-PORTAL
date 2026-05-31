@@ -125,6 +125,24 @@ const StudentDashboard = () => {
             </div>
           )}
 
+          {/* Subscribed Subjects check alert */}
+          {(JSON.parse(localStorage.getItem('subscribedSubjects') || '[]')).length === 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-amber-50 dark:bg-amber-955/20 border border-amber-200 dark:border-amber-900/50 p-4.5 rounded-3xl text-xs shadow-md">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
+                <span className="font-extrabold text-amber-800 dark:text-amber-400 leading-normal">
+                  Your student portal is inactive. Please configure and subscribe to subjects on the subscription checkout page to view your courses, video lessons, and study materials.
+                </span>
+              </div>
+              <button 
+                onClick={() => navigate('/student/subscription')}
+                className="py-2 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold transition-smooth text-[10px] shrink-0 shadow-sm"
+              >
+                Configure Curriculum
+              </button>
+            </div>
+          )}
+
           {/* Welcome Greeting Hero Component */}
           <WelcomeHero 
             streak={dashboardData?.summary?.streak || 0}
@@ -228,35 +246,50 @@ const StudentDashboard = () => {
                 </div>
 
                 <div className="flex-grow overflow-y-auto py-4 space-y-3 pr-1">
-                  {activities.map((act) => (
-                    <div 
-                      key={act.id}
-                      onClick={() => toggleActivity(act.id)}
-                      className={`flex items-center justify-between p-3 rounded-2xl border transition-smooth cursor-pointer ${
-                        act.done 
-                          ? 'bg-slate-50/50 dark:bg-slate-950/20 border-slate-100 dark:border-slate-850 opacity-60' 
-                          : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-900 hover:bg-slate-50/40 dark:hover:bg-slate-850/20'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <button className="text-slate-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-smooth">
-                          {act.done ? (
-                            <CheckSquare className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-                          ) : (
-                            <Square className="w-5 h-5 text-slate-300 dark:text-slate-700" />
-                          )}
-                        </button>
-                        <span className={`text-xs font-semibold font-sans tracking-wide ${
-                          act.done ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200'
-                        }`}>
-                          {act.title}
+                  {(() => {
+                    const subs = JSON.parse(localStorage.getItem('subscribedSubjects') || '[]');
+                    const filteredActivities = activities.filter(act => 
+                      subs.some(s => s.toLowerCase() === act.subject?.toLowerCase())
+                    );
+                    
+                    if (filteredActivities.length === 0) {
+                      return (
+                        <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 text-center py-16">
+                          No activities matching your active subjects.
+                        </p>
+                      );
+                    }
+
+                    return filteredActivities.map((act) => (
+                      <div 
+                        key={act.id}
+                        onClick={() => toggleActivity(act.id)}
+                        className={`flex items-center justify-between p-3 rounded-2xl border transition-smooth cursor-pointer ${
+                          act.done 
+                            ? 'bg-slate-50/50 dark:bg-slate-950/20 border-slate-100 dark:border-slate-850 opacity-60' 
+                            : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-900 hover:bg-slate-50/40 dark:hover:bg-slate-850/20'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <button className="text-slate-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-smooth">
+                            {act.done ? (
+                              <CheckSquare className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+                            ) : (
+                              <Square className="w-5 h-5 text-slate-300 dark:text-slate-700" />
+                            )}
+                          </button>
+                          <span className={`text-xs font-semibold font-sans tracking-wide ${
+                            act.done ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200'
+                          }`}>
+                            {act.title}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/50 text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50 uppercase tracking-wider">
+                          {act.date}
                         </span>
                       </div>
-                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/50 text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50 uppercase tracking-wider">
-                        {act.date}
-                      </span>
-                    </div>
-                  ))}
+                    ));
+                  })()}
                 </div>
               </div>
             </div>
