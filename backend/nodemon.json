@@ -1,0 +1,6 @@
+{
+  "ignore": [
+    "utils/student_subscriptions.json",
+    "temp/*"
+  ]
+}

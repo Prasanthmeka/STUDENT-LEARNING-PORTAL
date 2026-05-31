@@ -18,7 +18,7 @@ const AdminAnalytics = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   useEffect(() => {

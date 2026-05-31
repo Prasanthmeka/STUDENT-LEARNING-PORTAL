@@ -1,6 +1,7 @@
 const express = require('express');
 const supabase = require('../utils/supabase');
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
+const { getSubscribedSubjects } = require('../utils/subscriptionHelper');
 
 const router = express.Router();
 
@@ -267,7 +268,7 @@ router.get('/admin-dashboard', authenticateToken, authorizeRole(['admin']), asyn
     // 5. Build Student Table Data
     const studentsTableData = students.map(student => {
       const sub = subscriptions.find(s => s.student_id === student.id && s.is_active);
-      const subjects = getAssignedSubjects(student.id, student.full_name);
+      const subjects = getSubscribedSubjects(student.id);
       
       let plan = 'Free Trial';
       let expiryDate = null;
@@ -275,7 +276,18 @@ router.get('/admin-dashboard', authenticateToken, authorizeRole(['admin']), asyn
 
       if (sub) {
         plan = sub.subscription_type === 'premium' ? 'Premium Plan' : 'Free Trial';
-        expiryDate = sub.end_date ? new Date(sub.end_date).toLocaleDateString() : 'N/A';
+        let subEndDate = sub.end_date;
+        if (!subEndDate) {
+          const baseDate = sub.start_date || sub.created_at || student.created_at || new Date();
+          const end = new Date(baseDate);
+          if (sub.subscription_type === 'premium') {
+            end.setMonth(end.getMonth() + 1);
+          } else {
+            end.setDate(end.getDate() + 14);
+          }
+          subEndDate = end;
+        }
+        expiryDate = new Date(subEndDate).toLocaleDateString();
         status = sub.subscription_type === 'premium' ? 'Active' : 'Expired';
       } else {
         // Mock free trial expiry (14 days from registration)

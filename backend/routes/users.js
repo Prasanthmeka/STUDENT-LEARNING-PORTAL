@@ -1,6 +1,8 @@
 const express = require('express');
 const supabase = require('../utils/supabase');
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
+const fs = require('fs');
+const path = require('path');
 
 const router = express.Router();
 
@@ -55,6 +57,72 @@ router.get('/me', authenticateToken, async (req, res) => {
     }
 
     res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: Delete student/user
+router.delete('/:id', authenticateToken, authorizeRole(['admin']), async (req, res) => {
+  try {
+    const studentId = req.params.id;
+
+    // 1. Delete student attempts (quiz_attempts)
+    const { error: attemptsError } = await supabase
+      .from('quiz_attempts')
+      .delete()
+      .eq('student_id', studentId);
+
+    if (attemptsError) {
+      console.warn('Failed to delete student quiz attempts:', attemptsError.message);
+    }
+
+    // 2. Delete student quiz permissions
+    const { error: permError } = await supabase
+      .from('quiz_permissions')
+      .delete()
+      .eq('student_id', studentId);
+
+    if (permError) {
+      console.warn('Failed to delete student quiz permissions:', permError.message);
+    }
+
+    // 3. Delete student subscriptions from Supabase
+    const { error: subsError } = await supabase
+      .from('subscriptions')
+      .delete()
+      .eq('student_id', studentId);
+
+    if (subsError) {
+      console.warn('Failed to delete student subscriptions:', subsError.message);
+    }
+
+    // 4. Delete student from local student_subscriptions.json if exists
+    try {
+      const localSubscriptionsPath = path.join(__dirname, '../../student_subscriptions.json');
+      if (fs.existsSync(localSubscriptionsPath)) {
+        const data = fs.readFileSync(localSubscriptionsPath, 'utf8');
+        const subs = JSON.parse(data);
+        if (subs[studentId]) {
+          delete subs[studentId];
+          fs.writeFileSync(localSubscriptionsPath, JSON.stringify(subs, null, 2));
+        }
+      }
+    } catch (localErr) {
+      console.warn('Failed to delete student subscription from local JSON:', localErr.message);
+    }
+
+    // 5. Finally delete the user/student
+    const { error: userError } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', studentId);
+
+    if (userError) {
+      return res.status(400).json({ error: userError.message });
+    }
+
+    res.json({ message: 'Student and all related records deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

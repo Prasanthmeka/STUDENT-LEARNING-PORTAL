@@ -46,7 +46,7 @@ const ProtectedRoute = ({ component: Component, requiredRole }) => {
   if (loading) return <div className="loading">Loading...</div>;
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/" />;
   }
 
   if (requiredRole && user?.role !== requiredRole) {

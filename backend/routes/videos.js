@@ -54,7 +54,7 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
 });
 
 // Get All Published Videos
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('videos')
@@ -64,6 +64,17 @@ router.get('/', async (req, res) => {
 
     if (error) {
       return res.status(400).json({ error: error.message });
+    }
+
+    // Filter by subscribed subjects if user is a student
+    if (req.user && req.user.role === 'student') {
+      const { getSubscribedSubjects } = require('../utils/subscriptionHelper');
+      const subscribedSubjects = getSubscribedSubjects(req.user.id, req.headers);
+      
+      const filtered = (data || []).filter(v => 
+        subscribedSubjects.some(s => s.toLowerCase() === v.subject?.toLowerCase())
+      );
+      return res.json(filtered);
     }
 
     res.json(data);
@@ -92,7 +103,7 @@ router.get('/admin', authenticateToken, authorizeRole(['admin']), async (req, re
 });
 
 // Get Video by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('videos')
@@ -100,8 +111,17 @@ router.get('/:id', async (req, res) => {
       .eq('id', req.params.id)
       .single();
 
-    if (error) {
+    if (error || !data) {
       return res.status(404).json({ error: 'Video not found' });
+    }
+
+    // Security guard for students
+    if (req.user && req.user.role === 'student') {
+      const { isSubscribedToSubject } = require('../utils/subscriptionHelper');
+      const isSubscribed = isSubscribedToSubject(req.user.id, data.subject, req.headers);
+      if (!isSubscribed) {
+        return res.status(403).json({ error: 'Access denied. You are not subscribed to this subject.' });
+      }
     }
 
     res.json(data);

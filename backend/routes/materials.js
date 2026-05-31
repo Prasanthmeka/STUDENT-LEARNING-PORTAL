@@ -51,7 +51,7 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
 });
 
 // Get All Published Materials
-router.get('/', async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('study_materials')
@@ -61,6 +61,17 @@ router.get('/', async (req, res) => {
 
     if (error) {
       return res.status(400).json({ error: error.message });
+    }
+
+    // Filter by subscribed subjects if user is a student
+    if (req.user && req.user.role === 'student') {
+      const { getSubscribedSubjects } = require('../utils/subscriptionHelper');
+      const subscribedSubjects = getSubscribedSubjects(req.user.id, req.headers);
+      
+      const filtered = (data || []).filter(m => 
+        subscribedSubjects.some(s => s.toLowerCase() === m.subject?.toLowerCase())
+      );
+      return res.json(filtered);
     }
 
     res.json(data);
@@ -91,8 +102,44 @@ router.get('/admin', authenticateToken, authorizeRole(['admin']), async (req, re
 // Proxy / Render external material content (restricted to GitHub hosts)
 router.get('/render', async (req, res) => {
   try {
-    const { url } = req.query;
-    if (!url) return res.status(400).json({ error: 'Missing url query param' });
+    let { url, id, token, subjects } = req.query;
+
+    // Secure checking if id and token are provided (Student Workspace Download Link)
+    if (id) {
+      if (!token) return res.status(401).json({ error: 'Missing token query param' });
+
+      const jwt = require('jsonwebtoken');
+      let decoded;
+      try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret_here');
+      } catch (e) {
+        return res.status(403).json({ error: 'Invalid or expired token' });
+      }
+
+      const { data: material, error } = await supabase
+        .from('study_materials')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error || !material) {
+        return res.status(404).json({ error: 'Material not found' });
+      }
+
+      // If student, check if they are subscribed to this subject
+      if (decoded.role === 'student') {
+        const { isSubscribedToSubject } = require('../utils/subscriptionHelper');
+        const headersFallback = { 'x-subscribed-subjects': subjects };
+        const isSubscribed = isSubscribedToSubject(decoded.id, material.subject, headersFallback);
+        if (!isSubscribed) {
+          return res.status(403).json({ error: 'Access denied. You are not subscribed to this subject.' });
+        }
+      }
+
+      url = material.github_url;
+    }
+
+    if (!url) return res.status(400).json({ error: 'Missing url or id query param' });
 
     const allowedHosts = ['github.com', 'raw.githubusercontent.com', 'gist.githubusercontent.com', 'githubusercontent.com'];
     let parsed;
@@ -155,7 +202,7 @@ router.get('/render', async (req, res) => {
 });
 
 // Get Material by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('study_materials')
@@ -163,8 +210,17 @@ router.get('/:id', async (req, res) => {
       .eq('id', req.params.id)
       .single();
 
-    if (error) {
+    if (error || !data) {
       return res.status(404).json({ error: 'Material not found' });
+    }
+
+    // Security guard for students
+    if (req.user && req.user.role === 'student') {
+      const { isSubscribedToSubject } = require('../utils/subscriptionHelper');
+      const isSubscribed = isSubscribedToSubject(req.user.id, data.subject, req.headers);
+      if (!isSubscribed) {
+        return res.status(403).json({ error: 'Access denied. You are not subscribed to this subject.' });
+      }
     }
 
     res.json(data);

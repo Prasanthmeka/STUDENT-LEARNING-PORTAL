@@ -24,7 +24,8 @@ const StudentMaterials = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [selectedSubject, setSelectedSubject] = useState('All');
 
-  const subjects = ['All', 'Telugu', 'Hindi', 'English', 'Maths', 'Physics', 'Chemistry', 'Biology', 'Social'];
+  const subscribedList = JSON.parse(localStorage.getItem('subscribedSubjects') || '[]');
+  const subjects = ['All', ...subscribedList];
 
   useEffect(() => {
     fetchMaterials();
@@ -35,10 +36,13 @@ const StudentMaterials = () => {
       setLoading(true);
       const response = await materialAPI.getMaterials();
       
-      // Restrict to authorized 8 subjects
+      // Restrict to authorized 8 subjects & check subscription
       const allowed = ['TELUGU', 'HINDI', 'ENGLISH', 'SOCIAL', 'PHYSICS', 'CHEMISTRY', 'MATHS', 'BIOLOGY', 'SOCIAL STUDIES'];
+      const subscribed = JSON.parse(localStorage.getItem('subscribedSubjects') || '[]');
+      
       const filteredRaw = (response.data || []).filter(m => 
-        allowed.includes(m.subject?.toUpperCase())
+        allowed.includes(m.subject?.toUpperCase()) &&
+        subscribed.some(s => s.toLowerCase() === m.subject?.toLowerCase())
       );
       
       setMaterials(filteredRaw);
@@ -256,10 +260,24 @@ const StudentMaterials = () => {
           <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850 flex items-center justify-center text-slate-400 mx-auto mb-4">
             <HelpCircle className="w-8 h-8 stroke-1.5" />
           </div>
-          <h4 className="font-extrabold text-slate-800 dark:text-white text-lg leading-tight">No Materials Found</h4>
+          <h4 className="font-extrabold text-slate-800 dark:text-white text-lg leading-tight">
+            {(JSON.parse(localStorage.getItem('subscribedSubjects') || '[]')).length === 0 
+              ? 'No Subscribed Subjects' 
+              : 'No Materials Found'}
+          </h4>
           <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-            There are no reference documents or study guide notes matching your filter choices.
+            {(JSON.parse(localStorage.getItem('subscribedSubjects') || '[]')).length === 0 
+              ? 'You have not subscribed to any subjects yet. Customize your curriculum on the subscription page to unlock reference resources and notebooks!' 
+              : 'There are no reference documents or study guide notes matching your filter choices.'}
           </p>
+          {(JSON.parse(localStorage.getItem('subscribedSubjects') || '[]')).length === 0 && (
+            <a
+              href="/student/subscription"
+              className="inline-flex items-center gap-2 mt-5 py-2.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs tracking-wide transition-smooth shadow-md shadow-indigo-600/10 shrink-0"
+            >
+              Go to Subscription
+            </a>
+          )}
         </div>
       ) : (
         <motion.div 
@@ -270,7 +288,9 @@ const StudentMaterials = () => {
         >
           {filteredMaterials.map((material) => {
             const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-            const proxyUrl = `${API_BASE}/materials/render?url=${encodeURIComponent(material.github_url)}`;
+            const token = localStorage.getItem('token') || '';
+            const subs = localStorage.getItem('subscribedSubjects') || '[]';
+            const proxyUrl = `${API_BASE}/materials/render?id=${material.id}&token=${encodeURIComponent(token)}&subjects=${encodeURIComponent(subs)}`;
 
             return (
               <motion.div
