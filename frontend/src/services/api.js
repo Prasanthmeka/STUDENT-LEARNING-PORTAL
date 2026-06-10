@@ -78,7 +78,8 @@ export const courseAPI = {
 // Analytics APIs
 export const analyticsAPI = {
   getStudentDashboard: () => API.get('/analytics/student-dashboard'),
-  getAdminDashboard: () => API.get('/analytics/admin-dashboard')
+  getAdminDashboard: () => API.get('/analytics/admin-dashboard'),
+  getAdminSubjectDashboard: (subjectName) => API.get(`/analytics/admin-subject-dashboard/${subjectName}`)
 };
 
 // Settings APIs

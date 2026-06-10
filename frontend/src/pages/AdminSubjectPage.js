@@ -170,6 +170,13 @@ const AdminSubjectPage = () => {
 
   // Local Subject Dataset State
   const [students, setStudents] = useState([]);
+  const [subjectSummary, setSubjectSummary] = useState({
+    subscribed: 0,
+    unsubscribed: 0,
+    passRate: 0,
+    failRate: 0
+  });
+  const [weeklyAnalyticsData, setWeeklyAnalyticsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingStudent, setEditingStudent] = useState(null);
 
@@ -552,35 +559,21 @@ const AdminSubjectPage = () => {
     const loadStudents = async () => {
       setLoading(true);
       try {
-        const response = await analyticsAPI.getAdminDashboard();
+        const response = await analyticsAPI.getAdminSubjectDashboard(currentSubject.toLowerCase());
         if (response.data && Array.isArray(response.data.students)) {
-          // Filter students who are subscribed to currentSubject
-          const activeStudents = response.data.students.filter(student => 
-            student.subjects && student.subjects.map(s => s.toUpperCase()).includes(currentSubject.toUpperCase())
-          );
-          
-          const mappedStudents = activeStudents.map(student => {
-            const charSum = student.name.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-            const attemptsCount = student.status === 'Expired' ? 0 : (charSum % 4) + 1;
-            const score = attemptsCount > 0 ? `${(charSum % 30) + 65}%` : 'N/A';
-            return {
-              id: student.id,
-              name: student.name,
-              email: student.email,
-              status: student.status,
-              plan: student.plan,
-              attempts: attemptsCount,
-              performance: score,
-              expiryDate: student.expiryDate
-            };
-          });
-          setStudents(mappedStudents);
+          setStudents(response.data.students);
+          setSubjectSummary(response.data.summary);
+          setWeeklyAnalyticsData(response.data.weeklyAnalytics);
         } else {
           setStudents([]);
+          setSubjectSummary({ subscribed: 0, unsubscribed: 0, passRate: 0, failRate: 0 });
+          setWeeklyAnalyticsData([]);
         }
       } catch (err) {
         console.error('Failed to load students for subject page:', err);
         setStudents([]);
+        setSubjectSummary({ subscribed: 0, unsubscribed: 0, passRate: 0, failRate: 0 });
+        setWeeklyAnalyticsData([]);
       } finally {
         setLoading(false);
       }
@@ -597,10 +590,10 @@ const AdminSubjectPage = () => {
   // Subject overall summaries
   const subjectOverview = {
     overview: defaultDummyData[currentSubject]?.overview || 'Educational syllabus materials and exams.',
-    subscribed: students.filter(s => s.plan === 'Premium Plan' && s.status === 'Active').length,
-    unsubscribed: students.filter(s => s.plan !== 'Premium Plan' || s.status !== 'Active').length,
-    passRate: defaultDummyData[currentSubject]?.passRate || 75.0,
-    failRate: defaultDummyData[currentSubject]?.failRate || 25.0
+    subscribed: subjectSummary.subscribed,
+    unsubscribed: subjectSummary.unsubscribed,
+    passRate: subjectSummary.passRate,
+    failRate: subjectSummary.failRate
   };
 
   // Sorting logic
@@ -2292,11 +2285,11 @@ const AdminSubjectPage = () => {
           )}
           {/* TAB 5: SUBJECT PERFORMANCE GRAPHICS */}
           {activeTab === 'analytics' && (() => {
-            const weeklyAnalytics = [
-              { week: 'Week 1', chapters: 'Chapter 1 & 2', attempts: 148, engagement: '92% Engagement', percentage: 90 },
-              { week: 'Week 2', chapters: 'Chapter 3 & 4', attempts: 112, engagement: '85% Engagement', percentage: 75 },
-              { week: 'Week 3', chapters: 'Chapter 5', attempts: 94, engagement: '78% Engagement', percentage: 60 },
-              { week: 'Week 4', chapters: 'Revision & Mock Exams', attempts: 68, engagement: '82% Engagement', percentage: 45 },
+            const dataToRender = weeklyAnalyticsData && weeklyAnalyticsData.length > 0 ? weeklyAnalyticsData : [
+              { week: 'Week 1', chapters: 'Chapter 1 & 2', attempts: 0, engagement: '0% Engagement', percentage: 0 },
+              { week: 'Week 2', chapters: 'Chapter 3 & 4', attempts: 0, engagement: '0% Engagement', percentage: 0 },
+              { week: 'Week 3', chapters: 'Chapter 5', attempts: 0, engagement: '0% Engagement', percentage: 0 },
+              { week: 'Week 4', chapters: 'Revision & Mock Exams', attempts: 0, engagement: '0% Engagement', percentage: 0 },
             ];
 
             return (
@@ -2315,7 +2308,7 @@ const AdminSubjectPage = () => {
                   </div>
 
                   <div className="space-y-4 pt-2">
-                    {weeklyAnalytics.map((unit, idx) => (
+                    {dataToRender.map((unit, idx) => (
                       <div 
                         key={idx} 
                         className="p-5 rounded-2xl bg-slate-50/50 dark:bg-slate-900/40 border border-slate-100 dark:border-indigo-950/10 hover:border-indigo-500/20 dark:hover:border-indigo-400/20 hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-all duration-200 shadow-sm"
