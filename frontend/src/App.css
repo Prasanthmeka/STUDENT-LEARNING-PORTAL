@@ -85,16 +85,514 @@ img, picture, video, iframe {
   }
 }
 
+/* ==========================================
+   MOBILE & TABLET NAVIGATION FIXES
+   Overrides high specificity desktop styles on smaller viewports
+   ========================================== */
+@media (max-width: 991px) {
+  #navigation .col-lg-6,
+  #navigation .col-lg-3.text-end {
+    display: none !important;
+  }
+  #navigation .col-lg-3 {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+  .site-logo-text {
+    white-space: nowrap !important;
+  }
+}
+
+/* ==========================================
+   SAMSUNG GALAXY S20 & MOBILE RESPONSIVENESS
+   Targets widths 480px down to 320px
+   ========================================== */
 @media (max-width: 480px) {
   .main-content {
     padding: 0 8px;
   }
 
-  /* Make buttons and fixed-width elements adapt */
-  .btn {
-    width: auto;
-    max-width: 100%;
-    padding: 10px 16px;
-    box-sizing: border-box;
+  /* 1. Global Overflow & Container Overrides */
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+  }
+  
+  .container, .container-fluid {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  /* 2. Navigation & Mobile Menu Touch Targets */
+  #navigation {
+    padding: 0 16px !important;
+    height: 70px !important;
+  }
+
+  .navbar-logo-img, .logo {
+    max-width: 150px !important;
+    height: auto !important;
+  }
+
+  .site-logo span {
+    font-size: 1.25rem !important; /* Scale text logo */
+  }
+
+  .mobile-menu-drawer {
+    width: 280px !important;
+    right: -280px !important;
+    left: auto !important;
+    padding: 80px 24px 40px !important;
+    transition: right 0.4s cubic-bezier(0.645, 0.045, 0.355, 1) !important;
+  }
+
+  .mobile-menu-drawer.open {
+    right: 0 !important;
+    left: auto !important;
+  }
+
+  .mobile-menu-list li a,
+  .mobile-menu-list li button {
+    padding: 14px 0 !important;
+    min-height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    font-size: 15px !important;
+  }
+
+  .mobile-menu-list li .mobile-signup {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 12px 24px !important;
+    border-radius: 30px !important;
+  }
+
+  /* 3. Button Touch Friendliness */
+  .btn, .btn-cta, .btn-link, .btn-view, .btn-submit, .btn-back, .btn-logout, 
+  .btn-start-quiz, .btn-search, .explore-subject-btn, .filter-btn {
+    min-height: 44px !important;
+    padding: 10px 18px !important;
+    font-size: 14px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 4. Landing Page Adjustments */
+  .hero-section {
+    padding: 30px 0 40px !important;
+    min-height: auto !important;
+  }
+
+  .hero-title {
+    font-size: 26px !important;
+    line-height: 1.2 !important;
+    margin-bottom: 15px !important;
+  }
+
+  .hero-desc {
+    font-size: 14px !important;
+    line-height: 20px !important;
+    margin-bottom: 20px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .hero-search {
+    flex-direction: column !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    gap: 8px !important;
+    padding: 0 !important;
+    margin-bottom: 20px !important;
+  }
+
+  .search-input-wrapper {
+    background: #ffffff !important;
+    height: 48px !important;
+    border-radius: 12px !important;
+    border: 1.5px solid rgba(99, 102, 241, 0.15) !important;
+    width: 100% !important;
+  }
+
+  .btn-search {
+    height: 48px !important;
+    width: 100% !important;
+    border-radius: 12px !important;
+  }
+
+  .hero-buttons {
+    width: 100% !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .hero-buttons .btn-cta {
+    width: 100% !important;
+  }
+
+  /* Stack floating cards inline to prevent overlapping illustration */
+  .hero-visual {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-top: 20px !important;
+  }
+
+  .hero-floating-card {
+    position: static !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .section-header {
+    margin-bottom: 30px !important;
+  }
+
+  .section-header h2 {
+    font-size: 24px !important;
+    line-height: 1.25 !important;
+  }
+
+  .section-header p {
+    font-size: 14px !important;
+    line-height: 20px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Grids: stack all cards to prevent overflow */
+  .features-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .feature-card {
+    padding: 20px 16px !important;
+    border-radius: 16px !important;
+  }
+
+  .feature-card h3 {
+    font-size: 18px !important;
+  }
+
+  .feature-card p {
+    font-size: 13.5px !important;
+    line-height: 20px !important;
+  }
+
+  .subjects-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .subject-card {
+    padding: 20px 16px !important;
+    border-radius: 16px !important;
+  }
+
+  .subject-card h3 {
+    font-size: 18px !important;
+  }
+
+  .subject-card p {
+    font-size: 13px !important;
+    line-height: 18px !important;
+    margin-bottom: 15px !important;
+  }
+
+  /* CTA Section */
+  .cta-container {
+    padding: 40px 16px !important;
+  }
+
+  .cta-gradient-box {
+    padding: 35px 20px !important;
+  }
+
+  .cta-gradient-box h2 {
+    font-size: 24px !important;
+    line-height: 1.2 !important;
+  }
+
+  .cta-gradient-box p {
+    font-size: 14px !important;
+    line-height: 20px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .btn-white {
+    width: 100% !important;
+    padding: 12px 20px !important;
+  }
+
+  /* 5. Authentication (Login / Register) Adjustments */
+  .auth-container {
+    padding: 20px 16px !important;
+  }
+
+  .auth-card {
+    padding: 24px 16px !important;
+    border-radius: 12px !important;
+  }
+
+  .auth-card h2 {
+    font-size: 20px !important;
+  }
+
+  .auth-card h3 {
+    font-size: 18px !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* 6. Dashboard & Leaderboard Adjustments */
+  .dashboard-header {
+    padding: 20px 16px !important;
+  }
+
+  .header-top {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .header-top h1 {
+    font-size: 22px !important;
+    text-align: left !important;
+  }
+
+  .header-top .btn-back,
+  .header-top .btn-logout,
+  .btn-back,
+  .btn-logout {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  .dashboard-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    padding: 8px !important;
+  }
+
+  .dashboard-nav a {
+    flex: 1 1 auto !important;
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  .dashboard-overview,
+  .videos-section,
+  .quizzes-section,
+  .materials-section,
+  .analytics-section {
+    margin: 20px auto !important;
+    padding: 0 16px 20px !important;
+  }
+
+  .dashboard-overview h2,
+  .videos-section h2,
+  .quizzes-section h2,
+  .materials-section h2,
+  .analytics-section h2 {
+    font-size: 1.3em !important;
+    padding: 15px 16px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .quick-links,
+  .videos-grid,
+  .quizzes-grid,
+  .materials-grid,
+  .analytics-grid,
+  .videos-list {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .quick-link-card,
+  .video-card,
+  .quiz-card,
+  .material-card,
+  .stat-card,
+  .video-item {
+    padding: 16px !important;
+  }
+
+  .video-thumbnail {
+    height: 160px !important;
+  }
+
+  /* Ensure all tables are horizontally scrollable on mobile screen sizes */
+  .performers-table,
+  .users-table,
+  .users-list-container table,
+  .detailed-results table,
+  table {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .users-list-container {
+    padding: 20px 16px !important;
+  }
+
+  .modal {
+    padding: 24px 16px !important;
+    max-height: 95vh !important;
+  }
+
+  .modal h2 {
+    font-size: 20px !important;
+    margin-bottom: 15px !important;
+  }
+
+  /* 7. Quiz Page & Quiz Results Adjustments */
+  .quiz-container {
+    padding: 12px !important;
+  }
+
+  .quiz-header {
+    padding: 12px !important;
+    gap: 10px !important;
+  }
+
+  .quiz-header h1 {
+    font-size: 18px !important;
+  }
+
+  .question-section {
+    padding: 16px !important;
+  }
+
+  .question-section h3 {
+    font-size: 16px !important;
+    margin-bottom: 15px !important;
+  }
+
+  .option {
+    padding: 12px !important;
+  }
+
+  .option span {
+    font-size: 14px !important;
+  }
+
+  .nav-buttons {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .btn-nav, .btn-submit, .btn-submit-quiz {
+    width: 100% !important;
+  }
+
+  .quiz-results {
+    padding: 20px 12px !important;
+  }
+
+  .result-header h1 {
+    font-size: 1.5em !important;
+  }
+
+  .score-display {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 15px !important;
+  }
+
+  .score-circle {
+    width: 100px !important;
+    height: 100px !important;
+  }
+
+  .score-value {
+    font-size: 2em !important;
+  }
+
+  .detailed-results h2 {
+    font-size: 1.3em !important;
+  }
+
+  .result-question {
+    padding: 16px !important;
+  }
+
+  .result-question-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .result-question-header h3 {
+    font-size: 1.05em !important;
+  }
+
+  .result-options {
+    gap: 10px !important;
+  }
+
+  .result-option {
+    padding: 12px !important;
+  }
+
+  .result-actions {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .result-actions button,
+  .result-actions a {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  /* 8. AI mascot/bubble adjustments */
+  .ai-mascot-img-wrapper {
+    width: 75px !important;
+    height: 75px !important;
+  }
+  .ai-mascot-img {
+    width: 65px !important;
+    height: 65px !important;
+  }
+  .ai-mascot-bubble {
+    bottom: 85px !important;
+    font-size: 12px !important;
+    max-width: 200px !important;
+    padding: 8px 12px !important;
+  }
+}
+
+/* 9. Extra small screen (320px) adjustments */
+@media (max-width: 340px) {
+  .hero-title {
+    font-size: 22px !important;
+  }
+  .section-header h2 {
+    font-size: 20px !important;
+  }
+  .navbar-logo-img, .logo {
+    max-width: 130px !important;
   }
 }
