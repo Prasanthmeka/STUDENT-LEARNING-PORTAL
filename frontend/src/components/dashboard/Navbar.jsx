@@ -155,7 +155,7 @@ const Navbar = ({ isCollapsed, setIsMobileOpen, searchQuery, setSearchQuery }) =
 
           {/* Notifications Dropdown */}
           {showNotifications && (
-            <div className="absolute right-0 w-80 mt-3.5 origin-top-right rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xl ring-1 ring-black/5 z-50">
+            <div className="absolute right-[-80px] md:right-0 top-full w-80 max-w-[calc(100vw-32px)] mt-3.5 origin-top-right rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xl ring-1 ring-black/5 z-50">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">Notifications</span>
                 <button className="text-xs text-indigo-500 dark:text-indigo-400 font-semibold hover:underline">Mark all read</button>

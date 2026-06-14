@@ -182,10 +182,10 @@ const StudentMaterials = () => {
           </div>
 
           {/* Quick tab button selectors */}
-          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shrink-0 self-start md:self-auto">
+          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 overflow-x-auto max-w-full no-scrollbar shrink-0 self-start md:self-auto">
             <button
               onClick={() => handleTypeChange('all')}
-              className={`flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-smooth ${
+              className={`flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-smooth whitespace-nowrap ${
                 selectedFilter === 'all' 
                   ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm' 
                   : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
@@ -196,7 +196,7 @@ const StudentMaterials = () => {
             </button>
             <button
               onClick={() => handleTypeChange('pdf')}
-              className={`flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-smooth ${
+              className={`flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-smooth whitespace-nowrap ${
                 selectedFilter === 'pdf' 
                   ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' 
                   : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
@@ -207,7 +207,7 @@ const StudentMaterials = () => {
             </button>
             <button
               onClick={() => handleTypeChange('doc')}
-              className={`flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-smooth ${
+              className={`flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-smooth whitespace-nowrap ${
                 selectedFilter === 'doc' 
                   ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' 
                   : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
@@ -218,7 +218,7 @@ const StudentMaterials = () => {
             </button>
             <button
               onClick={() => handleTypeChange('txt')}
-              className={`flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-smooth ${
+              className={`flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-smooth whitespace-nowrap ${
                 selectedFilter === 'txt' 
                   ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' 
                   : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'

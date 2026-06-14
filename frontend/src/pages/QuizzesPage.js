@@ -171,10 +171,10 @@ const QuizzesPage = () => {
           </div>
 
           {/* Quick tab filters */}
-          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shrink-0 self-start md:self-auto">
+          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 overflow-x-auto max-w-full no-scrollbar shrink-0 self-start md:self-auto">
             <button
               onClick={() => handleStatusChange('all')}
-              className={`py-2 px-4 rounded-xl text-xs font-bold transition-smooth ${
+              className={`py-2 px-4 rounded-xl text-xs font-bold transition-smooth whitespace-nowrap ${
                 selectedFilter === 'all' 
                   ? 'bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm' 
                   : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
@@ -184,7 +184,7 @@ const QuizzesPage = () => {
             </button>
             <button
               onClick={() => handleStatusChange('short')}
-              className={`py-2 px-4 rounded-xl text-xs font-bold transition-smooth ${
+              className={`py-2 px-4 rounded-xl text-xs font-bold transition-smooth whitespace-nowrap ${
                 selectedFilter === 'short' 
                   ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' 
                   : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
@@ -194,9 +194,9 @@ const QuizzesPage = () => {
             </button>
             <button
               onClick={() => handleStatusChange('long')}
-              className={`py-2 px-4 rounded-xl text-xs font-bold transition-smooth ${
+              className={`py-2 px-4 rounded-xl text-xs font-bold transition-smooth whitespace-nowrap ${
                 selectedFilter === 'long' 
-                  ? 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-450 shadow-sm' 
+                  ? 'bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-455 shadow-sm' 
                   : 'text-slate-500 hover:text-rose-600 dark:hover:text-rose-400'
               }`}
             >

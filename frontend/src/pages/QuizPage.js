@@ -176,7 +176,7 @@ const QuizPage = () => {
     
     return (
       <StudentLayout>
-        <GoBackButton />
+        <GoBackButton to="/student/quizzes" replace={true} />
 
         {/* Results PageHeader */}
         <PageHeader
@@ -184,7 +184,7 @@ const QuizPage = () => {
           subtitle={quiz.title}
           parentLabel="Tests"
           parentPath="/student/quizzes"
-          showBackButton={true}
+          showBackButton={false}
         />
 
         {/* Inner Results Cards Grid */}
@@ -252,8 +252,8 @@ const QuizPage = () => {
               {/* Action Buttons */}
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
                 <button
-                  onClick={() => navigate('/student/quizzes')}
-                  className="w-full py-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 font-bold text-xs tracking-wide transition-smooth"
+                  onClick={() => navigate('/student/quizzes', { replace: true })}
+                  className="w-full py-3 rounded-2xl bg-indigo-50 dark:bg-indigo-955/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 font-bold text-xs tracking-wide transition-smooth"
                 >
                   Back to Assessments
                 </button>
@@ -410,7 +410,7 @@ const QuizPage = () => {
 
   return (
     <StudentLayout>
-      <GoBackButton />
+      <GoBackButton to="/student/quizzes" replace={true} />
 
       {/* Quiz Solver Header */}
       <PageHeader
@@ -418,7 +418,7 @@ const QuizPage = () => {
         subtitle={`Assessment in progress. Subject: ${quiz.subject}`}
         parentLabel="Tests"
         parentPath="/student/quizzes"
-        showBackButton={true}
+        showBackButton={false}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
