@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { analyticsAPI, userAPI } from '../services/api';
 import AdminLayout from '../layouts/AdminLayout';
+import CustomSelect from '../components/dashboard/CustomSelect';
 import { 
   GraduationCap, 
   Crown, 
@@ -808,60 +809,56 @@ const AdminDashboard = () => {
 
             {/* Premium, custom-styled dropdown selectors & filters inside section */}
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-2">
-              
-              {/* Subject filter dropdown inside table */}
+                 {/* Subject filter dropdown inside table */}
               <div className="space-y-1.5">
                 <span className="block text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-1">Filter Subject</span>
-                <div className="relative">
-                  <select 
-                    value={subjectFilter}
-                    onChange={(e) => { setSubjectFilter(e.target.value); setCurrentPage(1); }}
-                    className="w-full pl-4 pr-8 py-2.5 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-850 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-slate-755 dark:text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-550/10 cursor-pointer transition-all duration-300 hover:shadow-sm dark:hover:shadow-indigo-950/20 custom-select"
-                  >
-                    <option value="All">All Subjects</option>
-                    <option value="TELUGU">TELUGU</option>
-                    <option value="HINDI">HINDI</option>
-                    <option value="ENGLISH">ENGLISH</option>
-                    <option value="SOCIAL">SOCIAL</option>
-                    <option value="PHYSICS">PHYSICS</option>
-                    <option value="CHEMISTRY">CHEMISTRY</option>
-                    <option value="BIOLOGY">BIOLOGY</option>
-                    <option value="MATHS">MATHS</option>
-                  </select>
-                </div>
+                <CustomSelect 
+                  value={subjectFilter}
+                  onChange={(val) => { setSubjectFilter(val); setCurrentPage(1); }}
+                  options={[
+                    { value: 'All', label: 'All Subjects' },
+                    { value: 'TELUGU', label: 'TELUGU' },
+                    { value: 'HINDI', label: 'HINDI' },
+                    { value: 'ENGLISH', label: 'ENGLISH' },
+                    { value: 'SOCIAL', label: 'SOCIAL' },
+                    { value: 'PHYSICS', label: 'PHYSICS' },
+                    { value: 'CHEMISTRY', label: 'CHEMISTRY' },
+                    { value: 'BIOLOGY', label: 'BIOLOGY' },
+                    { value: 'MATHS', label: 'MATHS' }
+                  ]}
+                  className="!py-2.5 !px-4 text-xs font-bold bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-205 dark:border-slate-850"
+                />
               </div>
 
               {/* Plan dropdown select filter */}
               <div className="space-y-1.5">
                 <span className="block text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-1">Plan Type</span>
-                <div className="relative">
-                  <select 
-                    value={planFilter}
-                    onChange={(e) => { setPlanFilter(e.target.value); setCurrentPage(1); }}
-                    className="w-full pl-4 pr-8 py-2.5 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-850 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-slate-755 dark:text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-550/10 cursor-pointer transition-all duration-300 hover:shadow-sm dark:hover:shadow-indigo-950/20 custom-select"
-                  >
-                    <option value="All">All Plans</option>
-                    <option value="Premium">Premium Plan</option>
-                    <option value="Free Trial">Free Trial</option>
-                  </select>
-                </div>
+                <CustomSelect 
+                  value={planFilter}
+                  onChange={(val) => { setPlanFilter(val); setCurrentPage(1); }}
+                  options={[
+                    { value: 'All', label: 'All Plans' },
+                    { value: 'Premium', label: 'Premium Plan' },
+                    { value: 'Free Trial', label: 'Free Trial' }
+                  ]}
+                  className="!py-2.5 !px-4 text-xs font-bold bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-205 dark:border-slate-850"
+                />
               </div>
 
               {/* Status dropdown select filter */}
               <div className="space-y-1.5">
                 <span className="block text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-1">Subscription Status</span>
-                <div className="relative">
-                  <select 
-                    value={statusFilter}
-                    onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-                    className="w-full pl-4 pr-8 py-2.5 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-850 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-slate-755 dark:text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-550/10 cursor-pointer transition-all duration-300 hover:shadow-sm dark:hover:shadow-indigo-950/20 custom-select"
-                  >
-                    <option value="All">All Statuses</option>
-                    <option value="Active">Active</option>
-                    <option value="Expired">Expired</option>
-                    <option value="Free Trial">Free Trial</option>
-                  </select>
-                </div>
+                <CustomSelect 
+                  value={statusFilter}
+                  onChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}
+                  options={[
+                    { value: 'All', label: 'All Statuses' },
+                    { value: 'Active', label: 'Active' },
+                    { value: 'Expired', label: 'Expired' },
+                    { value: 'Free Trial', label: 'Free Trial' }
+                  ]}
+                  className="!py-2.5 !px-4 text-xs font-bold bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-205 dark:border-slate-850"
+                />
               </div>
 
               {/* Search text input */}
