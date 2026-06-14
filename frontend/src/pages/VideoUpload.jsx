@@ -9,6 +9,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import CustomSelect from '../components/dashboard/CustomSelect';
 
 const VideoUpload = () => {
   const { subjectName } = useParams();
@@ -165,7 +166,7 @@ const VideoUpload = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Chapter / Unit *</label>
                     <input 
@@ -179,14 +180,11 @@ const VideoUpload = () => {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Video Type</label>
-                    <select 
+                    <CustomSelect 
                       value={videoType}
-                      onChange={(e) => setVideoType(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950/50 text-slate-755 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer custom-select"
-                    >
-                      <option value="Recorded">Recorded</option>
-                      <option value="Live">Live</option>
-                    </select>
+                      onChange={setVideoType}
+                      options={['Recorded', 'Live']}
+                    />
                   </div>
                 </div>
               </div>
@@ -205,7 +203,7 @@ const VideoUpload = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Duration</label>
                     <input 
@@ -217,15 +215,15 @@ const VideoUpload = () => {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Visibility</label>
-                    <select 
+                    <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Visibility</label>
+                    <CustomSelect 
                       value={videoVisibility}
-                      onChange={(e) => setVideoVisibility(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950/50 text-slate-755 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer custom-select"
-                    >
-                      <option value="Premium Only">Premium Only</option>
-                      <option value="Public">Public (Free)</option>
-                    </select>
+                      onChange={setVideoVisibility}
+                      options={[
+                        { value: 'Premium Only', label: 'Premium Only' },
+                        { value: 'Public', label: 'Public (Free)' }
+                      ]}
+                    />
                   </div>
                 </div>
 
@@ -244,11 +242,11 @@ const VideoUpload = () => {
             </div>
 
             {/* Buttons */}
-            <div className="pt-6 border-t border-slate-100 dark:border-indigo-950/20 flex flex-wrap items-center justify-end gap-3">
+            <div className="pt-6 border-t border-slate-100 dark:border-indigo-950/20 flex flex-col md:flex-row items-stretch md:items-center justify-end gap-3">
               <button 
                 type="button"
                 onClick={() => navigate(`/admin/subject/${subjectName.toLowerCase()}`)}
-                className="py-2.5 px-5 rounded-xl border border-slate-200 dark:border-slate-850 text-slate-600 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-850 font-bold transition-colors duration-150"
+                className="order-3 md:order-1 w-full md:w-auto text-center py-2.5 px-5 rounded-xl border border-slate-200 dark:border-slate-850 text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-855 font-bold transition-colors duration-150"
               >
                 Cancel
               </button>
@@ -256,7 +254,7 @@ const VideoUpload = () => {
               <button 
                 type="button"
                 onClick={handleSaveDraft}
-                className="py-2.5 px-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-850 transition-colors duration-150"
+                className="order-2 md:order-2 w-full md:w-auto text-center py-2.5 px-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-850 transition-colors duration-150"
               >
                 Save Draft
               </button>
@@ -264,7 +262,7 @@ const VideoUpload = () => {
               <button 
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center gap-2 py-2.5 px-6 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-40 text-white shadow-md transition-all duration-150"
+                className="order-1 md:order-3 w-full md:w-auto inline-flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-40 text-white shadow-md transition-all duration-150"
               >
                 {saving ? 'Uploading...' : 'Upload Video'}
               </button>

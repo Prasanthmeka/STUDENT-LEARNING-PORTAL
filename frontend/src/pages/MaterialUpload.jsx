@@ -9,6 +9,7 @@ import {
   CheckCircle 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import CustomSelect from '../components/dashboard/CustomSelect';
 
 const MaterialUpload = () => {
   const { subjectName } = useParams();
@@ -159,7 +160,7 @@ const MaterialUpload = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Chapter Name *</label>
                     <input 
@@ -173,16 +174,11 @@ const MaterialUpload = () => {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] text-slate-450 uppercase tracking-wider block">File Type</label>
-                    <select 
+                    <CustomSelect 
                       value={fileType}
-                      onChange={(e) => setFileType(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-855 bg-slate-50/50 dark:bg-slate-955/50 text-slate-755 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer custom-select"
-                    >
-                      <option value="PDF">PDF</option>
-                      <option value="Notes">Notes</option>
-                      <option value="Assignment">Assignment</option>
-                      <option value="Worksheet">Worksheet</option>
-                    </select>
+                      onChange={setFileType}
+                      options={['PDF', 'Notes', 'Assignment', 'Worksheet']}
+                    />
                   </div>
                 </div>
               </div>
@@ -206,14 +202,14 @@ const MaterialUpload = () => {
 
                 <div className="space-y-1.5">
                   <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Visibility</label>
-                  <select 
+                  <CustomSelect 
                     value={materialVisibility}
-                    onChange={(e) => setMaterialVisibility(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-855 bg-slate-50/50 dark:bg-slate-955/50 text-slate-755 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer custom-select"
-                  >
-                    <option value="Premium Only">Premium Only</option>
-                    <option value="Public">Public (Free)</option>
-                  </select>
+                    onChange={setMaterialVisibility}
+                    options={[
+                      { value: 'Premium Only', label: 'Premium Only' },
+                      { value: 'Public', label: 'Public (Free)' }
+                    ]}
+                  />
                 </div>
 
                 <div className="space-y-1.5">
@@ -231,11 +227,11 @@ const MaterialUpload = () => {
             </div>
 
             {/* Buttons */}
-            <div className="pt-6 border-t border-slate-100 dark:border-indigo-950/20 flex items-center justify-end gap-3">
+            <div className="pt-6 border-t border-slate-100 dark:border-indigo-950/20 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
               <button 
                 type="button"
                 onClick={() => navigate(`/admin/subject/${subjectName.toLowerCase()}`)}
-                className="py-2.5 px-5 rounded-xl border border-slate-200 dark:border-slate-850 text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-850 font-bold transition-colors duration-150"
+                className="order-2 sm:order-1 w-full sm:w-auto text-center py-2.5 px-5 rounded-xl border border-slate-200 dark:border-slate-850 text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-850 font-bold transition-colors duration-150"
               >
                 Cancel
               </button>
@@ -243,7 +239,7 @@ const MaterialUpload = () => {
               <button 
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center gap-2 py-2.5 px-6 rounded-xl bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 disabled:opacity-40 text-white shadow-md transition-all duration-150"
+                className="order-1 sm:order-2 w-full sm:w-auto inline-flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl bg-gradient-to-r from-purple-500 to-pink-650 hover:from-purple-650 hover:to-pink-700 disabled:opacity-40 text-white shadow-md transition-all duration-150"
               >
                 {saving ? (
                   'Saving...'
