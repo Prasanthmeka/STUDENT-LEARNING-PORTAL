@@ -3175,23 +3175,6 @@ const AdminSubjectPage = () => {
                                       </span>
                                       <span>{opt.option_text}</span>
                                     </div>
-                                    <div className="flex items-center gap-1.5 shrink-0 animate-none">
-                                      {isSelectedOption && (
-                                        <span className={`text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded
-                                          ${isCorrectOption 
-                                            ? 'bg-emerald-100/50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-450' 
-                                            : 'bg-rose-100/50 dark:bg-rose-950/30 text-rose-650 dark:text-rose-450'
-                                          }`}
-                                        >
-                                          Student Choice
-                                        </span>
-                                      )}
-                                      {isCorrectOption && (
-                                        <span className="text-[8px] font-black text-emerald-600 dark:text-emerald-450 uppercase tracking-wider bg-emerald-100/50 dark:bg-emerald-950/30 px-1.5 py-0.5 rounded-md">
-                                          Correct Option
-                                        </span>
-                                      )}
-                                    </div>
                                   </div>
                                 );
                               })}

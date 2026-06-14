@@ -348,13 +348,6 @@ const QuizPage = () => {
                                 </span>
 
                                 <span className="flex-grow">{option.option_text}</span>
-
-                                {isCorrectAns && (
-                                  <span className="text-[9px] font-black uppercase text-emerald-600 dark:text-emerald-400 shrink-0">Correct Choice</span>
-                                )}
-                                {selected && !isCorrectAns && (
-                                  <span className="text-[9px] font-black uppercase text-rose-600 dark:text-rose-400 shrink-0">Your Answer</span>
-                                )}
                               </div>
                             );
                           })}
