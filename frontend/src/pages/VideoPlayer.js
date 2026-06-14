@@ -85,7 +85,7 @@ const VideoPlayer = () => {
 
   return (
     <StudentLayout>
-      <GoBackButton />
+      <GoBackButton to="/student/videos" replace={true} />
 
       {/* Header Panel */}
       <PageHeader 
@@ -93,7 +93,7 @@ const VideoPlayer = () => {
         subtitle={`Subject Course Module: ${video.subject}`}
         parentLabel="Videos"
         parentPath="/student/videos"
-        showBackButton={true}
+        showBackButton={false}
       />
 
       {/* Dual Column Streaming & Interactive Layout */}
