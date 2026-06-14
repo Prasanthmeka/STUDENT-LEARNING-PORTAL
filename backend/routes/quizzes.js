@@ -257,7 +257,7 @@ router.get('/', async (req, res) => {
 
       // Extract subscribed subjects list securely from local JSON
       const { getSubscribedSubjects } = require('../utils/subscriptionHelper');
-      const subscribedSubjects = getSubscribedSubjects(userId, req.headers);
+      const subscribedSubjects = await getSubscribedSubjects(userId, req.headers);
 
       // Extract quiz data from permissions and attach attempt info, filtered by subject subscription list
       const quizzes = (permittedQuizzes || [])
@@ -302,7 +302,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
     // Security guard for students
     if (req.user && req.user.role === 'student') {
       const { isSubscribedToSubject } = require('../utils/subscriptionHelper');
-      const isSubscribed = isSubscribedToSubject(req.user.id, quizData.subject, req.headers);
+      const isSubscribed = await isSubscribedToSubject(req.user.id, quizData.subject, req.headers);
       if (!isSubscribed) {
         return res.status(403).json({ error: 'Access denied. You are not subscribed to this subject.' });
       }

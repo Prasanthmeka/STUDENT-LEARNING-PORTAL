@@ -6,50 +6,12 @@ const fs = require('fs');
 const path = require('path');
 
 const router = express.Router();
-const localSubscriptionsPath = path.join(__dirname, '../../student_subscriptions.json');
-
-// Local storage helper functions
-const readLocalSubscriptions = () => {
-  try {
-    if (!fs.existsSync(localSubscriptionsPath)) {
-      return {};
-    }
-    const data = fs.readFileSync(localSubscriptionsPath, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    console.error('Failed to read local subscriptions:', err);
-    return {};
-  }
-};
-
-const writeLocalSubscriptions = (subs) => {
-  try {
-    const dir = path.dirname(localSubscriptionsPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(localSubscriptionsPath, JSON.stringify(subs, null, 2));
-    return true;
-  } catch (err) {
-    console.error('Failed to write local subscriptions:', err);
-    return false;
-  }
-};
-
 // Create or Update Subscription (Student)
 router.post('/', authenticateToken, authorizeRole(['student']), async (req, res) => {
   try {
     const { subscription_type = 'free', plan_name = 'Free Trial', subjects = [] } = req.body;
 
-    // 1. Persist to local JSON file securely under req.user.id
-    const subs = readLocalSubscriptions();
-    subs[req.user.id] = {
-      active_plan: plan_name,
-      subscribed_subjects: subjects
-    };
-    writeLocalSubscriptions(subs);
-
-    // 2. Insert/Update active subscription in Supabase for tracking
+    // 1. Insert/Update active subscription in Supabase for tracking
     let subscriptionResult;
     const start = new Date();
     const end = new Date(start);
@@ -76,7 +38,9 @@ router.post('/', authenticateToken, authorizeRole(['student']), async (req, res)
           .update({
             subscription_type,
             end_date: end,
-            created_at: new Date() // Treat as refreshed/updated start
+            created_at: new Date(), // Treat as refreshed/updated start
+            plan_name,
+            subscribed_subjects: subjects
           })
           .eq('id', existing[0].id)
           .select();
@@ -97,7 +61,9 @@ router.post('/', authenticateToken, authorizeRole(['student']), async (req, res)
               subscription_type,
               is_active: true,
               start_date: start,
-              end_date: end
+              end_date: end,
+              plan_name,
+              subscribed_subjects: subjects
             }
           ])
           .select();
@@ -107,7 +73,7 @@ router.post('/', authenticateToken, authorizeRole(['student']), async (req, res)
         }
       }
     } catch (dbErr) {
-      console.warn('Supabase subscription sync failed, relying on local JSON:', dbErr.message);
+      console.warn('Supabase subscription sync failed:', dbErr.message);
     }
 
     // Standardize result structure
@@ -134,44 +100,35 @@ router.post('/', authenticateToken, authorizeRole(['student']), async (req, res)
 // Get Student's Subscription
 router.get('/my-subscription', authenticateToken, async (req, res) => {
   try {
-    // 1. Fetch details from local JSON
-    const subs = readLocalSubscriptions();
-    const localData = subs[req.user.id];
+    // Fetch active subscription from Supabase
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('student_id', req.user.id)
+      .eq('is_active', true)
+      .limit(1);
 
-    // 2. Fetch from Supabase
-    let dbData = null;
-    try {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('student_id', req.user.id)
-        .eq('is_active', true)
-        .limit(1);
-
-      if (!error && data && data.length > 0) {
-        dbData = data[0];
-      }
-    } catch (dbErr) {
-      console.warn('Failed to query Supabase for subscription, using local data');
+    if (error) {
+      return res.status(400).json({ error: error.message });
     }
 
-    if (!localData && !dbData) {
+    if (!data || data.length === 0) {
       return res.status(404).json({ error: 'No active subscription found' });
     }
 
-    // Merge and return
-    const merged = {
-      id: dbData?.id || uuidv4(),
-      student_id: req.user.id,
-      subscription_type: dbData?.subscription_type || (localData?.active_plan !== 'Free Trial' ? 'premium' : 'free'),
-      is_active: true,
-      start_date: dbData?.start_date || new Date(),
-      end_date: dbData?.end_date || null,
-      active_plan: localData?.active_plan || 'Free Trial',
-      subscribed_subjects: localData?.subscribed_subjects || []
+    const subscription = data[0];
+    const result = {
+      id: subscription.id,
+      student_id: subscription.student_id,
+      subscription_type: subscription.subscription_type,
+      is_active: subscription.is_active,
+      start_date: subscription.start_date,
+      end_date: subscription.end_date,
+      active_plan: subscription.plan_name || 'Free Trial',
+      subscribed_subjects: subscription.subscribed_subjects || []
     };
 
-    res.json(merged);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -181,13 +138,6 @@ router.get('/my-subscription', authenticateToken, async (req, res) => {
 router.put('/:subscriptionId', authenticateToken, async (req, res) => {
   try {
     const { subscription_type, plan_name = 'Monthly Premium', subjects = [] } = req.body;
-
-    const subs = readLocalSubscriptions();
-    subs[req.user.id] = {
-      active_plan: plan_name,
-      subscribed_subjects: subjects
-    };
-    writeLocalSubscriptions(subs);
 
     const start = new Date();
     const end = new Date(start);
@@ -199,23 +149,22 @@ router.put('/:subscriptionId', authenticateToken, async (req, res) => {
       end.setDate(start.getDate() + 14);
     }
 
-    let dbData = [];
-    try {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .update({
-          subscription_type,
-          end_date: end,
-          created_at: new Date()
-        })
-        .eq('id', req.params.subscriptionId)
-        .eq('student_id', req.user.id)
-        .select();
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .update({
+        subscription_type,
+        end_date: end,
+        created_at: new Date(),
+        plan_name,
+        subscribed_subjects: subjects
+      })
+      .eq('id', req.params.subscriptionId)
+      .eq('student_id', req.user.id)
+      .select();
       
-      if (!error && data) {
-        dbData = data;
-      }
-    } catch (dbErr) {}
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
 
     res.json({ 
       message: 'Subscription upgraded successfully', 
