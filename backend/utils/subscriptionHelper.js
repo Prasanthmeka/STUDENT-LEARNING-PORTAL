@@ -1,32 +1,32 @@
-const fs = require('fs');
-const path = require('path');
-
-const localSubscriptionsPath = path.join(__dirname, '../../student_subscriptions.json');
+const supabase = require('./supabase');
 
 /**
  * Get all subscribed subjects for a student.
- * Falls back to request headers if not found in the local JSON database.
+ * Falls back to request headers if not found in the Supabase database.
  * @param {string} studentId - The student's unique user ID.
  * @param {object} headers - The incoming request headers.
- * @returns {string[]} An array of capitalized/canonical subject strings.
+ * @returns {Promise<string[]>} An array of capitalized/canonical subject strings.
  */
-function getSubscribedSubjects(studentId, headers = {}) {
+async function getSubscribedSubjects(studentId, headers = {}) {
   let subscribedSubjects = [];
 
-  // 1. Try to read from local persistent JSON store
+  // 1. Try to read from Supabase
   try {
-    if (fs.existsSync(localSubscriptionsPath)) {
-      const data = fs.readFileSync(localSubscriptionsPath, 'utf8');
-      const subs = JSON.parse(data);
-      if (subs[studentId] && Array.isArray(subs[studentId].subscribed_subjects)) {
-        subscribedSubjects = subs[studentId].subscribed_subjects;
-      }
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select('subscribed_subjects')
+      .eq('student_id', studentId)
+      .eq('is_active', true)
+      .limit(1);
+
+    if (!error && data && data.length > 0 && Array.isArray(data[0].subscribed_subjects)) {
+      subscribedSubjects = data[0].subscribed_subjects;
     }
   } catch (err) {
-    console.error('Error reading student_subscriptions.json in helper:', err);
+    console.error('Error reading subscription from Supabase in helper:', err);
   }
 
-  // 2. Fall back to header if local data is missing
+  // 2. Fall back to header if database data is missing
   if (subscribedSubjects.length === 0 && headers && headers['x-subscribed-subjects']) {
     try {
       const parsed = JSON.parse(headers['x-subscribed-subjects']);
@@ -46,11 +46,11 @@ function getSubscribedSubjects(studentId, headers = {}) {
  * @param {string} studentId - The student's unique user ID.
  * @param {string} subject - The subject name to check.
  * @param {object} headers - The incoming request headers.
- * @returns {boolean} True if subscribed, false otherwise.
+ * @returns {Promise<boolean>} True if subscribed, false otherwise.
  */
-function isSubscribedToSubject(studentId, subject, headers = {}) {
+async function isSubscribedToSubject(studentId, subject, headers = {}) {
   if (!subject) return false;
-  const subjects = getSubscribedSubjects(studentId, headers);
+  const subjects = await getSubscribedSubjects(studentId, headers);
   return subjects.some(s => s.toLowerCase() === subject.toLowerCase());
 }
 

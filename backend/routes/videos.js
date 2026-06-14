@@ -69,7 +69,7 @@ router.get('/', authenticateToken, async (req, res) => {
     // Filter by subscribed subjects if user is a student
     if (req.user && req.user.role === 'student') {
       const { getSubscribedSubjects } = require('../utils/subscriptionHelper');
-      const subscribedSubjects = getSubscribedSubjects(req.user.id, req.headers);
+      const subscribedSubjects = await getSubscribedSubjects(req.user.id, req.headers);
       
       const filtered = (data || []).filter(v => 
         subscribedSubjects.some(s => s.toLowerCase() === v.subject?.toLowerCase())
@@ -118,7 +118,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
     // Security guard for students
     if (req.user && req.user.role === 'student') {
       const { isSubscribedToSubject } = require('../utils/subscriptionHelper');
-      const isSubscribed = isSubscribedToSubject(req.user.id, data.subject, req.headers);
+      const isSubscribed = await isSubscribedToSubject(req.user.id, data.subject, req.headers);
       if (!isSubscribed) {
         return res.status(403).json({ error: 'Access denied. You are not subscribed to this subject.' });
       }

@@ -18,7 +18,9 @@ CREATE TABLE subscriptions (
   start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   end_date TIMESTAMP,
   is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  plan_name VARCHAR(100) DEFAULT 'Free Trial',
+  subscribed_subjects TEXT[] DEFAULT '{}'
 );
 
 -- Videos Table

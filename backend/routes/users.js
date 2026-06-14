@@ -97,22 +97,7 @@ router.delete('/:id', authenticateToken, authorizeRole(['admin']), async (req, r
       console.warn('Failed to delete student subscriptions:', subsError.message);
     }
 
-    // 4. Delete student from local student_subscriptions.json if exists
-    try {
-      const localSubscriptionsPath = path.join(__dirname, '../../student_subscriptions.json');
-      if (fs.existsSync(localSubscriptionsPath)) {
-        const data = fs.readFileSync(localSubscriptionsPath, 'utf8');
-        const subs = JSON.parse(data);
-        if (subs[studentId]) {
-          delete subs[studentId];
-          fs.writeFileSync(localSubscriptionsPath, JSON.stringify(subs, null, 2));
-        }
-      }
-    } catch (localErr) {
-      console.warn('Failed to delete student subscription from local JSON:', localErr.message);
-    }
-
-    // 5. Finally delete the user/student
+    // 4. Finally delete the user/student
     const { error: userError } = await supabase
       .from('users')
       .delete()

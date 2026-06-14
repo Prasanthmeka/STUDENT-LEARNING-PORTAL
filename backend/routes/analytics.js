@@ -1,7 +1,6 @@
 const express = require('express');
 const supabase = require('../utils/supabase');
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
-const { getSubscribedSubjects } = require('../utils/subscriptionHelper');
 
 const router = express.Router();
 
@@ -268,7 +267,7 @@ router.get('/admin-dashboard', authenticateToken, authorizeRole(['admin']), asyn
     // 5. Build Student Table Data
     const studentsTableData = students.map(student => {
       const sub = subscriptions.find(s => s.student_id === student.id && s.is_active);
-      const subjects = getSubscribedSubjects(student.id);
+      const subjects = sub?.subscribed_subjects || [];
       
       let plan = 'Free Trial';
       let expiryDate = null;
@@ -437,7 +436,8 @@ router.get('/admin-subject-dashboard/:subjectName', authenticateToken, authorize
 
     // 5. Build Student list for this subject
     const subjectStudents = students.filter(student => {
-      const subjects = getSubscribedSubjects(student.id);
+      const sub = subscriptions.find(s => s.student_id === student.id && s.is_active);
+      const subjects = sub?.subscribed_subjects || [];
       return subjects.some(s => s.toLowerCase() === subjectName.toLowerCase());
     });
 

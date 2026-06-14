@@ -70,7 +70,7 @@ router.get('/', authenticateToken, authorizeRole(['student']), async (req, res) 
 
     // Extract subscribed subjects list securely from local JSON
     const { getSubscribedSubjects } = require('../utils/subscriptionHelper');
-    const subscribedSubjects = getSubscribedSubjects(studentId, req.headers);
+    const subscribedSubjects = await getSubscribedSubjects(studentId, req.headers);
 
     const coursesArray = Object.keys(subjectMap)
       .filter(sub => subscribedSubjects.some(s => s.toLowerCase() === sub.toLowerCase()))
