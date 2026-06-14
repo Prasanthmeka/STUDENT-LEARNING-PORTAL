@@ -24,6 +24,7 @@ import {
   Video
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import CustomSelect from '../components/dashboard/CustomSelect';
 
 // Strict Subjects List validation
 const VALID_SUBJECTS = ['TELUGU', 'HINDI', 'ENGLISH', 'SOCIAL', 'PHYSICS', 'CHEMISTRY', 'BIOLOGY', 'MATHS'];
@@ -1240,14 +1241,6 @@ const AdminSubjectPage = () => {
     printWindow.document.close();
   };
 
-  // Recharts analytics graphs data constructs
-  const analyticsGraphData = [
-    { name: 'Week 1', avgGrade: 72, attemptsCount: 22 },
-    { name: 'Week 2', avgGrade: 78, attemptsCount: 30 },
-    { name: 'Week 3', avgGrade: 84, attemptsCount: 45 },
-    { name: 'Week 4', avgGrade: 81, attemptsCount: 38 }
-  ];
-
   if (!isValid) return null;
 
   return (
@@ -1380,23 +1373,6 @@ const AdminSubjectPage = () => {
               </button>
             </div>
 
-            {/* Quick Action 4: View Analytics */}
-            <div className="bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas hover:shadow-lg transition-all duration-300 p-4 rounded-2xl flex flex-col justify-between hover:-translate-y-0.5 group">
-              <div className="space-y-1">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-650 text-white flex items-center justify-center shadow-md">
-                  <Activity className="w-4 h-4" />
-                </div>
-                <h4 className="text-xs font-bold text-slate-800 dark:text-white mt-2 group-hover:text-amber-500 transition-colors duration-205">View Analytics</h4>
-                <p className="text-[9px] text-slate-400 dark:text-slate-500 leading-normal">Syllabus performance charts</p>
-              </div>
-              <button 
-                onClick={() => setActiveTab('analytics')}
-                className="w-full mt-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-[9px] font-black tracking-wider rounded-xl transition-all duration-200"
-              >
-                View Analytics
-              </button>
-            </div>
-
             {/* Quick Action 5: Manage Users */}
             <div className="bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas hover:shadow-lg transition-all duration-300 p-4 rounded-2xl flex flex-col justify-between hover:-translate-y-0.5 group">
               <div className="space-y-1">
@@ -1426,7 +1402,6 @@ const AdminSubjectPage = () => {
             { id: 'videos', label: 'Video Lectures', icon: Play },
             { id: 'quizzes', label: 'Exam Quizzes', icon: ClipboardList },
             { id: 'materials', label: 'PDF Materials', icon: FileText },
-            { id: 'analytics', label: 'Performance Analytics', icon: Activity },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -1498,29 +1473,31 @@ const AdminSubjectPage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                   <div className="space-y-1.5">
                     <span className="block text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-1">Plan Type</span>
-                    <select 
+                    <CustomSelect 
                       value={planFilter}
-                      onChange={(e) => { setPlanFilter(e.target.value); setCurrentPage(1); }}
-                      className="w-full pl-4 pr-8 py-2.5 text-xs font-bold rounded-xl border border-slate-205 dark:border-slate-850 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-550/10 cursor-pointer custom-select"
-                    >
-                      <option value="All">All Plans</option>
-                      <option value="Premium">Premium Plan</option>
-                      <option value="Free Trial">Free Trial</option>
-                    </select>
+                      onChange={(val) => { setPlanFilter(val); setCurrentPage(1); }}
+                      options={[
+                        { value: 'All', label: 'All Plans' },
+                        { value: 'Premium', label: 'Premium Plan' },
+                        { value: 'Free Trial', label: 'Free Trial' }
+                      ]}
+                      className="!py-2.5 !px-4 text-xs font-bold bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-205 dark:border-slate-850"
+                    />
                   </div>
 
                   <div className="space-y-1.5">
                     <span className="block text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-1">Status</span>
-                    <select 
+                    <CustomSelect 
                       value={statusFilter}
-                      onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-                      className="w-full pl-4 pr-8 py-2.5 text-xs font-bold rounded-xl border border-slate-205 dark:border-slate-850 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-550/10 cursor-pointer custom-select"
-                    >
-                      <option value="All">All Statuses</option>
-                      <option value="Active">Active</option>
-                      <option value="Expired">Expired</option>
-                      <option value="Free Trial">Free Trial</option>
-                    </select>
+                      onChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}
+                      options={[
+                        { value: 'All', label: 'All Statuses' },
+                        { value: 'Active', label: 'Active' },
+                        { value: 'Expired', label: 'Expired' },
+                        { value: 'Free Trial', label: 'Free Trial' }
+                      ]}
+                      className="!py-2.5 !px-4 text-xs font-bold bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-205 dark:border-slate-850"
+                    />
                   </div>
 
                   <div className="space-y-1.5">
@@ -1751,28 +1728,30 @@ const AdminSubjectPage = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                     <div className="space-y-1.5">
                       <span className="block text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-1">Type</span>
-                      <select 
+                      <CustomSelect 
                         value={videoTypeFilter}
-                        onChange={(e) => { setVideoTypeFilter(e.target.value); setVideoPage(1); }}
-                        className="w-full pl-4 pr-8 py-2.5 text-xs font-bold rounded-xl border border-slate-205 dark:border-slate-850 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer animate-none"
-                      >
-                        <option value="All">All Types</option>
-                        <option value="Recorded">Recorded</option>
-                        <option value="Live">Live Stream</option>
-                      </select>
+                        onChange={(val) => { setVideoTypeFilter(val); setVideoPage(1); }}
+                        options={[
+                          { value: 'All', label: 'All Types' },
+                          { value: 'Recorded', label: 'Recorded' },
+                          { value: 'Live', label: 'Live Stream' }
+                        ]}
+                        className="!py-2.5 !px-4 text-xs font-bold bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-205 dark:border-slate-850"
+                      />
                     </div>
 
                     <div className="space-y-1.5">
                       <span className="block text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-1">Visibility</span>
-                      <select 
+                      <CustomSelect 
                         value={videoVisFilter}
-                        onChange={(e) => { setVideoVisFilter(e.target.value); setVideoPage(1); }}
-                        className="w-full pl-4 pr-8 py-2.5 text-xs font-bold rounded-xl border border-slate-205 dark:border-slate-850 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer animate-none"
-                      >
-                        <option value="All">All Visibilities</option>
-                        <option value="Premium Only">Premium Only</option>
-                        <option value="Public">Public (Free)</option>
-                      </select>
+                        onChange={(val) => { setVideoVisFilter(val); setVideoPage(1); }}
+                        options={[
+                          { value: 'All', label: 'All Visibilities' },
+                          { value: 'Premium Only', label: 'Premium Only' },
+                          { value: 'Public', label: 'Public (Free)' }
+                        ]}
+                        className="!py-2.5 !px-4 text-xs font-bold bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-205 dark:border-slate-850"
+                      />
                     </div>
 
                     <div className="space-y-1.5">
@@ -1948,15 +1927,16 @@ const AdminSubjectPage = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                     <div className="space-y-1.5">
                       <span className="block text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-1">Status Filter</span>
-                      <select 
+                      <CustomSelect 
                         value={quizStatusFilter}
-                        onChange={(e) => { setQuizStatusFilter(e.target.value); setQuizPage(1); }}
-                        className="w-full pl-4 pr-8 py-2.5 text-xs font-bold rounded-xl border border-slate-205 dark:border-slate-850 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer animate-none"
-                      >
-                        <option value="All">All Statuses</option>
-                        <option value="Active">Active Published</option>
-                        <option value="Draft">Drafting</option>
-                      </select>
+                        onChange={(val) => { setQuizStatusFilter(val); setQuizPage(1); }}
+                        options={[
+                          { value: 'All', label: 'All Statuses' },
+                          { value: 'Active', label: 'Active Published' },
+                          { value: 'Draft', label: 'Drafting' }
+                        ]}
+                        className="!py-2.5 !px-4 text-xs font-bold bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-205 dark:border-slate-850"
+                      />
                     </div>
 
                     <div className="space-y-1.5">
@@ -2133,30 +2113,32 @@ const AdminSubjectPage = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                     <div className="space-y-1.5">
                       <span className="block text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-1">Type</span>
-                      <select 
+                      <CustomSelect 
                         value={materialTypeFilter}
-                        onChange={(e) => { setMaterialTypeFilter(e.target.value); setMaterialPage(1); }}
-                        className="w-full pl-4 pr-8 py-2.5 text-xs font-bold rounded-xl border border-slate-205 dark:border-slate-855 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer animate-none"
-                      >
-                        <option value="All">All Types</option>
-                        <option value="PDF">PDF Documents</option>
-                        <option value="Notes">Notes packs</option>
-                        <option value="Assignment">Assignments</option>
-                        <option value="Worksheet">Worksheets</option>
-                      </select>
+                        onChange={(val) => { setMaterialTypeFilter(val); setMaterialPage(1); }}
+                        options={[
+                          { value: 'All', label: 'All Types' },
+                          { value: 'PDF', label: 'PDF Documents' },
+                          { value: 'Notes', label: 'Notes Study Pack' },
+                          { value: 'Assignment', label: 'Assignments' },
+                          { value: 'Worksheet', label: 'Worksheets' }
+                        ]}
+                        className="!py-2.5 !px-4 text-xs font-bold bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-205 dark:border-slate-855"
+                      />
                     </div>
 
                     <div className="space-y-1.5">
                       <span className="block text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-1">Visibility</span>
-                      <select 
+                      <CustomSelect 
                         value={materialVisFilter}
-                        onChange={(e) => { setMaterialVisFilter(e.target.value); setMaterialPage(1); }}
-                        className="w-full pl-4 pr-8 py-2.5 text-xs font-bold rounded-xl border border-slate-205 dark:border-slate-850 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer animate-none"
-                      >
-                        <option value="All">All Visibilities</option>
-                        <option value="Premium Only">Premium Only</option>
-                        <option value="Public">Public (Free)</option>
-                      </select>
+                        onChange={(val) => { setMaterialVisFilter(val); setMaterialPage(1); }}
+                        options={[
+                          { value: 'All', label: 'All Visibilities' },
+                          { value: 'Premium Only', label: 'Premium Only' },
+                          { value: 'Public', label: 'Public (Free)' }
+                        ]}
+                        className="!py-2.5 !px-4 text-xs font-bold bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-205 dark:border-slate-850"
+                      />
                     </div>
 
                     <div className="space-y-1.5">
@@ -2283,67 +2265,6 @@ const AdminSubjectPage = () => {
               </div>
             </motion.div>
           )}
-          {/* TAB 5: SUBJECT PERFORMANCE GRAPHICS */}
-          {activeTab === 'analytics' && (() => {
-            const dataToRender = weeklyAnalyticsData && weeklyAnalyticsData.length > 0 ? weeklyAnalyticsData : [
-              { week: 'Week 1', chapters: 'Chapter 1 & 2', attempts: 0, engagement: '0% Engagement', percentage: 0 },
-              { week: 'Week 2', chapters: 'Chapter 3 & 4', attempts: 0, engagement: '0% Engagement', percentage: 0 },
-              { week: 'Week 3', chapters: 'Chapter 5', attempts: 0, engagement: '0% Engagement', percentage: 0 },
-              { week: 'Week 4', chapters: 'Revision & Mock Exams', attempts: 0, engagement: '0% Engagement', percentage: 0 },
-            ];
-
-            return (
-              <motion.div 
-                key="analytics"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="space-y-6"
-              >
-                <div className="p-6 rounded-3xl bg-white dark:bg-[#0f172a]/95 border border-slate-205 dark:border-indigo-950/20 shadow-saas space-y-6">
-                  <div className="space-y-1">
-                    <span className={`text-[10px] font-black uppercase tracking-widest ${themeColors.text}`}>Syllabus Performance metrics</span>
-                    <h3 className="text-base font-black text-slate-805 dark:text-white tracking-tight font-sans">Week-wise Syllabus Attempts Analytics</h3>
-                    <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">Detailed progress, quiz attempts, and student engagement metrics mapped week-by-week.</p>
-                  </div>
-
-                  <div className="space-y-4 pt-2">
-                    {dataToRender.map((unit, idx) => (
-                      <div 
-                        key={idx} 
-                        className="p-5 rounded-2xl bg-slate-50/50 dark:bg-slate-900/40 border border-slate-100 dark:border-indigo-950/10 hover:border-indigo-500/20 dark:hover:border-indigo-400/20 hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-all duration-200 shadow-sm"
-                      >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <span className={`text-xs font-black px-2 py-0.5 rounded ${themeColors.badgeText}`}>{unit.week}</span>
-                              <span className="text-xs font-extrabold text-slate-700 dark:text-slate-300">{unit.chapters}</span>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5">
-                              <span>📊 {unit.attempts} Quiz Attempts</span>
-                              <span>•</span>
-                              <span className="text-indigo-500">{unit.engagement}</span>
-                            </div>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <span className={`text-xs font-mono font-black ${themeColors.text}`}>{unit.percentage}% Completed</span>
-                          </div>
-                        </div>
-
-                        {/* Progress Bar Container */}
-                        <div className="w-full bg-slate-200/60 dark:bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-200/20 dark:border-slate-900 relative">
-                          <div 
-                            className={`h-full bg-gradient-to-r ${themeColors.glow} rounded-full transition-all duration-500`}
-                            style={{ width: `${unit.percentage}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })()}
 
         </AnimatePresence>
 
@@ -2400,27 +2321,29 @@ const AdminSubjectPage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Plan Type</label>
-                    <select 
+                    <CustomSelect 
                       value={editPlan}
-                      onChange={(e) => setEditPlan(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-850 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer"
-                    >
-                      <option value="Premium Plan">Premium Plan</option>
-                      <option value="Free Trial">Free Trial</option>
-                    </select>
+                      onChange={setEditPlan}
+                      options={[
+                        { value: 'Premium Plan', label: 'Premium Plan' },
+                        { value: 'Free Trial', label: 'Free Trial' }
+                      ]}
+                      className="!py-2.5 bg-slate-50 dark:bg-slate-900 border-slate-205 dark:border-slate-850"
+                    />
                   </div>
 
                   <div className="space-y-1.5">
                     <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Status</label>
-                    <select 
+                    <CustomSelect 
                       value={editStatus}
-                      onChange={(e) => setEditStatus(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-850 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer"
-                    >
-                      <option value="Active">Active</option>
-                      <option value="Expired">Expired</option>
-                      <option value="Free Trial">Free Trial</option>
-                    </select>
+                      onChange={setEditStatus}
+                      options={[
+                        { value: 'Active', label: 'Active' },
+                        { value: 'Expired', label: 'Expired' },
+                        { value: 'Free Trial', label: 'Free Trial' }
+                      ]}
+                      className="!py-2.5 bg-slate-50 dark:bg-slate-900 border-slate-205 dark:border-slate-850"
+                    />
                   </div>
                 </div>
 
@@ -2497,18 +2420,18 @@ const AdminSubjectPage = () => {
                       className="w-full p-3 rounded-xl border border-slate-250 dark:border-slate-850/60 bg-slate-100 dark:bg-slate-900/50 text-slate-550 dark:text-slate-400 cursor-not-allowed opacity-80"
                     />
                   </div>
-
-                  {/* Field 3: Video Type (dropdown) */}
+                               {/* Field 3: Video Type (dropdown) */}
                   <div className="space-y-1.5">
                     <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Video Type</label>
-                    <select 
+                    <CustomSelect 
                       value={videoType}
-                      onChange={(e) => setVideoType(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-850 bg-slate-50 dark:bg-slate-900 text-slate-850 dark:text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer custom-select"
-                    >
-                      <option value="Recorded">Recorded</option>
-                      <option value="Live">Live Stream</option>
-                    </select>
+                      onChange={setVideoType}
+                      options={[
+                        { value: 'Recorded', label: 'Recorded' },
+                        { value: 'Live', label: 'Live Stream' }
+                      ]}
+                      className="!py-2.5 bg-slate-50 dark:bg-slate-900 border-slate-205 dark:border-slate-850"
+                    />
                   </div>
 
                   {/* Field 4: Video URL */}
@@ -2550,14 +2473,15 @@ const AdminSubjectPage = () => {
                   {/* Field 9: Visibility */}
                   <div className="space-y-1.5">
                     <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Visibility Status</label>
-                    <select 
+                    <CustomSelect 
                       value={videoVisibility}
-                      onChange={(e) => setVideoVisibility(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-855 bg-slate-50 dark:bg-slate-900 text-slate-850 dark:text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer custom-select"
-                    >
-                      <option value="Premium Only">Premium Only</option>
-                      <option value="Public">Public (Free)</option>
-                    </select>
+                      onChange={setVideoVisibility}
+                      options={[
+                        { value: 'Premium Only', label: 'Premium Only' },
+                        { value: 'Public', label: 'Public (Free)' }
+                      ]}
+                      className="!py-2.5 bg-slate-50 dark:bg-slate-900 border-slate-205 dark:border-slate-855"
+                    />
                   </div>
 
                 </div>
@@ -2647,20 +2571,20 @@ const AdminSubjectPage = () => {
                       className="w-full p-3 rounded-xl border border-slate-250 bg-slate-100 dark:bg-slate-900/50 text-slate-555 dark:text-slate-400 cursor-not-allowed opacity-80"
                     />
                   </div>
-
-                  {/* Field 3: Material Type dropdown */}
+                               {/* Field 3: Material Type dropdown */}
                   <div className="space-y-1.5">
                     <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Material Type</label>
-                    <select 
+                    <CustomSelect 
                       value={materialType}
-                      onChange={(e) => setMaterialType(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-850 bg-slate-50 dark:bg-slate-900 text-slate-850 dark:text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer custom-select"
-                    >
-                      <option value="PDF">PDF Document</option>
-                      <option value="Notes">Notes Study Pack</option>
-                      <option value="Assignment">Assignment Homework</option>
-                      <option value="Worksheet">Practice Worksheet</option>
-                    </select>
+                      onChange={setMaterialType}
+                      options={[
+                        { value: 'PDF', label: 'PDF Document' },
+                        { value: 'Notes', label: 'Notes Study Pack' },
+                        { value: 'Assignment', label: 'Assignment Homework' },
+                        { value: 'Worksheet', label: 'Practice Worksheet' }
+                      ]}
+                      className="!py-2.5 bg-slate-50 dark:bg-slate-900 border-slate-205 dark:border-slate-850"
+                    />
                   </div>
 
                   {/* Field 6: Chapter Name */}
@@ -2678,14 +2602,15 @@ const AdminSubjectPage = () => {
                   {/* Field 7: Visibility */}
                   <div className="space-y-1.5">
                     <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Visibility Status</label>
-                    <select 
+                    <CustomSelect 
                       value={materialVisibility}
-                      onChange={(e) => setMaterialVisibility(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-850 bg-slate-50 dark:bg-slate-900 text-slate-850 dark:text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer custom-select"
-                    >
-                      <option value="Premium Only">Premium Only</option>
-                      <option value="Public">Public (Free)</option>
-                    </select>
+                      onChange={setMaterialVisibility}
+                      options={[
+                        { value: 'Premium Only', label: 'Premium Only' },
+                        { value: 'Public', label: 'Public (Free)' }
+                      ]}
+                      className="!py-2.5 bg-slate-50 dark:bg-slate-900 border-slate-205 dark:border-slate-850"
+                    />
                   </div>
 
                   {/* Field 4: File Upload drag state */}
