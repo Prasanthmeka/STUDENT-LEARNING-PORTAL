@@ -436,7 +436,7 @@ const AdminDashboard = () => {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-900 text-white p-6 md:p-8 border border-slate-800 shadow-premium group animate-float-subtle"
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-indigo-900 text-white p-4 sm:p-6 md:p-8 border border-slate-800 shadow-premium group animate-float-subtle"
         >
           {/* Ambient light abstract backgrounds */}
           <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-gradient-to-bl from-indigo-500/10 to-purple-500/10 blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
@@ -480,7 +480,7 @@ const AdminDashboard = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.05 }}
-            className="p-6 rounded-2xl bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas hover:shadow-lg transition-all duration-250 relative overflow-hidden group hover:-translate-y-0.5"
+            className="p-4 sm:p-6 rounded-2xl bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas hover:shadow-lg transition-all duration-250 relative overflow-hidden group hover:-translate-y-0.5"
           >
             <div className="absolute top-0 right-0 w-24 h-24 rounded-bl-full bg-gradient-to-bl from-blue-500/5 to-indigo-500/5 opacity-50 pointer-events-none" />
             <div className="flex items-center justify-between">
@@ -505,7 +505,7 @@ const AdminDashboard = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="p-6 rounded-2xl bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas hover:shadow-lg transition-all duration-250 relative overflow-hidden group hover:-translate-y-0.5"
+            className="p-4 sm:p-6 rounded-2xl bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas hover:shadow-lg transition-all duration-250 relative overflow-hidden group hover:-translate-y-0.5"
           >
             <div className="absolute top-0 right-0 w-24 h-24 rounded-bl-full bg-gradient-to-bl from-emerald-500/5 to-green-500/5 opacity-50 pointer-events-none" />
             <div className="flex items-center justify-between">
@@ -532,7 +532,7 @@ const AdminDashboard = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.15 }}
-            className="p-6 rounded-2xl bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas hover:shadow-lg transition-all duration-250 relative overflow-hidden group group hover:-translate-y-0.5"
+            className="p-4 sm:p-6 rounded-2xl bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas hover:shadow-lg transition-all duration-250 relative overflow-hidden group group hover:-translate-y-0.5"
           >
             <div className="absolute top-0 right-0 w-24 h-24 rounded-bl-full bg-gradient-to-bl from-indigo-500/5 to-purple-500/5 opacity-50 pointer-events-none" />
             <div className="flex items-center justify-between">
@@ -557,7 +557,7 @@ const AdminDashboard = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
-            className="p-6 rounded-2xl bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas hover:shadow-lg transition-all duration-250 relative overflow-hidden group hover:-translate-y-0.5"
+            className="p-4 sm:p-6 rounded-2xl bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas hover:shadow-lg transition-all duration-250 relative overflow-hidden group hover:-translate-y-0.5"
           >
             <div className="absolute top-0 right-0 w-24 h-24 rounded-bl-full bg-gradient-to-bl from-rose-500/5 to-orange-500/5 opacity-50 pointer-events-none" />
             <div className="flex items-center justify-between">
@@ -590,7 +590,7 @@ const AdminDashboard = () => {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.35, delay: 0.1 }}
-            className="p-6 rounded-3xl bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas space-y-6 flex flex-col justify-between"
+            className="p-4 sm:p-6 rounded-3xl bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas space-y-4 sm:space-y-6 flex flex-col justify-between"
           >
             <div className="space-y-1">
               <span className={`text-[10px] font-black uppercase tracking-widest ${themeColors.text}`}>Curriculum Metrics</span>
@@ -668,7 +668,7 @@ const AdminDashboard = () => {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.35, delay: 0.15 }}
-            className="p-6 rounded-3xl bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas space-y-6 flex flex-col justify-between"
+            className="p-4 sm:p-6 rounded-3xl bg-white dark:bg-[#0f172a]/90 border border-slate-200/80 dark:border-indigo-950/20 shadow-saas space-y-4 sm:space-y-6 flex flex-col justify-between"
           >
             <div className="space-y-1">
               <span className={`text-[10px] font-black uppercase tracking-widest ${themeColors.text}`}>Platform Engagement</span>
@@ -680,7 +680,7 @@ const AdminDashboard = () => {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-8 pt-4 h-72">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 pt-4 h-auto sm:h-72">
               <div className="h-56 w-56 shrink-0 relative flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -775,7 +775,7 @@ const AdminDashboard = () => {
           className="rounded-3xl bg-white dark:bg-[#0f172a]/95 border border-slate-200 dark:border-indigo-950/25 shadow-saas overflow-hidden"
         >
           {/* Header Controls Panel */}
-          <div className="p-6 border-b border-slate-100 dark:border-indigo-950/25 space-y-4">
+          <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-indigo-950/25 space-y-4">
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="space-y-1">
@@ -1004,7 +1004,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Interactive Pagination controls footer */}
-          <div className="p-4 bg-slate-50/60 dark:bg-slate-950/40 border-t border-slate-100 dark:border-slate-900 flex items-center justify-between text-xs font-bold text-slate-550 select-none">
+          <div className="p-4 bg-slate-50/60 dark:bg-slate-950/40 border-t border-slate-100 dark:border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-bold text-slate-550 select-none text-center sm:text-left">
             <span>
               Showing {filteredStudents.length > 0 ? indexOfFirstRow + 1 : 0} to {Math.min(indexOfLastRow, filteredStudents.length)} of {filteredStudents.length} entries
             </span>
@@ -1096,7 +1096,7 @@ const AdminDashboard = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Plan Type</label>
                     <select 

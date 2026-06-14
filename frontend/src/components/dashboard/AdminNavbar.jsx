@@ -191,7 +191,7 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                className="absolute right-0 w-80 mt-3.5 origin-top-right rounded-2xl border border-slate-100 dark:border-slate-900 bg-white dark:bg-slate-950 p-4 shadow-2xl ring-1 ring-black/5 z-50"
+                className="fixed md:absolute left-4 right-4 md:left-auto md:right-0 top-20 md:top-auto w-auto md:w-80 mt-3.5 origin-top md:origin-top-right rounded-2xl border border-slate-100 dark:border-slate-900 bg-white dark:bg-slate-950 p-4 shadow-2xl ring-1 ring-black/5 z-50"
               >
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-900">
                   <span className="font-bold text-slate-850 dark:text-slate-100 text-xs tracking-wide">System Notifications</span>

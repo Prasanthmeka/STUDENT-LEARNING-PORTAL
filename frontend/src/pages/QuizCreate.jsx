@@ -17,6 +17,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import CustomSelect from '../components/dashboard/CustomSelect';
 
 const QuizCreate = () => {
   const { subjectName } = useParams();
@@ -537,15 +538,11 @@ const QuizCreate = () => {
 
               <div className="space-y-1.5">
                 <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Difficulty</label>
-                <select 
+                <CustomSelect 
                   value={quizDifficulty}
-                  onChange={(e) => setQuizDifficulty(e.target.value)}
-                  className="w-full p-3 rounded-xl border border-slate-205 dark:border-slate-855 bg-slate-50/50 dark:bg-slate-955/50 text-slate-755 dark:text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer custom-select"
-                >
-                  <option value="Easy">Easy</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Hard">Hard</option>
-                </select>
+                  onChange={setQuizDifficulty}
+                  options={['Easy', 'Medium', 'Hard']}
+                />
               </div>
 
               <div className="space-y-1.5">
@@ -624,7 +621,7 @@ const QuizCreate = () => {
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Option A *</label>
                           <input 
@@ -711,28 +708,28 @@ const QuizCreate = () => {
               ))}
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-between pt-2 select-none">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-2 select-none">
                 <button
                   type="button"
                   onClick={handleAddManualRow}
-                  className="inline-flex items-center gap-1.5 py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-850 bg-white/90 dark:bg-slate-900 hover:bg-slate-50 text-slate-700 dark:text-slate-200 text-xs font-black transition-all"
+                  className="inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-855 bg-white/90 dark:bg-slate-900 hover:bg-slate-50 text-slate-700 dark:text-slate-200 text-xs font-black transition-all w-full sm:w-auto"
                 >
                   <Plus className="w-4 h-4 text-indigo-500" />
                   Add Another Question
                 </button>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                   <button 
                     type="button"
                     onClick={() => navigate(`/admin/subject/${subjectName.toLowerCase()}`)}
-                    className="py-2.5 px-6 rounded-xl border border-slate-200 dark:border-slate-850 text-slate-600 dark:text-slate-350 hover:bg-slate-50 font-bold transition-all"
+                    className="order-2 sm:order-1 w-full sm:w-auto py-2.5 px-6 rounded-xl border border-slate-200 dark:border-slate-855 text-slate-600 dark:text-slate-350 hover:bg-slate-50 font-bold transition-all text-center"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit"
                     disabled={saving}
-                    className="py-2.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-black uppercase tracking-wide text-xs shadow-md shadow-indigo-600/20 transition-all"
+                    className="order-1 sm:order-2 w-full sm:w-auto py-2.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-black uppercase tracking-wide text-xs shadow-md shadow-indigo-600/20 transition-all text-center justify-center inline-flex items-center"
                   >
                     {saving ? 'Publishing...' : 'Publish Quiz Assessment'}
                   </button>
@@ -1068,7 +1065,7 @@ const QuizCreate = () => {
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Option A</label>
                           <input 
@@ -1148,12 +1145,12 @@ const QuizCreate = () => {
               ))}
             </div>
 
-            {/* Bottom Actions Bar */}
-            <div className="flex justify-end gap-3 pt-4 select-none">
+             {/* Bottom Actions Bar */}
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 select-none">
               <button 
                 type="button" 
                 onClick={() => { setShowPreview(false); setUploadedFile(null); }}
-                className="py-2.5 px-6 border border-slate-200 dark:border-slate-800 bg-white/90 text-slate-650 hover:bg-slate-50 font-bold rounded-xl"
+                className="order-2 sm:order-1 w-full sm:w-auto py-2.5 px-6 border border-slate-200 dark:border-slate-800 bg-white/90 text-slate-650 hover:bg-slate-50 font-bold rounded-xl text-center"
               >
                 Discard Assessment
               </button>
@@ -1162,7 +1159,7 @@ const QuizCreate = () => {
                 type="button"
                 onClick={handlePublishGeneratedQuiz}
                 disabled={saving}
-                className="py-2.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase text-xs shadow-md shadow-emerald-600/10 transition-all flex items-center gap-1.5"
+                className="order-1 sm:order-2 w-full sm:w-auto py-2.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase text-xs shadow-md shadow-emerald-600/10 transition-all flex items-center justify-center gap-1.5"
               >
                 {saving ? (
                   <>

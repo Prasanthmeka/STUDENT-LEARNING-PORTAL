@@ -178,7 +178,7 @@ const UserSettings = () => {
               <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Loading Settings...</span>
             </div>
           ) : (
-            <form onSubmit={handleSave} className="p-6 md:p-8 space-y-8">
+            <form onSubmit={handleSave} className="p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
               
               {/* Category 1: Theme Selection */}
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start pb-6 border-b border-slate-100 dark:border-indigo-950/20">
