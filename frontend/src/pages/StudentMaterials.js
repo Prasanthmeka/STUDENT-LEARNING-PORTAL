@@ -297,7 +297,7 @@ const StudentMaterials = () => {
                 key={material.id}
                 variants={cardVariants}
                 whileHover={{ y: -6, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05)' }}
-                className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-saas p-6 hover:border-slate-300 dark:hover:border-slate-700 transition-smooth flex flex-col justify-between h-[210px] group cursor-pointer"
+                className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-saas p-6 pb-7 hover:border-slate-300 dark:hover:border-slate-700 transition-smooth flex flex-col justify-between h-[225px] group cursor-pointer"
               >
                 {/* Header section */}
                 <div className="space-y-3.5">
@@ -340,7 +340,7 @@ const StudentMaterials = () => {
                     className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs tracking-wide transition-smooth shadow-md shadow-indigo-600/10 shrink-0"
                   >
                     <Download className="w-4 h-4 shrink-0" />
-                    Download Reference Resource
+                    Download
                   </a>
                 </div>
               </motion.div>
