@@ -3,16 +3,12 @@
   "outputDirectory": "frontend/build",
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api"
-    },
-    {
       "source": "/(.*)",
       "destination": "/"
     }
   ],
   "env": {
-    "REACT_APP_API_URL": "/api",
+    "REACT_APP_API_URL": "http://localhost:5000/api",
     "REACT_APP_SUPABASE_URL": "https://ohllyamllegkezogymyc.supabase.co",
     "REACT_APP_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9obGx5YW1sbGVna2V6b2d5bXljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1NzM3MzQsImV4cCI6MjA5MjE0OTczNH0.URqaekfmcTi5BE19Ge1xPPFpvRtOu6oBEXjiieyZo5I"
   }
