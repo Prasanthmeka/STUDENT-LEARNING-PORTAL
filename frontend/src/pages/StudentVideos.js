@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { videoAPI } from '../services/api';
 import StudentLayout from '../layouts/StudentLayout';
 import PageHeader from '../components/layout/PageHeader';
@@ -17,21 +17,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const StudentVideos = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Parse subject from query parameter if present
-  const queryParams = new URLSearchParams(location.search);
-  const subjectQuery = queryParams.get('subject');
-  const subscribedList = JSON.parse(localStorage.getItem('subscribedSubjects') || '[]');
-  const subjects = ['All', ...subscribedList];
-
-  const initialSubject = (() => {
-    if (subjectQuery) {
-      const match = subjects.find(s => s.toLowerCase() === subjectQuery.toLowerCase());
-      if (match) return match;
-    }
-    return 'All';
-  })();
 
   // Component States
   const [videos, setVideos] = useState([]);
@@ -39,24 +24,14 @@ const StudentVideos = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
-  const [selectedSubject, setSelectedSubject] = useState(initialSubject);
+  const [selectedSubject, setSelectedSubject] = useState('All');
 
-  // Fetch videos on mount
+  const subscribedList = JSON.parse(localStorage.getItem('subscribedSubjects') || '[]');
+  const subjects = ['All', ...subscribedList];
+
   useEffect(() => {
     fetchVideos();
   }, []);
-
-  // Update selectedSubject dynamically when query parameter changes
-  useEffect(() => {
-    const qParams = new URLSearchParams(location.search);
-    const subQ = qParams.get('subject');
-    if (subQ) {
-      const match = subjects.find(s => s.toLowerCase() === subQ.toLowerCase());
-      if (match) {
-        setSelectedSubject(match);
-      }
-    }
-  }, [location.search]);
 
   const fetchVideos = async () => {
     try {
@@ -73,6 +48,7 @@ const StudentVideos = () => {
       );
       
       setVideos(filteredRaw);
+      setFilteredVideos(filteredRaw);
     } catch (error) {
       console.error('Failed to fetch videos:', error);
     } finally {
@@ -80,42 +56,45 @@ const StudentVideos = () => {
     }
   };
 
-  // Automatically filter videos whenever state dependencies change
-  useEffect(() => {
+  const applyFilters = (type, subject, query) => {
     let filtered = videos;
 
     // Filter by type
-    if (selectedType !== 'all') {
-      filtered = filtered.filter(v => v.video_type === selectedType);
+    if (type !== 'all') {
+      filtered = filtered.filter(v => v.video_type === type);
     }
 
     // Filter by subject
-    if (selectedSubject !== 'All') {
-      filtered = filtered.filter(v => v.subject?.toLowerCase() === selectedSubject.toLowerCase());
+    if (subject !== 'All') {
+      filtered = filtered.filter(v => v.subject === subject);
     }
 
     // Filter by search query
-    if (searchQuery.trim() !== '') {
-      const q = searchQuery.toLowerCase();
+    if (query.trim() !== '') {
+      const q = query.toLowerCase();
       filtered = filtered.filter(v => 
-        v.title?.toLowerCase().includes(q) || 
-        v.description?.toLowerCase().includes(q)
+        v.title.toLowerCase().includes(q) || 
+        v.description.toLowerCase().includes(q)
       );
     }
 
     setFilteredVideos(filtered);
-  }, [videos, selectedType, selectedSubject, searchQuery]);
+  };
 
   const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
+    const val = e.target.value;
+    setSearchQuery(val);
+    applyFilters(selectedType, selectedSubject, val);
   };
 
   const handleSubjectChange = (subject) => {
     setSelectedSubject(subject);
+    applyFilters(selectedType, subject, searchQuery);
   };
 
   const handleTypeChange = (type) => {
     setSelectedType(type);
+    applyFilters(type, selectedSubject, searchQuery);
   };
 
   // Get Video ID from YouTube URL

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { ArrowRight, PlayCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -64,7 +63,7 @@ const CoursesGrid = ({ courses = [], loading = false, searchQuery = '' }) => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[1, 2, 3, 4].map((idx) => (
-          <div key={idx} className="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-saas h-[235px] skeleton-pulse" />
+          <div key={idx} className="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-saas h-[300px] skeleton-pulse" />
         ))}
       </div>
     );
@@ -138,7 +137,7 @@ const CoursesGrid = ({ courses = [], loading = false, searchQuery = '' }) => {
               key={course.id}
               variants={cardVariants}
               whileHover={{ y: -6, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05)' }}
-              className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-saas overflow-hidden hover:border-slate-300 dark:hover:border-slate-700 transition-smooth flex flex-col h-[235px] group"
+              className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-saas overflow-hidden hover:border-slate-300 dark:hover:border-slate-700 transition-smooth flex flex-col h-[310px] group"
             >
               {/* Course Card Cover (Thumbnail) with gradient & Subject Title */}
               <div className={`relative h-32 bg-gradient-to-br ${getGradientColor(course.subject)} p-5 flex flex-col justify-between text-white shrink-0`}>
@@ -160,16 +159,33 @@ const CoursesGrid = ({ courses = [], loading = false, searchQuery = '' }) => {
               </div>
 
               {/* Card Body Info */}
-              <div className="flex-1 p-5 flex flex-col justify-center">
+              <div className="flex-1 p-5 flex flex-col justify-between">
+                {/* Progress bar */}
+                <div className="space-y-2 py-2">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 dark:text-slate-500">
+                    <span>{course.lessonsCompleted}/{course.totalLessons} Lessons</span>
+                    <span className="text-slate-700 dark:text-slate-300">{course.progress}% Complete</span>
+                  </div>
+                  {/* Progress Line */}
+                  <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${course.progress}%` }}
+                      transition={{ duration: 1, delay: 0.2 }}
+                      className="h-full rounded-full bg-indigo-500"
+                    />
+                  </div>
+                </div>
+
                 {/* Action button */}
-                <Link
-                  to={`/student/videos?subject=${encodeURIComponent(course.subject)}`}
+                <a
+                  href="/student/videos"
                   className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 hover:bg-indigo-600 text-indigo-600 dark:text-indigo-400 hover:text-white font-bold text-xs tracking-wide transition-smooth group/btn"
                 >
                   <PlayCircle className="w-4 h-4 transition-smooth group-hover/btn:scale-110" />
                   Continue Learning
                   <ArrowRight className="w-3.5 h-3.5 transition-smooth group-hover/btn:translate-x-1" />
-                </Link>
+                </a>
               </div>
             </motion.div>
           );
