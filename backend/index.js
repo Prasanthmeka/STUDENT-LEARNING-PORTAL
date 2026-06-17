@@ -2,6 +2,10 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'your_jwt_secret_here';
+}
+
 const app = express();
 
 // Middleware
