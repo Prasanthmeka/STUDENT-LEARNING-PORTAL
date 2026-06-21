@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Search, 
   Bell, 
   User, 
   Settings, 
@@ -18,9 +17,6 @@ const Navbar = ({ isCollapsed, setIsMobileOpen, searchQuery, setSearchQuery }) =
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const [internalQuery, setInternalQuery] = useState('');
-  const query = searchQuery !== undefined ? searchQuery : internalQuery;
-  const setQuery = setSearchQuery !== undefined ? setSearchQuery : setInternalQuery;
 
   // Silhouette Vector Placeholder Avatar
   const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2364748b"><circle cx="12" cy="8" r="4"/><path d="M12 14c-6.1 0-8 4-8 4h16s-1.9-4-8-4z"/></svg>`;
@@ -117,17 +113,7 @@ const Navbar = ({ isCollapsed, setIsMobileOpen, searchQuery, setSearchQuery }) =
           <Menu className="w-6 h-6" />
         </button>
 
-        {/* Search Input Container */}
-        <div className="relative hidden max-w-xs md:block">
-          <Search className="absolute top-1/2 left-3 w-4 h-4 -translate-y-1/2 text-slate-400" />
-          <input 
-            type="text" 
-            placeholder="Search subjects..." 
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="w-64 pl-10 pr-4 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-indigo-500/10 transition-smooth"
-          />
-        </div>
+
       </div>
 
       {/* Dynamic Date-Time, Theme & Action Items */}
