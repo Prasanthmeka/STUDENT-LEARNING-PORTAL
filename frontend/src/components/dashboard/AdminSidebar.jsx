@@ -60,11 +60,11 @@ const AdminSidebar = ({
     { name: 'TELUGU', icon: Languages, letter: 'తె', color: 'from-orange-500 to-amber-500' },
     { name: 'HINDI', icon: Languages, letter: 'हि', color: 'from-yellow-500 to-amber-500' },
     { name: 'ENGLISH', icon: BookOpen, color: 'from-indigo-500 to-blue-500' },
-    { name: 'SOCIAL', icon: Compass, color: 'from-teal-500 to-emerald-500' },
+    { name: 'MATHS', icon: Binary, color: 'from-blue-500 to-cyan-500' },
     { name: 'PHYSICS', icon: Atom, color: 'from-purple-500 to-indigo-500' },
     { name: 'CHEMISTRY', icon: FlaskConical, color: 'from-pink-500 to-rose-500' },
     { name: 'BIOLOGY', icon: Dna, color: 'from-emerald-500 to-cyan-500' },
-    { name: 'MATHS', icon: Binary, color: 'from-blue-500 to-cyan-500' },
+    { name: 'SOCIAL', icon: Compass, color: 'from-teal-500 to-emerald-500' },
   ];
 
   // Settings Links (Logout removed to be sticky bottom)
@@ -271,7 +271,7 @@ const AdminSidebar = ({
                       )}
                     </div>
                     {!isCollapsed && (
-                      <span className="tracking-wide">{sub.name}</span>
+                      <span className="tracking-wide">{sub.name === 'SOCIAL' ? 'SOCIAL STUDIES' : sub.name}</span>
                     )}
                     
                     {/* Active Indicator Pin */}
@@ -282,7 +282,7 @@ const AdminSidebar = ({
                     {/* Tooltip in collapsed state */}
                     {isCollapsed && (
                       <span className="absolute left-20 py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-[#E5E7EB] opacity-0 group-hover:opacity-100 translate-x-3 group-hover:translate-x-0 pointer-events-none transition-all duration-200 z-50 shadow-xl whitespace-nowrap">
-                        {sub.name}
+                        {sub.name === 'SOCIAL' ? 'SOCIAL STUDIES' : sub.name}
                       </span>
                     )}
                   </button>

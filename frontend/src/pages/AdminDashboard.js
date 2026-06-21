@@ -69,6 +69,25 @@ const defaultDummyData = {
   }
 };
 
+const sortSubjects = (subjects = []) => {
+  const subjectOrder = {
+    'TELUGU': 1,
+    'HINDI': 2,
+    'ENGLISH': 3,
+    'MATHS': 4,
+    'PHYSICS': 5,
+    'CHEMISTRY': 6,
+    'BIOLOGY': 7,
+    'SOCIAL': 8,
+    'SOCIAL STUDIES': 8
+  };
+  return [...subjects].sort((a, b) => {
+    const aOrder = subjectOrder[a.toUpperCase().trim()] || 99;
+    const bOrder = subjectOrder[b.toUpperCase().trim()] || 99;
+    return aOrder - bOrder;
+  });
+};
+
 const AdminDashboard = () => {
   // Core filter states (Dashboard table remains static from sidebar subject clicks)
   const [searchQuery, setSearchQuery] = useState('');
@@ -97,6 +116,32 @@ const AdminDashboard = () => {
   const [editEmail, setEditEmail] = useState('');
   const [editPlan, setEditPlan] = useState('');
   const [editStatus, setEditStatus] = useState('');
+
+  // Sorted and formatted subscription analytics data for Recharts BarChart
+  const sortedAnalyticsData = React.useMemo(() => {
+    if (!data?.subjectSubscriptionAnalytics) return [];
+    const subjectOrder = {
+      'TELUGU': 1,
+      'HINDI': 2,
+      'ENGLISH': 3,
+      'MATHS': 4,
+      'PHYSICS': 5,
+      'CHEMISTRY': 6,
+      'BIOLOGY': 7,
+      'SOCIAL': 8,
+      'SOCIAL STUDIES': 8
+    };
+    return [...data.subjectSubscriptionAnalytics]
+      .map(item => ({
+        ...item,
+        subject: item.subject === 'SOCIAL' ? 'SOCIAL STUDIES' : item.subject
+      }))
+      .sort((a, b) => {
+        const aOrder = subjectOrder[a.subject.toUpperCase()] || 99;
+        const bOrder = subjectOrder[b.subject.toUpperCase()] || 99;
+        return aOrder - bOrder;
+      });
+  }, [data]);
 
   // Fetch from real backend endpoint with graceful mock fallback
   useEffect(() => {
@@ -261,7 +306,7 @@ const AdminDashboard = () => {
     const rows = filteredStudents.map(student => [
       `"${student.name.replace(/"/g, '""')}"`,
       `"${student.email.replace(/"/g, '""')}"`,
-      `"${student.subjects.join(', ')}"`,
+      `"${sortSubjects(student.subjects).join(', ')}"`,
       `"${student.plan}"`,
       `"${student.expiryDate || 'N/A'}"`,
       `"${student.status}"`
@@ -318,7 +363,7 @@ const AdminDashboard = () => {
                 <tr>
                   <td><strong>${student.name}</strong></td>
                   <td>${student.email}</td>
-                  <td>${student.subjects.join(', ')}</td>
+                  <td>${sortSubjects(student.subjects).join(', ')}</td>
                   <td>${student.plan}</td>
                   <td>${student.expiryDate || 'N/A'}</td>
                   <td>
@@ -606,7 +651,7 @@ const AdminDashboard = () => {
             <div className="h-72 w-full pt-4">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={data?.subjectSubscriptionAnalytics || []}
+                  data={sortedAnalyticsData}
                   margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                   barGap={6}
                 >
@@ -820,11 +865,11 @@ const AdminDashboard = () => {
                     { value: 'TELUGU', label: 'TELUGU' },
                     { value: 'HINDI', label: 'HINDI' },
                     { value: 'ENGLISH', label: 'ENGLISH' },
-                    { value: 'SOCIAL', label: 'SOCIAL' },
+                    { value: 'MATHS', label: 'MATHS' },
                     { value: 'PHYSICS', label: 'PHYSICS' },
                     { value: 'CHEMISTRY', label: 'CHEMISTRY' },
                     { value: 'BIOLOGY', label: 'BIOLOGY' },
-                    { value: 'MATHS', label: 'MATHS' }
+                    { value: 'SOCIAL', label: 'SOCIAL STUDIES' }
                   ]}
                   className="!py-2.5 !px-4 text-xs font-bold bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-205 dark:border-slate-850"
                 />
@@ -932,7 +977,7 @@ const AdminDashboard = () => {
                       {/* Subscribed Subjects list */}
                       <td className="py-3.5 px-6">
                         <div className="flex flex-wrap gap-1 max-w-[200px]">
-                          {student.subjects.map((sub) => (
+                          {sortSubjects(student.subjects).map((sub) => (
                             <span 
                               key={sub} 
                               className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 text-slate-500 dark:text-slate-400"
