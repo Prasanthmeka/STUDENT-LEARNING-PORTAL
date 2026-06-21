@@ -16,6 +16,49 @@ const Subscription = () => {
 
   // Subscription states
   const [currentPlan, setCurrentPlan] = useState(() => localStorage.getItem('activePlan') || 'Free Trial');
+  const [prices, setPrices] = useState({ monthly: 299, yearly: 2499 });
+  const [subjectPricesMonthly, setSubjectPricesMonthly] = useState({
+    Telugu: 30, Hindi: 30, English: 30, Maths: 50, Physics: 40, Chemistry: 40, Biology: 40, Social: 39
+  });
+  const [subjectPricesYearly, setSubjectPricesYearly] = useState({
+    Telugu: 250, Hindi: 250, English: 250, Maths: 450, Physics: 350, Chemistry: 350, Biology: 350, Social: 199
+  });
+
+  React.useEffect(() => {
+    const fetchPrices = async () => {
+      try {
+        const response = await subscriptionAPI.getPrices();
+        if (response.data) {
+          setPrices({
+            monthly: response.data.subscription_monthly !== undefined && response.data.subscription_monthly !== null 
+              ? response.data.subscription_monthly 
+              : 299,
+            yearly: response.data.subscription_yearly !== undefined && response.data.subscription_yearly !== null 
+              ? response.data.subscription_yearly 
+              : 2499
+          });
+          if (response.data.subject_prices_monthly) {
+            setSubjectPricesMonthly(response.data.subject_prices_monthly);
+          }
+          if (response.data.subject_prices_yearly) {
+            setSubjectPricesYearly(response.data.subject_prices_yearly);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch subscription prices:', err);
+      }
+    };
+    fetchPrices();
+  }, []);
+
+  const getSelectedSubjectsPrice = () => {
+    const targetPrices = selectedPlanName === 'Yearly Premium' ? subjectPricesYearly : subjectPricesMonthly;
+    if (selectedSubjects.length === 0) {
+      return Object.values(targetPrices).reduce((sum, val) => sum + Number(val || 0), 0);
+    }
+    return selectedSubjects.reduce((sum, sub) => sum + Number(targetPrices[sub] || 0), 0);
+  };
+
   const [showSubjectModal, setShowSubjectModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [selectedPlanName, setSelectedPlanName] = useState('');
@@ -37,7 +80,7 @@ const Subscription = () => {
 
   const handleUpgradeClick = (planName) => {
     setSelectedPlanName(planName);
-    setSelectedSubjects([]);
+    setSelectedSubjects(subjectsList);
     setShowSubjectModal(true);
   };
 
@@ -133,8 +176,14 @@ const Subscription = () => {
                   Monthly Membership
                 </h4>
                 <div className="pt-4 flex items-baseline">
-                  <span className="text-4xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">&#8377;299</span>
-                  <span className="text-xs font-bold text-slate-400 ml-1">/ month</span>
+                  {prices.monthly === 0 ? (
+                    <span className="text-4xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">Free</span>
+                  ) : (
+                    <>
+                      <span className="text-4xl font-black text-slate-800 dark:text-slate-100 tracking-tight leading-none">&#8377;{prices.monthly}</span>
+                      <span className="text-xs font-bold text-slate-400 ml-1">/ month</span>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -186,8 +235,14 @@ const Subscription = () => {
                   Yearly Membership
                 </h4>
                 <div className="pt-4 flex items-baseline">
-                  <span className="text-4xl font-black text-yellow-400 tracking-tight leading-none">&#8377;2499</span>
-                  <span className="text-xs font-bold text-slate-400 ml-1">/ year</span>
+                  {prices.yearly === 0 ? (
+                    <span className="text-4xl font-black text-yellow-400 tracking-tight leading-none font-sans">Free</span>
+                  ) : (
+                    <>
+                      <span className="text-4xl font-black text-yellow-400 tracking-tight leading-none">&#8377;{prices.yearly}</span>
+                      <span className="text-xs font-bold text-slate-400 ml-1">/ year</span>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -267,11 +322,14 @@ const Subscription = () => {
               <div className="flex-1 overflow-y-auto py-6 pr-1 grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {subjectsList.map((sub) => {
                   const isSelected = selectedSubjects.includes(sub);
+                  const itemPrice = selectedPlanName === 'Yearly Premium' 
+                    ? (subjectPricesYearly[sub] ?? 0) 
+                    : (subjectPricesMonthly[sub] ?? 0);
                   return (
                     <button
                       key={sub}
                       onClick={() => toggleSubject(sub)}
-                      className={`p-4 rounded-2xl border text-center flex flex-col items-center justify-center gap-3 transition-smooth ${
+                      className={`p-4 rounded-2xl border text-center flex flex-col items-center justify-center gap-2.5 transition-smooth ${
                         isSelected 
                           ? 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-500 text-indigo-600 dark:text-indigo-400 shadow-sm'
                           : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-350 dark:hover:border-slate-700'
@@ -279,6 +337,9 @@ const Subscription = () => {
                     >
                       <span className="text-3xl select-none">{subjectIcons[sub]}</span>
                       <span className="text-xs font-black tracking-wide font-sans">{sub === 'Social' ? 'Social Studies' : sub}</span>
+                      <span className="text-[10px] font-bold text-slate-450 dark:text-slate-500">
+                        +&#8377;{itemPrice}
+                      </span>
                       
                       {/* Check dot selector */}
                       <span className={`w-4.5 h-4.5 rounded-full border flex items-center justify-center text-[9px] font-black ${
@@ -295,9 +356,15 @@ const Subscription = () => {
 
               {/* Action buttons */}
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <span className="text-[10px] font-bold text-slate-400 leading-normal text-center sm:text-left">
-                  Selected: <strong className="text-slate-700 dark:text-slate-300 font-black">{selectedSubjects.length} of 8 subjects</strong>
-                </span>
+                <div className="text-center sm:text-left">
+                  <span className="block text-[10px] font-bold text-slate-400 leading-normal">
+                    Selected: <strong className="text-slate-700 dark:text-slate-300 font-black">{selectedSubjects.length} of 8 subjects</strong>
+                  </span>
+                  <span className="block text-[11px] font-black text-indigo-600 dark:text-indigo-400 mt-0.5">
+                    Price: {getSelectedSubjectsPrice() === 0 ? 'Free' : `\u20B9${getSelectedSubjectsPrice()}`}
+                    {selectedPlanName === 'Yearly Premium' ? ' / year' : ' / month'}
+                  </span>
+                </div>
 
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   <button

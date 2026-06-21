@@ -1,7 +1,29 @@
 {
-  "theme_accent": "pink",
+  "theme_accent": "purple",
   "notif_registrations": true,
   "notif_submissions": true,
   "notif_alerts": true,
-  "notif_uploads": true
+  "notif_uploads": true,
+  "subscription_monthly": 360,
+  "subscription_yearly": 3600,
+  "subject_prices_monthly": {
+    "Telugu": 10,
+    "Hindi": 20,
+    "English": 30,
+    "Maths": 40,
+    "Physics": 50,
+    "Chemistry": 60,
+    "Biology": 70,
+    "Social": 80
+  },
+  "subject_prices_yearly": {
+    "Telugu": 100,
+    "Hindi": 200,
+    "English": 300,
+    "Maths": 400,
+    "Physics": 500,
+    "Chemistry": 600,
+    "Biology": 700,
+    "Social": 800
+  }
 }
