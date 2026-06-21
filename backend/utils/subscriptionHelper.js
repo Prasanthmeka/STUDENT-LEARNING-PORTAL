@@ -51,7 +51,12 @@ async function getSubscribedSubjects(studentId, headers = {}) {
 async function isSubscribedToSubject(studentId, subject, headers = {}) {
   if (!subject) return false;
   const subjects = await getSubscribedSubjects(studentId, headers);
-  return subjects.some(s => s.toLowerCase() === subject.toLowerCase());
+  return subjects.some(s => {
+    const sNorm = s.toLowerCase();
+    const subNorm = subject.toLowerCase();
+    return sNorm === subNorm || 
+      ((sNorm === 'social' || sNorm === 'social studies') && (subNorm === 'social' || subNorm === 'social studies'));
+  });
 }
 
 module.exports = {

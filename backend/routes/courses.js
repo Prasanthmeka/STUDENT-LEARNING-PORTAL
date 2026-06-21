@@ -73,7 +73,12 @@ router.get('/', authenticateToken, authorizeRole(['student']), async (req, res) 
     const subscribedSubjects = await getSubscribedSubjects(studentId, req.headers);
 
     const coursesArray = Object.keys(subjectMap)
-      .filter(sub => subscribedSubjects.some(s => s.toLowerCase() === sub.toLowerCase()))
+      .filter(sub => subscribedSubjects.some(s => {
+        const sNorm = s.toLowerCase();
+        const subNorm = sub.toLowerCase();
+        return sNorm === subNorm || 
+          ((sNorm === 'social' || sNorm === 'social studies') && (subNorm === 'social' || subNorm === 'social studies'));
+      }))
       .map(sub => {
         const course = subjectMap[sub];
         const percentage = course.lessons > 0 ? Math.round((course.completed / course.lessons) * 100) : 0;

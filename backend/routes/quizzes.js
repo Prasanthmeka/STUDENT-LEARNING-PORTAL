@@ -262,7 +262,12 @@ router.get('/', async (req, res) => {
       // Extract quiz data from permissions and attach attempt info, filtered by subject subscription list
       const quizzes = (permittedQuizzes || [])
         .map(p => p.quizzes)
-        .filter(q => q && q.is_published && subscribedSubjects.some(s => s.toLowerCase() === q.subject?.toLowerCase()))
+        .filter(q => q && q.is_published && subscribedSubjects.some(s => {
+          const sNorm = s.toLowerCase();
+          const qNorm = q.subject?.toLowerCase() || '';
+          return sNorm === qNorm || 
+            ((sNorm === 'social' || sNorm === 'social studies') && (qNorm === 'social' || qNorm === 'social studies'));
+        }))
         .map(q => {
           const attempt = attemptsMap[q.id] || null;
           return {

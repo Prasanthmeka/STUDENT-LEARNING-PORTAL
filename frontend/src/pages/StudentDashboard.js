@@ -18,10 +18,7 @@ import {
   Trophy, 
   Download, 
   ChevronRight,
-  AlertCircle,
-  Calendar,
-  CheckSquare,
-  Square
+  AlertCircle
 } from 'lucide-react';
 
 const StudentDashboard = () => {
@@ -35,15 +32,6 @@ const StudentDashboard = () => {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Activities Checklist State
-  const [activities, setActivities] = useState([
-    { id: 1, title: 'Maths - Quadratic Equations Quiz', date: 'May 26', done: false, subject: 'Maths' },
-    { id: 2, title: 'Physics - Mechanics Video Lecture', date: 'May 28', done: false, subject: 'Physics' },
-    { id: 3, title: 'English - Grammar Practice Exam', date: 'May 29', done: true, subject: 'English' },
-    { id: 4, title: 'Biology - Cell Division Reading', date: 'June 01', done: false, subject: 'Biology' },
-    { id: 5, title: 'Chemistry - Organic Bonding Review', date: 'June 03', done: false, subject: 'Chemistry' },
-  ]);
-
   // Toast Notification State
   const [toast, setToast] = useState(null);
 
@@ -52,15 +40,6 @@ const StudentDashboard = () => {
     setTimeout(() => {
       setToast(null);
     }, 4500);
-  };
-
-  const toggleActivity = (id) => {
-    setActivities(prev => 
-      prev.map(act => act.id === id ? { ...act, done: !act.done } : act)
-    );
-    const actName = activities.find(a => a.id === id)?.title;
-    const isNowDone = !activities.find(a => a.id === id)?.done;
-    showToast(isNowDone ? `Marked "${actName}" as completed!` : `Reopened "${actName}"`, 'success');
   };
 
   useEffect(() => {
@@ -220,80 +199,11 @@ const StudentDashboard = () => {
             />
           </div>
 
-          {/* Bottom Grid (Top Quizzes Table & Upcoming Activities Checklist) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Top Quizzes (7 Cols) */}
-            <div className="lg:col-span-7">
-              <TopQuizzes 
-                quizzes={dashboardData?.topQuizzes || []}
-                loading={loading}
-              />
-            </div>
-
-            {/* Upcoming Activities Checklist (5 Cols) */}
-            <div className="lg:col-span-5">
-              <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 shadow-saas h-[380px] flex flex-col">
-                <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center border border-indigo-100 dark:border-indigo-900 text-indigo-500 dark:text-indigo-400">
-                      <Calendar className="w-4.5 h-4.5" />
-                    </div>
-                    <div>
-                      <h3 className="font-extrabold text-slate-800 dark:text-white text-base tracking-tight font-sans">Upcoming Quizzes & Activities</h3>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Your Schedule</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex-grow overflow-y-auto py-4 space-y-3 pr-1">
-                  {(() => {
-                    const subs = JSON.parse(localStorage.getItem('subscribedSubjects') || '[]');
-                    const filteredActivities = activities.filter(act => 
-                      subs.some(s => s.toLowerCase() === act.subject?.toLowerCase())
-                    );
-                    
-                    if (filteredActivities.length === 0) {
-                      return (
-                        <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 text-center py-16">
-                          No activities matching your active subjects.
-                        </p>
-                      );
-                    }
-
-                    return filteredActivities.map((act) => (
-                      <div 
-                        key={act.id}
-                        onClick={() => toggleActivity(act.id)}
-                        className={`flex items-center justify-between p-3 rounded-2xl border transition-smooth cursor-pointer ${
-                          act.done 
-                            ? 'bg-slate-50/50 dark:bg-slate-950/20 border-slate-100 dark:border-slate-850 opacity-60' 
-                            : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-900 hover:bg-slate-50/40 dark:hover:bg-slate-850/20'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <button className="text-slate-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-smooth">
-                            {act.done ? (
-                              <CheckSquare className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-                            ) : (
-                              <Square className="w-5 h-5 text-slate-300 dark:text-slate-700" />
-                            )}
-                          </button>
-                          <span className={`text-xs font-semibold font-sans tracking-wide ${
-                            act.done ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200'
-                          }`}>
-                            {act.title}
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/50 text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50 uppercase tracking-wider">
-                          {act.date}
-                        </span>
-                      </div>
-                    ));
-                  })()}
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Bottom Section (Top Quizzes Table) */}
+          <TopQuizzes 
+            quizzes={dashboardData?.topQuizzes || []}
+            loading={loading}
+          />
 
           {/* Active Courses grid (Illustrations + progress bars) */}
           <CoursesGrid 
