@@ -72,7 +72,12 @@ router.get('/', authenticateToken, async (req, res) => {
       const subscribedSubjects = await getSubscribedSubjects(req.user.id, req.headers);
       
       const filtered = (data || []).filter(v => 
-        subscribedSubjects.some(s => s.toLowerCase() === v.subject?.toLowerCase())
+        subscribedSubjects.some(s => {
+          const sNorm = s.toLowerCase();
+          const vNorm = v.subject?.toLowerCase() || '';
+          return sNorm === vNorm || 
+            ((sNorm === 'social' || sNorm === 'social studies') && (vNorm === 'social' || vNorm === 'social studies'));
+        })
       );
       return res.json(filtered);
     }

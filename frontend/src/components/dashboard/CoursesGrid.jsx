@@ -78,7 +78,12 @@ const CoursesGrid = ({ courses = [], loading = false, searchQuery = '' }) => {
     const matchesSearch = searchQuery 
       ? course.subject?.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
-    const isSubscribed = subscribed.some(s => s.toLowerCase() === course.subject?.toLowerCase());
+    const isSubscribed = subscribed.some(s => {
+      const sNorm = s.toLowerCase();
+      const cNorm = course.subject?.toLowerCase() || '';
+      return sNorm === cNorm || 
+        ((sNorm === 'social' || sNorm === 'social studies') && (cNorm === 'social' || cNorm === 'social studies'));
+    });
     return isAllowed && matchesSearch && isSubscribed;
   });
 

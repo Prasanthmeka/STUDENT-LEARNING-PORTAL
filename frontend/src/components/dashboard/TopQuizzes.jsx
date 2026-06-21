@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Trophy, Calendar, HelpCircle } from 'lucide-react';
 
 const TopQuizzes = ({ quizzes = [], loading = false }) => {
+  const navigate = useNavigate();
 
   const getSubjectColor = (subject) => {
     const colors = {
@@ -70,9 +72,12 @@ const TopQuizzes = ({ quizzes = [], loading = false }) => {
                     
                     {/* Quiz Name */}
                     <td className="py-3 px-4">
-                      <div className="font-bold text-slate-800 group-hover:text-indigo-600 transition-smooth text-sm max-w-[200px] truncate font-sans">
+                      <button
+                        onClick={() => quiz.quizId && navigate(`/student/quiz/${quiz.quizId}`, { state: { from: 'dashboard' } })}
+                        className="text-left font-bold text-slate-800 hover:text-indigo-600 hover:underline transition-smooth text-sm max-w-[200px] truncate font-sans focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-md"
+                      >
                         {quiz.quizName}
-                      </div>
+                      </button>
                     </td>
 
                     {/* Subject Badge */}

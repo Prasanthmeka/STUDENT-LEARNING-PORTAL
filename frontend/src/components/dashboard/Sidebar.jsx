@@ -7,7 +7,6 @@ import {
   LayoutDashboard, 
   BookOpen, 
   ClipboardList, 
-  BarChart3, 
   Trophy, 
   FileText, 
   CreditCard, 
@@ -71,9 +70,8 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen })
     { name: 'Dashboard', path: '/student/dashboard', icon: LayoutDashboard },
     { name: 'Courses', path: '/student/videos', icon: BookOpen }, 
     { name: 'Tests', path: '/student/quizzes', icon: ClipboardList }, 
-    { name: 'Analytics', path: '#analytics-section', icon: BarChart3, isAnchor: true },
-    { name: 'Leaderboard', path: '/student/leaderboard', icon: Trophy },
     { name: 'Study Materials', path: '/student/materials', icon: FileText },
+    { name: 'Leaderboard', path: '/student/leaderboard', icon: Trophy },
     { name: 'Subscription', path: '/student/subscription', icon: CreditCard },
     { name: 'Settings', path: '/student/settings', icon: Settings },
   ];

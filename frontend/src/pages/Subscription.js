@@ -22,7 +22,7 @@ const Subscription = () => {
   const [selectedSubjects, setSelectedSubjects] = useState([]);
 
   // Strict 8 subjects list
-  const subjectsList = ['Telugu', 'Hindi', 'English', 'Social', 'Physics', 'Chemistry', 'Maths', 'Biology'];
+  const subjectsList = ['Telugu', 'Hindi', 'English', 'Maths', 'Physics', 'Chemistry', 'Biology', 'Social'];
 
   const subjectIcons = {
     'Telugu': '📙',
@@ -55,12 +55,17 @@ const Subscription = () => {
       return;
     }
     
+    // Sort selected subjects according to the strict order of subjectsList
+    const orderedSubjects = [...selectedSubjects].sort((a, b) => {
+      return subjectsList.indexOf(a) - subjectsList.indexOf(b);
+    });
+    
     try {
       // Securely save the subscription choices on the backend
       await subscriptionAPI.createSubscription({
         subscription_type: 'premium',
         plan_name: selectedPlanName,
-        subjects: selectedSubjects
+        subjects: orderedSubjects
       });
 
       setShowSubjectModal(false);
@@ -68,7 +73,7 @@ const Subscription = () => {
 
       // Save active plan to localStorage
       localStorage.setItem('activePlan', selectedPlanName);
-      localStorage.setItem('subscribedSubjects', JSON.stringify(selectedSubjects));
+      localStorage.setItem('subscribedSubjects', JSON.stringify(orderedSubjects));
       setCurrentPlan(selectedPlanName);
     } catch (err) {
       console.error('Failed to create subscription on backend:', err);

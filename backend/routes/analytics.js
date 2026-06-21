@@ -127,6 +127,7 @@ router.get('/student-dashboard', authenticateToken, authorizeRole(['student']), 
         
         uniqueTopQuizzes.push({
           id: attempt.id,
+          quizId: attempt.quiz_id,
           quizName: attempt.quizzes.title,
           subject: attempt.quizzes.subject === 'Social' ? 'Social Studies' : attempt.quizzes.subject,
           score: attempt.percentage ? parseFloat(attempt.percentage).toFixed(1) : 0,

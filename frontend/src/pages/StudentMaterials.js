@@ -25,7 +25,23 @@ const StudentMaterials = () => {
   const [selectedSubject, setSelectedSubject] = useState('All');
 
   const subscribedList = JSON.parse(localStorage.getItem('subscribedSubjects') || '[]');
-  const subjects = ['All', ...subscribedList];
+  const subjectOrder = {
+    'telugu': 1,
+    'hindi': 2,
+    'english': 3,
+    'maths': 4,
+    'physics': 5,
+    'chemistry': 6,
+    'biology': 7,
+    'social': 8,
+    'social studies': 8
+  };
+  const sortedSubscribedList = [...subscribedList].sort((a, b) => {
+    const aOrder = subjectOrder[a.toLowerCase().trim()] || 99;
+    const bOrder = subjectOrder[b.toLowerCase().trim()] || 99;
+    return aOrder - bOrder;
+  });
+  const subjects = ['All', ...sortedSubscribedList];
 
   useEffect(() => {
     fetchMaterials();
@@ -42,7 +58,12 @@ const StudentMaterials = () => {
       
       const filteredRaw = (response.data || []).filter(m => 
         allowed.includes(m.subject?.toUpperCase()) &&
-        subscribed.some(s => s.toLowerCase() === m.subject?.toLowerCase())
+        subscribed.some(s => {
+          const sNorm = s.toLowerCase();
+          const mNorm = m.subject?.toLowerCase() || '';
+          return sNorm === mNorm || 
+            ((sNorm === 'social' || sNorm === 'social studies') && (mNorm === 'social' || mNorm === 'social studies'));
+        })
       );
       
       setMaterials(filteredRaw);

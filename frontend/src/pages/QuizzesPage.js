@@ -25,7 +25,23 @@ const QuizzesPage = () => {
   const [selectedSubject, setSelectedSubject] = useState('All');
 
   const subscribedList = JSON.parse(localStorage.getItem('subscribedSubjects') || '[]');
-  const subjects = ['All', ...subscribedList];
+  const subjectOrder = {
+    'telugu': 1,
+    'hindi': 2,
+    'english': 3,
+    'maths': 4,
+    'physics': 5,
+    'chemistry': 6,
+    'biology': 7,
+    'social': 8,
+    'social studies': 8
+  };
+  const sortedSubscribedList = [...subscribedList].sort((a, b) => {
+    const aOrder = subjectOrder[a.toLowerCase().trim()] || 99;
+    const bOrder = subjectOrder[b.toLowerCase().trim()] || 99;
+    return aOrder - bOrder;
+  });
+  const subjects = ['All', ...sortedSubscribedList];
 
   useEffect(() => {
     fetchQuizzes();
@@ -42,7 +58,12 @@ const QuizzesPage = () => {
       
       const filteredRaw = (response.data || []).filter(q => 
         allowed.includes(q.subject?.toUpperCase()) &&
-        subscribed.some(s => s.toLowerCase() === q.subject?.toLowerCase())
+        subscribed.some(s => {
+          const sNorm = s.toLowerCase();
+          const qNorm = q.subject?.toLowerCase() || '';
+          return sNorm === qNorm || 
+            ((sNorm === 'social' || sNorm === 'social studies') && (qNorm === 'social' || qNorm === 'social studies'));
+        })
       );
       
       setQuizzes(filteredRaw);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { quizAPI } from '../services/api';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import StudentLayout from '../layouts/StudentLayout';
 import PageHeader from '../components/layout/PageHeader';
 import GoBackButton from '../components/layout/GoBackButton';
@@ -31,6 +31,12 @@ const formatTimeTaken = (seconds) => {
 const QuizPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Determine back path
+  const fromDashboard = location.state?.from === 'dashboard';
+  const backPath = fromDashboard ? '/student/dashboard' : '/student/quizzes';
+  const backLabel = fromDashboard ? 'Dashboard' : 'Tests';
 
   // Core States
   const [quiz, setQuiz] = useState(null);
@@ -176,14 +182,14 @@ const QuizPage = () => {
     
     return (
       <StudentLayout>
-        <GoBackButton to="/student/quizzes" replace={true} />
+        <GoBackButton to={backPath} replace={true} />
 
         {/* Results PageHeader */}
         <PageHeader
           title="Assessment Summary Report"
           subtitle={quiz.title}
-          parentLabel="Tests"
-          parentPath="/student/quizzes"
+          parentLabel={backLabel}
+          parentPath={backPath}
           showBackButton={false}
         />
 
@@ -252,10 +258,10 @@ const QuizPage = () => {
               {/* Action Buttons */}
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
                 <button
-                  onClick={() => navigate('/student/quizzes', { replace: true })}
+                  onClick={() => navigate(backPath, { replace: true })}
                   className="w-full py-3 rounded-2xl bg-indigo-50 dark:bg-indigo-955/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 font-bold text-xs tracking-wide transition-smooth"
                 >
-                  Back to Assessments
+                  {fromDashboard ? 'Back to Dashboard' : 'Back to Assessments'}
                 </button>
                 <button
                   onClick={() => navigate('/student/leaderboard')}
@@ -403,14 +409,14 @@ const QuizPage = () => {
 
   return (
     <StudentLayout>
-      <GoBackButton to="/student/quizzes" replace={true} />
+      <GoBackButton to={backPath} replace={true} />
 
       {/* Quiz Solver Header */}
       <PageHeader
         title={quiz.title}
         subtitle={`Assessment in progress. Subject: ${quiz.subject}`}
-        parentLabel="Tests"
-        parentPath="/student/quizzes"
+        parentLabel={backLabel}
+        parentPath={backPath}
         showBackButton={false}
       />
 
