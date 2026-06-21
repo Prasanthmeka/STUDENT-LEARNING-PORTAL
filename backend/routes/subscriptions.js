@@ -97,6 +97,73 @@ router.post('/', authenticateToken, authorizeRole(['student']), async (req, res)
   }
 });
 
+// Get Subscription Pricing values
+router.get('/prices', authenticateToken, async (req, res) => {
+  try {
+    const settingsPath = path.join(__dirname, '../utils/admin_settings.json');
+    let monthly = 299;
+    let yearly = 2499;
+    let subject_prices_monthly = { Telugu: 30, Hindi: 30, English: 30, Maths: 50, Physics: 40, Chemistry: 40, Biology: 40, Social: 39 };
+    let subject_prices_yearly = { Telugu: 250, Hindi: 250, English: 250, Maths: 450, Physics: 350, Chemistry: 350, Biology: 350, Social: 199 };
+    
+    // Try to get from Supabase first
+    try {
+      const { data, error } = await supabase
+        .from('admin_settings')
+        .select('*')
+        .limit(1);
+        
+      if (!error && data && data.length > 0) {
+        monthly = data[0].subscription_monthly ?? 299;
+        yearly = data[0].subscription_yearly ?? 2499;
+        subject_prices_monthly = data[0].subject_prices_monthly ?? subject_prices_monthly;
+        subject_prices_yearly = data[0].subject_prices_yearly ?? subject_prices_yearly;
+        
+        // Also merge local if columns are not in DB
+        if (!data[0].subject_prices_monthly || !data[0].subject_prices_yearly) {
+          if (fs.existsSync(settingsPath)) {
+            const fileData = fs.readFileSync(settingsPath, 'utf8');
+            const parsed = JSON.parse(fileData);
+            subject_prices_monthly = parsed.subject_prices_monthly ?? subject_prices_monthly;
+            subject_prices_yearly = parsed.subject_prices_yearly ?? subject_prices_yearly;
+          }
+        }
+        
+        return res.json({ 
+          subscription_monthly: monthly, 
+          subscription_yearly: yearly,
+          subject_prices_monthly,
+          subject_prices_yearly
+        });
+      }
+    } catch (e) {
+      console.warn("Supabase settings fetch failed for pricing:", e.message);
+    }
+    
+    if (fs.existsSync(settingsPath)) {
+      const fileData = fs.readFileSync(settingsPath, 'utf8');
+      const parsed = JSON.parse(fileData);
+      monthly = parsed.subscription_monthly ?? 299;
+      yearly = parsed.subscription_yearly ?? 2499;
+      subject_prices_monthly = parsed.subject_prices_monthly ?? subject_prices_monthly;
+      subject_prices_yearly = parsed.subject_prices_yearly ?? subject_prices_yearly;
+    }
+    res.json({ 
+      subscription_monthly: monthly, 
+      subscription_yearly: yearly,
+      subject_prices_monthly,
+      subject_prices_yearly
+    });
+  } catch (err) {
+    res.json({ 
+      subscription_monthly: 299, 
+      subscription_yearly: 2499,
+      subject_prices_monthly: { Telugu: 30, Hindi: 30, English: 30, Maths: 50, Physics: 40, Chemistry: 40, Biology: 40, Social: 39 },
+      subject_prices_yearly: { Telugu: 250, Hindi: 250, English: 250, Maths: 450, Physics: 350, Chemistry: 350, Biology: 350, Social: 199 }
+    });
+  }
+});
+
 // Get Student's Subscription
 router.get('/my-subscription', authenticateToken, async (req, res) => {
   try {

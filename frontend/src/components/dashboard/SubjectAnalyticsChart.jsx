@@ -24,8 +24,29 @@ const SubjectAnalyticsChart = ({ data = [], loading = false }) => {
 
   const DEFAULT_COLORS = ['#f59e0b', '#f43f5e', '#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#22c55e', '#d946ef'];
 
+  // Sort data strictly by requested subject order
+  const sortedData = React.useMemo(() => {
+    const subjectOrder = {
+      'telugu': 1,
+      'hindi': 2,
+      'english': 3,
+      'maths': 4,
+      'physics': 5,
+      'chemistry': 6,
+      'biology': 7,
+      'social': 8,
+      'social studies': 8
+    };
+
+    return [...data].sort((a, b) => {
+      const aOrder = subjectOrder[(a.subject || '').toLowerCase().trim()] || 99;
+      const bOrder = subjectOrder[(b.subject || '').toLowerCase().trim()] || 99;
+      return aOrder - bOrder;
+    });
+  }, [data]);
+
   // Filter data to only show subjects with attempted quizzes > 0
-  const chartData = data
+  const chartData = sortedData
     .filter(item => item.attempted > 0)
     .map(item => ({
       name: item.subject,
@@ -33,7 +54,7 @@ const SubjectAnalyticsChart = ({ data = [], loading = false }) => {
       percentage: item.percentage
     }));
 
-  const totalAttempted = data.reduce((acc, curr) => acc + curr.attempted, 0);
+  const totalAttempted = sortedData.reduce((acc, curr) => acc + curr.attempted, 0);
 
   // Custom Tooltip component
   const CustomTooltip = ({ active, payload }) => {
@@ -55,7 +76,7 @@ const SubjectAnalyticsChart = ({ data = [], loading = false }) => {
   const RenderLegend = () => {
     return (
       <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-4 px-2">
-        {data.map((item, idx) => {
+        {sortedData.map((item, idx) => {
           const color = COLORS[item.subject] || DEFAULT_COLORS[idx % DEFAULT_COLORS.length];
           const hasAttempted = item.attempted > 0;
           return (

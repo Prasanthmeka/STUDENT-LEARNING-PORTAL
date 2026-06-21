@@ -12,7 +12,29 @@ const getDefaultSettings = () => ({
   notif_registrations: true,
   notif_submissions: true,
   notif_alerts: true,
-  notif_uploads: true
+  notif_uploads: true,
+  subscription_monthly: 299,
+  subscription_yearly: 2499,
+  subject_prices_monthly: {
+    Telugu: 30,
+    Hindi: 30,
+    English: 30,
+    Maths: 50,
+    Physics: 40,
+    Chemistry: 40,
+    Biology: 40,
+    Social: 39
+  },
+  subject_prices_yearly: {
+    Telugu: 250,
+    Hindi: 250,
+    English: 250,
+    Maths: 450,
+    Physics: 350,
+    Chemistry: 350,
+    Biology: 350,
+    Social: 199
+  }
 });
 
 const readSettings = () => {
@@ -54,15 +76,21 @@ router.get('/', authenticateToken, authorizeRole(['admin']), async (req, res) =>
       .select('*')
       .limit(1);
 
+    const localSettings = readSettings();
     if (error || !data || data.length === 0) {
-      // Graceful fallback to local JSON file
-      const settings = readSettings();
-      return res.json(settings);
+      return res.json(localSettings);
     }
 
-    res.json(data[0]);
+    // Merge Supabase values with local/default structures to support subject_prices
+    const mergedSettings = {
+      ...getDefaultSettings(),
+      ...localSettings,
+      ...data[0],
+      subject_prices_monthly: data[0].subject_prices_monthly ?? localSettings.subject_prices_monthly ?? getDefaultSettings().subject_prices_monthly,
+      subject_prices_yearly: data[0].subject_prices_yearly ?? localSettings.subject_prices_yearly ?? getDefaultSettings().subject_prices_yearly
+    };
+    res.json(mergedSettings);
   } catch (err) {
-    // Graceful fallback to local JSON file
     const settings = readSettings();
     res.json(settings);
   }
@@ -71,14 +99,28 @@ router.get('/', authenticateToken, authorizeRole(['admin']), async (req, res) =>
 // PUT /api/admin/settings
 router.put('/', authenticateToken, authorizeRole(['admin']), async (req, res) => {
   try {
-    const { theme_accent, notif_registrations, notif_submissions, notif_alerts, notif_uploads } = req.body;
+    const { 
+      theme_accent, 
+      notif_registrations, 
+      notif_submissions, 
+      notif_alerts, 
+      notif_uploads,
+      subscription_monthly,
+      subscription_yearly,
+      subject_prices_monthly,
+      subject_prices_yearly
+    } = req.body;
 
     const settings = {
       theme_accent: theme_accent || 'purple',
       notif_registrations: notif_registrations !== undefined ? notif_registrations : true,
       notif_submissions: notif_submissions !== undefined ? notif_submissions : true,
       notif_alerts: notif_alerts !== undefined ? notif_alerts : true,
-      notif_uploads: notif_uploads !== undefined ? notif_uploads : true
+      notif_uploads: notif_uploads !== undefined ? notif_uploads : true,
+      subscription_monthly: subscription_monthly !== undefined ? Number(subscription_monthly) : 299,
+      subscription_yearly: subscription_yearly !== undefined ? Number(subscription_yearly) : 2499,
+      subject_prices_monthly: subject_prices_monthly || getDefaultSettings().subject_prices_monthly,
+      subject_prices_yearly: subject_prices_yearly || getDefaultSettings().subject_prices_yearly
     };
 
     // 1. Update the local JSON file first (guarantees local sync)

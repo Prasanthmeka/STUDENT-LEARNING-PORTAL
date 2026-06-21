@@ -8,7 +8,8 @@ import {
   CheckCircle, 
   Save, 
   RefreshCw,
-  ArrowLeft
+  ArrowLeft,
+  CreditCard
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -21,6 +22,17 @@ const UserSettings = () => {
   const [notifSubmissions, setNotifSubmissions] = useState(true);
   const [notifAlerts, setNotifAlerts] = useState(true);
   const [notifUploads, setNotifUploads] = useState(true);
+  const [subscriptionMonthly, setSubscriptionMonthly] = useState(299);
+  const [subscriptionYearly, setSubscriptionYearly] = useState(2499);
+  const [subjectPricesMonthly, setSubjectPricesMonthly] = useState({
+    Telugu: 30, Hindi: 30, English: 30, Maths: 50, Physics: 40, Chemistry: 40, Biology: 40, Social: 39
+  });
+  const [subjectPricesYearly, setSubjectPricesYearly] = useState({
+    Telugu: 250, Hindi: 250, English: 250, Maths: 450, Physics: 350, Chemistry: 350, Biology: 350, Social: 199
+  });
+
+  const calculatedMonthlyTotal = Object.values(subjectPricesMonthly).reduce((sum, val) => sum + Number(val || 0), 0);
+  const calculatedYearlyTotal = Object.values(subjectPricesYearly).reduce((sum, val) => sum + Number(val || 0), 0);
 
   // Status States
   const [loading, setLoading] = useState(true);
@@ -56,6 +68,22 @@ const UserSettings = () => {
               ? response.data.notif_uploads 
               : true
           );
+          setSubscriptionMonthly(
+            response.data.subscription_monthly !== undefined 
+              ? response.data.subscription_monthly 
+              : 299
+          );
+          setSubscriptionYearly(
+            response.data.subscription_yearly !== undefined 
+              ? response.data.subscription_yearly 
+              : 2499
+          );
+          if (response.data.subject_prices_monthly) {
+            setSubjectPricesMonthly(response.data.subject_prices_monthly);
+          }
+          if (response.data.subject_prices_yearly) {
+            setSubjectPricesYearly(response.data.subject_prices_yearly);
+          }
           localStorage.setItem('admin_theme_accent', response.data.theme_accent || 'purple');
           window.dispatchEvent(new Event('admin-theme-changed'));
         }
@@ -85,8 +113,14 @@ const UserSettings = () => {
         notif_registrations: notifRegistrations,
         notif_submissions: notifSubmissions,
         notif_alerts: notifAlerts,
-        notif_uploads: notifUploads
+        notif_uploads: notifUploads,
+        subscription_monthly: calculatedMonthlyTotal,
+        subscription_yearly: calculatedYearlyTotal,
+        subject_prices_monthly: subjectPricesMonthly,
+        subject_prices_yearly: subjectPricesYearly
       });
+      setSubscriptionMonthly(calculatedMonthlyTotal);
+      setSubscriptionYearly(calculatedYearlyTotal);
       
       // Update local storage and dispatch global react event
       localStorage.setItem('admin_theme_accent', themeAccent);
@@ -278,6 +312,103 @@ const UserSettings = () => {
                       />
                       <div className="w-11 h-6 bg-slate-200 dark:bg-slate-800 rounded-full peer peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-900/30 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-slate-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                     </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Category 3: Subscription Pricing Values */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start pt-6 border-t border-slate-100 dark:border-indigo-950/20">
+                <div className="md:col-span-4 space-y-1">
+                  <h3 className="font-extrabold text-slate-800 dark:text-white text-sm font-sans flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-slate-400 shrink-0" />
+                    Subscription Pricing Values
+                  </h3>
+                  <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-normal">
+                    Update the pricing values for Monthly and Yearly premium membership plans. Total sum is calculated dynamically based on subject rates.
+                  </p>
+                </div>
+                
+                <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Total Monthly Price (&#8377;) [Calculated]</label>
+                    <input 
+                      type="number" 
+                      value={calculatedMonthlyTotal}
+                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold cursor-not-allowed"
+                      readOnly
+                      disabled
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Total Yearly Price (&#8377;) [Calculated]</label>
+                    <input 
+                      type="number" 
+                      value={calculatedYearlyTotal}
+                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold cursor-not-allowed"
+                      readOnly
+                      disabled
+                    />
+                  </div>
+                </div>
+
+                <div className="md:col-span-12 space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <h4 className="font-black text-slate-800 dark:text-slate-200 text-xs uppercase tracking-wider">Subject-Specific Pricing Configurations</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    {['Telugu', 'Hindi', 'English', 'Maths', 'Physics', 'Chemistry', 'Biology', 'Social'].map((sub) => {
+                      const displayNames = {
+                        Telugu: 'Telugu',
+                        Hindi: 'Hindi',
+                        English: 'English',
+                        Maths: 'Maths',
+                        Physics: 'Physics',
+                        Chemistry: 'Chemistry',
+                        Biology: 'Biology',
+                        Social: 'Social Studies'
+                      };
+                      const subjectIcons = {
+                        Telugu: '📙',
+                        Hindi: '📔',
+                        English: '📕',
+                        Social: '🌍',
+                        Physics: '⚛️',
+                        Chemistry: '🧪',
+                        Maths: '📐',
+                        Biology: '🌿'
+                      };
+                      return (
+                        <div key={sub} className="bg-slate-55 dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-850 space-y-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl select-none">{subjectIcons[sub] || '📚'}</span>
+                            <span className="text-xs font-black text-slate-700 dark:text-slate-200">{displayNames[sub]}</span>
+                          </div>
+                          
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Monthly Price (&#8377;)</label>
+                            <input 
+                              type="number" 
+                              value={subjectPricesMonthly[sub] ?? 0}
+                              onChange={(e) => setSubjectPricesMonthly({ ...subjectPricesMonthly, [sub]: Number(e.target.value) })}
+                              className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 font-bold text-xs"
+                              min="0"
+                              required
+                            />
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Yearly Price (&#8377;)</label>
+                            <input 
+                              type="number" 
+                              value={subjectPricesYearly[sub] ?? 0}
+                              onChange={(e) => setSubjectPricesYearly({ ...subjectPricesYearly, [sub]: Number(e.target.value) })}
+                              className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 font-bold text-xs"
+                              min="0"
+                              required
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

@@ -69,6 +69,25 @@ const defaultDummyData = {
   }
 };
 
+const sortSubjects = (subjects = []) => {
+  const subjectOrder = {
+    'TELUGU': 1,
+    'HINDI': 2,
+    'ENGLISH': 3,
+    'MATHS': 4,
+    'PHYSICS': 5,
+    'CHEMISTRY': 6,
+    'BIOLOGY': 7,
+    'SOCIAL': 8,
+    'SOCIAL STUDIES': 8
+  };
+  return [...subjects].sort((a, b) => {
+    const aOrder = subjectOrder[a.toUpperCase().trim()] || 99;
+    const bOrder = subjectOrder[b.toUpperCase().trim()] || 99;
+    return aOrder - bOrder;
+  });
+};
+
 const AdminDashboard = () => {
   // Core filter states (Dashboard table remains static from sidebar subject clicks)
   const [searchQuery, setSearchQuery] = useState('');
@@ -97,6 +116,33 @@ const AdminDashboard = () => {
   const [editEmail, setEditEmail] = useState('');
   const [editPlan, setEditPlan] = useState('');
   const [editStatus, setEditStatus] = useState('');
+  const [editSubjects, setEditSubjects] = useState([]);
+
+  // Sorted and formatted subscription analytics data for Recharts BarChart
+  const sortedAnalyticsData = React.useMemo(() => {
+    if (!data?.subjectSubscriptionAnalytics) return [];
+    const subjectOrder = {
+      'TELUGU': 1,
+      'HINDI': 2,
+      'ENGLISH': 3,
+      'MATHS': 4,
+      'PHYSICS': 5,
+      'CHEMISTRY': 6,
+      'BIOLOGY': 7,
+      'SOCIAL': 8,
+      'SOCIAL STUDIES': 8
+    };
+    return [...data.subjectSubscriptionAnalytics]
+      .map(item => ({
+        ...item,
+        subject: item.subject === 'SOCIAL' ? 'SOCIAL STUDIES' : item.subject
+      }))
+      .sort((a, b) => {
+        const aOrder = subjectOrder[a.subject.toUpperCase()] || 99;
+        const bOrder = subjectOrder[b.subject.toUpperCase()] || 99;
+        return aOrder - bOrder;
+      });
+  }, [data]);
 
   // Fetch from real backend endpoint with graceful mock fallback
   useEffect(() => {
@@ -179,34 +225,57 @@ const AdminDashboard = () => {
     setEditEmail(student.email);
     setEditPlan(student.plan);
     setEditStatus(student.status);
+    setEditSubjects(student.subjects || []);
   };
 
   // Save Student Edits
-  const handleSaveStudent = (e) => {
+  const handleSaveStudent = async (e) => {
     e.preventDefault();
     if (!editName.trim() || !editEmail.trim()) {
       alert('Please fill in name and email addresses.');
       return;
     }
 
-    setData(prev => ({
-      ...prev,
-      students: prev.students.map(s => {
-        if (s.id === editingStudent.id) {
-          return {
-            ...s,
-            name: editName,
-            email: editEmail,
-            plan: editPlan,
-            status: editStatus,
-            expiryDate: editPlan === 'Premium Plan' ? '12/24/2026' : null
-          };
+    try {
+      if (isRealBackend) {
+        const response = await userAPI.updateUserSubscription(editingStudent.id, {
+          name: editName,
+          email: editEmail,
+          plan: editPlan,
+          status: editStatus,
+          subjects: editSubjects
+        });
+        
+        if (response.data) {
+          triggerRefresh();
+          alert('Student and subscription details updated successfully!');
         }
-        return s;
-      })
-    }));
-
-    setEditingStudent(null);
+      } else {
+        // Fallback for mock/offline data
+        setData(prev => ({
+          ...prev,
+          students: prev.students.map(s => {
+            if (s.id === editingStudent.id) {
+              return {
+                ...s,
+                name: editName,
+                email: editEmail,
+                plan: editPlan,
+                status: editStatus,
+                subjects: editSubjects,
+                expiryDate: editPlan === 'Premium Plan' ? '12/24/2026' : null
+              };
+            }
+            return s;
+          })
+        }));
+        alert('Student details saved successfully (mock state only).');
+      }
+      setEditingStudent(null);
+    } catch (error) {
+      console.error('Failed to update student subscription details:', error);
+      alert(error.response?.data?.error || 'Failed to update student subscription. Please try again.');
+    }
   };
 
   // Sorting implementation
@@ -261,7 +330,7 @@ const AdminDashboard = () => {
     const rows = filteredStudents.map(student => [
       `"${student.name.replace(/"/g, '""')}"`,
       `"${student.email.replace(/"/g, '""')}"`,
-      `"${student.subjects.join(', ')}"`,
+      `"${sortSubjects(student.subjects).join(', ')}"`,
       `"${student.plan}"`,
       `"${student.expiryDate || 'N/A'}"`,
       `"${student.status}"`
@@ -318,7 +387,7 @@ const AdminDashboard = () => {
                 <tr>
                   <td><strong>${student.name}</strong></td>
                   <td>${student.email}</td>
-                  <td>${student.subjects.join(', ')}</td>
+                  <td>${sortSubjects(student.subjects).join(', ')}</td>
                   <td>${student.plan}</td>
                   <td>${student.expiryDate || 'N/A'}</td>
                   <td>
@@ -606,7 +675,7 @@ const AdminDashboard = () => {
             <div className="h-72 w-full pt-4">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={data?.subjectSubscriptionAnalytics || []}
+                  data={sortedAnalyticsData}
                   margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                   barGap={6}
                 >
@@ -820,11 +889,11 @@ const AdminDashboard = () => {
                     { value: 'TELUGU', label: 'TELUGU' },
                     { value: 'HINDI', label: 'HINDI' },
                     { value: 'ENGLISH', label: 'ENGLISH' },
-                    { value: 'SOCIAL', label: 'SOCIAL' },
+                    { value: 'MATHS', label: 'MATHS' },
                     { value: 'PHYSICS', label: 'PHYSICS' },
                     { value: 'CHEMISTRY', label: 'CHEMISTRY' },
                     { value: 'BIOLOGY', label: 'BIOLOGY' },
-                    { value: 'MATHS', label: 'MATHS' }
+                    { value: 'SOCIAL', label: 'SOCIAL STUDIES' }
                   ]}
                   className="!py-2.5 !px-4 text-xs font-bold bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-205 dark:border-slate-850"
                 />
@@ -932,7 +1001,7 @@ const AdminDashboard = () => {
                       {/* Subscribed Subjects list */}
                       <td className="py-3.5 px-6">
                         <div className="flex flex-wrap gap-1 max-w-[200px]">
-                          {student.subjects.map((sub) => (
+                          {sortSubjects(student.subjects).map((sub) => (
                             <span 
                               key={sub} 
                               className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 text-slate-500 dark:text-slate-400"
@@ -1099,7 +1168,7 @@ const AdminDashboard = () => {
                     <select 
                       value={editPlan}
                       onChange={(e) => setEditPlan(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-55/50 dark:bg-slate-900 text-slate-800 dark:text-slate-105 focus:outline-none focus:border-indigo-500 cursor-pointer"
                     >
                       <option value="Premium Plan">Premium Plan</option>
                       <option value="Free Trial">Free Trial</option>
@@ -1111,7 +1180,7 @@ const AdminDashboard = () => {
                     <select 
                       value={editStatus}
                       onChange={(e) => setEditStatus(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-55/50 dark:bg-slate-900 text-slate-800 dark:text-slate-105 focus:outline-none focus:border-indigo-500 cursor-pointer"
                     >
                       <option value="Active">Active</option>
                       <option value="Expired">Expired</option>
@@ -1119,6 +1188,34 @@ const AdminDashboard = () => {
                     </select>
                   </div>
                 </div>
+
+                {editPlan === 'Premium Plan' && (
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Subscribed Subjects</label>
+                    <div className="grid grid-cols-2 gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900 max-h-36 overflow-y-auto">
+                      {['Telugu', 'Hindi', 'English', 'Maths', 'Physics', 'Chemistry', 'Biology', 'Social'].map(sub => {
+                        const isChecked = editSubjects.includes(sub);
+                        return (
+                          <label key={sub} className="flex items-center gap-2 text-xs font-semibold cursor-pointer text-slate-700 dark:text-slate-300">
+                            <input 
+                              type="checkbox" 
+                              checked={isChecked}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setEditSubjects([...editSubjects, sub]);
+                                } else {
+                                  setEditSubjects(editSubjects.filter(s => s !== sub));
+                                }
+                              }}
+                              className="rounded border-slate-300 text-indigo-650 focus:ring-indigo-500 w-3.5 h-3.5"
+                            />
+                            {sub === 'Social' ? 'Social Studies' : sub}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 <div className="pt-4 border-t border-slate-100 dark:border-slate-900 flex items-center justify-end gap-3">
                   <button

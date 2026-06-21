@@ -67,7 +67,8 @@ export const leaderboardAPI = {
 export const subscriptionAPI = {
   createSubscription: (data) => API.post('/subscriptions', data),
   getMySubscription: () => API.get('/subscriptions/my-subscription'),
-  upgradeSubscription: (subscriptionId, data) => API.put(`/subscriptions/${subscriptionId}`, data)
+  upgradeSubscription: (subscriptionId, data) => API.put(`/subscriptions/${subscriptionId}`, data),
+  getPrices: () => API.get('/subscriptions/prices')
 };
 
 // Course APIs
@@ -99,7 +100,8 @@ export const aiAPI = {
 
 // User/Student APIs
 export const userAPI = {
-  deleteUser: (id) => API.delete(`/users/${id}`)
+  deleteUser: (id) => API.delete(`/users/${id}`),
+  updateUserSubscription: (id, data) => API.put(`/users/${id}/subscription`, data)
 };
 
 export default API;
