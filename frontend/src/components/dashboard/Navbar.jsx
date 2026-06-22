@@ -8,9 +8,7 @@ import {
   LogOut, 
   Menu,
   CheckCircle,
-  AlertCircle,
-  Sun,
-  Moon
+  AlertCircle
 } from 'lucide-react';
 
 const Navbar = ({ isCollapsed, setIsMobileOpen, searchQuery, setSearchQuery }) => {
@@ -224,23 +222,7 @@ const Navbar = ({ isCollapsed, setIsMobileOpen, searchQuery, setSearchQuery }) =
                   <Settings className="w-4 h-4" />
                   Account Settings
                 </a>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleThemeToggle();
-                  }}
-                  className="flex items-center justify-between w-full px-3.5 py-2.5 text-sm font-medium rounded-xl text-slate-600 dark:text-slate-300 hover:text-indigo-650 dark:hover:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-850 transition-smooth"
-                >
-                  <div className="flex items-center gap-3">
-                    {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                    <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
-                  </div>
-                  {/* Premium Switch Toggle */}
-                  <div className={`w-8 h-4.5 rounded-full p-0.5 transition-colors duration-200 focus:outline-none ${isDarkMode ? 'bg-indigo-600' : 'bg-slate-350 dark:bg-slate-700'}`}>
-                    <div className={`w-3.5 h-3.5 rounded-full bg-white transition-transform duration-200 transform ${isDarkMode ? 'translate-x-3.5' : 'translate-x-0'}`} />
-                  </div>
-                </button>
+
                 <button 
                   onClick={handleLogout}
                   className="flex items-center gap-3 w-full px-3.5 py-2.5 text-sm font-medium rounded-xl text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-smooth"

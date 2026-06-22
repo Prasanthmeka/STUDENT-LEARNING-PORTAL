@@ -34,9 +34,6 @@ const Settings = () => {
   const [newPassword, setNewPassword] = useState('');
 
   // Styling / Layout states
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return document.documentElement.classList.contains('dark');
-  });
   const [accentColor, setAccentColor] = useState(() => localStorage.getItem('student_theme_accent') || 'indigo');
 
   // Notification States
@@ -99,17 +96,6 @@ const Settings = () => {
     showToast('Password credentials changed successfully!');
     setCurrentPassword('');
     setNewPassword('');
-  };
-
-  const handleThemeChange = (val) => {
-    setIsDarkMode(val);
-    if (val) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
   };
 
   const handlePreferenceSave = () => {
