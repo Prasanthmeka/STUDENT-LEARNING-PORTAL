@@ -1067,14 +1067,12 @@ const AdminSubjectPage = () => {
 
   // Materials Exporters
   const downloadMaterialsExcel = () => {
-    const headers = ['Material Title', 'Type', 'Chapter', 'Size', 'Visibility', 'Downloads'];
+    const headers = ['Material Title', 'Type', 'Chapter', 'Visibility'];
     const rows = filteredMaterials.map(mat => [
       `"${mat.title}"`,
       `"${mat.type || 'PDF'}"`,
       `"${mat.chapter || 'N/A'}"`,
-      `"${mat.size}"`,
-      `"${mat.visibility || 'Premium Only'}"`,
-      `"${mat.downloads || 0}"`
+      `"${mat.visibility || 'Premium Only'}"`
     ]);
 
     const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
@@ -1116,9 +1114,7 @@ const AdminSubjectPage = () => {
                 <th>Material Title</th>
                 <th>Type</th>
                 <th>Chapter</th>
-                <th>File Size</th>
                 <th>Visibility</th>
-                <th>Total Downloads</th>
               </tr>
             </thead>
             <tbody>
@@ -1127,13 +1123,11 @@ const AdminSubjectPage = () => {
                   <td><strong>${mat.title}</strong></td>
                   <td>${mat.type || 'PDF'}</td>
                   <td>Unit ${mat.chapter || 'N/A'}</td>
-                  <td>${mat.size}</td>
                   <td>
                     <span class="badge ${
                       (mat.visibility || 'Premium Only') === 'Public' ? 'public' : 'premium'
                     }">${mat.visibility || 'Premium Only'}</span>
                   </td>
-                  <td>${mat.downloads || 0} downloads</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -2164,8 +2158,6 @@ const AdminSubjectPage = () => {
                         <th className="py-4 px-6 font-extrabold">Material Title & Chapter</th>
                         <th className="py-4 px-6 font-extrabold">Type</th>
                         <th className="py-4 px-6 font-extrabold">Visibility</th>
-                        <th className="py-4 px-6 font-extrabold">File Size</th>
-                        <th className="py-4 px-6 font-extrabold">Downloads Count</th>
                         <th className="py-4 px-6 font-extrabold text-center">Actions</th>
                       </tr>
                     </thead>
@@ -2195,8 +2187,6 @@ const AdminSubjectPage = () => {
                                 {mat.visibility || 'Premium Only'}
                               </span>
                             </td>
-                            <td className="py-3.5 px-6 font-mono font-bold text-slate-600 dark:text-slate-400">{mat.size || '1.8 MB'}</td>
-                            <td className="py-3.5 px-6 font-mono font-semibold text-slate-600 dark:text-slate-400">{mat.downloads || 0} downloads</td>
                             <td className="py-3.5 px-6 text-center">
                               <div className="flex items-center justify-center gap-2">
                                 <button 
@@ -2217,7 +2207,7 @@ const AdminSubjectPage = () => {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan="6" className="py-12 text-center text-slate-400 dark:text-slate-500 font-semibold bg-slate-50/10">
+                          <td colSpan="4" className="py-12 text-center text-slate-400 dark:text-slate-500 font-semibold bg-slate-50/10">
                             <span>No materials found matching current filters.</span>
                           </td>
                         </tr>
