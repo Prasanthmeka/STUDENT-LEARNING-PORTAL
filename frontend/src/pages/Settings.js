@@ -11,7 +11,6 @@ import {
   CreditCard, 
   Check, 
   Lock, 
-  Upload,
   CheckCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,9 +18,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 const Settings = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  
-  // Silhouette Vector Placeholder Avatar
-  const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2364748b"><circle cx="12" cy="8" r="4"/><path d="M12 14c-6.1 0-8 4-8 4h16s-1.9-4-8-4z"/></svg>`;
 
   // Settings States
   const [activeTab, setActiveTab] = useState('account');
@@ -202,28 +198,6 @@ const Settings = () => {
                   <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 mt-0.5">Manage your student credentials and preferences</p>
                 </div>
 
-                {/* Avatar Upload mockup */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 py-4 border-y border-slate-100 dark:border-slate-800">
-                  <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden shrink-0 shadow-inner ring-2 ring-indigo-500/20">
-                    <img 
-                      src={defaultAvatar} 
-                      alt="Student Avatar" 
-                      className="w-10 h-10 object-contain opacity-75"
-                    />
-                  </div>
-                  <div>
-                    <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">Student Profile Image</span>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5 mb-2 leading-relaxed">JPG or PNG. Max size 2MB.</p>
-                    <button 
-                      onClick={() => alert('Profile photo upload feature requires premium storage.')}
-                      type="button"
-                      className="inline-flex items-center gap-1.5 py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-[11px] transition-smooth shadow-sm"
-                    >
-                      <Upload className="w-3.5 h-3.5" />
-                      Upload Photo
-                    </button>
-                  </div>
-                </div>
 
                 {/* Name / Email form */}
                 <form onSubmit={handleProfileSave} className="space-y-4">
