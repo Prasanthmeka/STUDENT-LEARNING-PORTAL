@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { videoAPI } from '../services/api';
 import StudentLayout from '../layouts/StudentLayout';
 import PageHeader from '../components/layout/PageHeader';
@@ -17,14 +17,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const StudentVideos = () => {
   const navigate = useNavigate();
-
-  // Component States
-  const [videos, setVideos] = useState([]);
-  const [filteredVideos, setFilteredVideos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState('all');
-  const [selectedSubject, setSelectedSubject] = useState('All');
+  const [searchParams] = useSearchParams();
 
   const subscribedList = JSON.parse(localStorage.getItem('subscribedSubjects') || '[]');
   const subjectOrder = {
@@ -45,11 +38,32 @@ const StudentVideos = () => {
   });
   const subjects = ['All', ...sortedSubscribedList];
 
+  // Component States
+  const [videos, setVideos] = useState([]);
+  const [filteredVideos, setFilteredVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedType, setSelectedType] = useState('all');
+  const [selectedSubject, setSelectedSubject] = useState(() => {
+    const subjectParam = searchParams.get('subject');
+    if (subjectParam) {
+      const match = sortedSubscribedList.find(s => {
+        const sNorm = s.toLowerCase();
+        const pNorm = subjectParam.toLowerCase();
+        return sNorm === pNorm || 
+          ((sNorm === 'social' || sNorm === 'social studies') && (pNorm === 'social' || pNorm === 'social studies'));
+      });
+      if (match) return match;
+    }
+    return 'All';
+  });
+
   useEffect(() => {
-    fetchVideos();
+    fetchVideos(selectedSubject, selectedType, searchQuery);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchVideos = async () => {
+  const fetchVideos = async (initialSubject, initialType, initialQuery) => {
     try {
       setLoading(true);
       const response = await videoAPI.getVideos();
@@ -69,7 +83,23 @@ const StudentVideos = () => {
       );
       
       setVideos(filteredRaw);
-      setFilteredVideos(filteredRaw);
+      
+      // Apply initial filters based on params
+      let filtered = filteredRaw;
+      if (initialType !== 'all') {
+        filtered = filtered.filter(v => v.video_type === initialType);
+      }
+      if (initialSubject !== 'All') {
+        filtered = filtered.filter(v => v.subject === initialSubject);
+      }
+      if (initialQuery.trim() !== '') {
+        const q = initialQuery.toLowerCase();
+        filtered = filtered.filter(v => 
+          v.title.toLowerCase().includes(q) || 
+          v.description.toLowerCase().includes(q)
+        );
+      }
+      setFilteredVideos(filtered);
     } catch (error) {
       console.error('Failed to fetch videos:', error);
     } finally {

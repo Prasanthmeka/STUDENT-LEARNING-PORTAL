@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowRight, PlayCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -165,14 +166,14 @@ const CoursesGrid = ({ courses = [], loading = false, searchQuery = '' }) => {
 
               <div className="flex-1 p-5 flex flex-col justify-end">
                 {/* Action button */}
-                <a
-                  href="/student/videos"
+                <Link
+                  to={`/student/videos?subject=${course.subject}`}
                   className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 hover:bg-indigo-600 text-indigo-600 dark:text-indigo-400 hover:text-white font-bold text-xs tracking-wide transition-smooth group/btn"
                 >
                   <PlayCircle className="w-4 h-4 transition-smooth group-hover/btn:scale-110" />
                   Continue Learning
                   <ArrowRight className="w-3.5 h-3.5 transition-smooth group-hover/btn:translate-x-1" />
-                </a>
+                </Link>
               </div>
             </motion.div>
           );
