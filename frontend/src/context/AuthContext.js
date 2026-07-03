@@ -22,6 +22,10 @@ export const AuthProvider = ({ children }) => {
       const response = await authAPI.getProfile();
       setUser(response.data);
 
+      if (response.data && response.data.loginType) {
+        localStorage.setItem('loginType', response.data.loginType);
+      }
+
       // Load active subscriptions securely for student
       if (response.data && response.data.role === 'student') {
         try {
@@ -44,6 +48,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('token');
       localStorage.removeItem('subscribedSubjects');
       localStorage.removeItem('activePlan');
+      localStorage.removeItem('loginType');
       setToken(null);
       setUser(null);
     } finally {
@@ -67,6 +72,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.login(credentials);
       localStorage.setItem('token', response.data.token);
+      if (response.data.user && response.data.user.loginType) {
+        localStorage.setItem('loginType', response.data.user.loginType);
+      }
       setToken(response.data.token);
       setUser(response.data.user);
       return response.data;
@@ -79,6 +87,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('subscribedSubjects');
     localStorage.removeItem('activePlan');
+    localStorage.removeItem('loginType');
     setToken(null);
     setUser(null);
   };

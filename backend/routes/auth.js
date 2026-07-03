@@ -91,7 +91,7 @@ router.post('/register', async (req, res) => {
 // Login User
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, loginType = 'courses' } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
@@ -114,14 +114,14 @@ router.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: data.id, email: data.email, role: data.role, class: data.class },
+      { id: data.id, email: data.email, role: data.role, class: data.class, loginType },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
     res.json({
       message: 'Login successful',
-      user: { id: data.id, email: data.email, full_name: data.full_name, role: data.role },
+      user: { id: data.id, email: data.email, full_name: data.full_name, role: data.role, loginType },
       token
     });
   } catch (err) {
@@ -150,7 +150,10 @@ router.get('/profile', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json(data);
+    res.json({
+      ...data,
+      loginType: decoded.loginType || 'courses'
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

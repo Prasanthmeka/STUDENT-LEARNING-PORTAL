@@ -32,11 +32,12 @@ const QuizPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const loginType = localStorage.getItem('loginType');
 
   // Determine back path
   const fromDashboard = location.state?.from === 'dashboard';
-  const backPath = fromDashboard ? '/student/dashboard' : '/student/quizzes';
-  const backLabel = fromDashboard ? 'Dashboard' : 'Tests';
+  const backPath = (fromDashboard && loginType !== 'quiz') ? '/student/dashboard' : '/student/quizzes';
+  const backLabel = (fromDashboard && loginType !== 'quiz') ? 'Dashboard' : 'Tests';
 
   // Core States
   const [quiz, setQuiz] = useState(null);
@@ -182,14 +183,14 @@ const QuizPage = () => {
     
     return (
       <StudentLayout>
-        <GoBackButton to={backPath} replace={true} />
+        {loginType !== 'quiz' && <GoBackButton to={backPath} replace={true} />}
 
         {/* Results PageHeader */}
         <PageHeader
           title="Assessment Summary Report"
           subtitle={quiz.title}
-          parentLabel={backLabel}
-          parentPath={backPath}
+          parentLabel={loginType === 'quiz' ? null : backLabel}
+          parentPath={loginType === 'quiz' ? null : backPath}
           showBackButton={false}
         />
 
@@ -263,12 +264,14 @@ const QuizPage = () => {
                 >
                   {fromDashboard ? 'Back to Dashboard' : 'Back to Assessments'}
                 </button>
-                <button
-                  onClick={() => navigate('/student/leaderboard')}
-                  className="w-full py-3 rounded-2xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-xs tracking-wide transition-smooth shadow-md"
-                >
-                  View Rankings Board
-                </button>
+                {loginType !== 'quiz' && (
+                  <button
+                    onClick={() => navigate('/student/leaderboard')}
+                    className="w-full py-3 rounded-2xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-xs tracking-wide transition-smooth shadow-md"
+                  >
+                    View Rankings Board
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -409,14 +412,14 @@ const QuizPage = () => {
 
   return (
     <StudentLayout>
-      <GoBackButton to={backPath} replace={true} />
+      {loginType !== 'quiz' && <GoBackButton to={backPath} replace={true} />}
 
       {/* Quiz Solver Header */}
       <PageHeader
         title={quiz.title}
         subtitle={`Assessment in progress. Subject: ${quiz.subject}`}
-        parentLabel={backLabel}
-        parentPath={backPath}
+        parentLabel={loginType === 'quiz' ? null : backLabel}
+        parentPath={loginType === 'quiz' ? null : backPath}
         showBackButton={false}
       />
 

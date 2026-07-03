@@ -66,15 +66,21 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen })
     navigate('/');
   };
 
-  const menuItems = [
-    { name: 'Dashboard', path: '/student/dashboard', icon: LayoutDashboard },
-    { name: 'Courses', path: '/student/videos', icon: BookOpen }, 
-    { name: 'Tests', path: '/student/quizzes', icon: ClipboardList }, 
-    { name: 'Study Materials', path: '/student/materials', icon: FileText },
-    { name: 'Leaderboard', path: '/student/leaderboard', icon: Trophy },
-    { name: 'Subscription', path: '/student/subscription', icon: CreditCard },
-    { name: 'Settings', path: '/student/settings', icon: Settings },
-  ];
+  const loginType = localStorage.getItem('loginType');
+
+  const menuItems = loginType === 'quiz'
+    ? [
+        { name: 'Quizzes', path: '/student/quizzes', icon: ClipboardList }
+      ]
+    : [
+        { name: 'Dashboard', path: '/student/dashboard', icon: LayoutDashboard },
+        { name: 'Courses', path: '/student/videos', icon: BookOpen }, 
+        { name: 'Tests', path: '/student/quizzes', icon: ClipboardList }, 
+        { name: 'Study Materials', path: '/student/materials', icon: FileText },
+        { name: 'Leaderboard', path: '/student/leaderboard', icon: Trophy },
+        { name: 'Subscription', path: '/student/subscription', icon: CreditCard },
+        { name: 'Settings', path: '/student/settings', icon: Settings },
+      ];
 
   const handleNavigation = (item) => {
     setIsMobileOpen(false);

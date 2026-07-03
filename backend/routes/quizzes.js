@@ -82,7 +82,8 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
           time_limit_minutes: finalTimeLimit,
           subject,
           class: req.body.class,
-          is_published: true // Manual quizzes are published immediately
+          is_published: true, // Manual quizzes are published immediately
+          is_competitive: req.body.is_competitive || false
         }
       ])
       .select();
@@ -208,9 +209,10 @@ router.get('/', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     let userId = null;
     let userRole = null;
+    let studentClass = null;
+    let loginType = 'courses';
 
     // If authenticated, decode token to get user info
-    let studentClass = null;
     if (token) {
       const jwt = require('jsonwebtoken');
       try {
@@ -218,6 +220,7 @@ router.get('/', async (req, res) => {
         userId = decoded.id;
         userRole = decoded.role;
         studentClass = decoded.class;
+        loginType = decoded.loginType || 'courses';
       } catch (e) {
         // Invalid token, continue as anonymous
       }
@@ -277,6 +280,17 @@ router.get('/', async (req, res) => {
             if (studentClass && q.class && q.class !== studentClass) {
               return false;
             }
+
+            // Filter by competitive type based on loginType
+            if (loginType === 'quiz') {
+              if (!q.is_competitive) return false;
+              // Bypass subscription check for quiz portal mode
+              return true;
+            } else {
+              // courses portal
+              if (q.is_competitive) return false;
+            }
+
             return subscribedSubjects.some(s => {
               const sNorm = s.toLowerCase();
               const qNorm = q.subject?.toLowerCase() || '';
@@ -324,10 +338,19 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
     // Security guard for students
     if (req.user && req.user.role === 'student') {
-      const { isSubscribedToSubject } = require('../utils/subscriptionHelper');
-      const isSubscribed = await isSubscribedToSubject(req.user.id, quizData.subject, req.headers);
-      if (!isSubscribed) {
-        return res.status(403).json({ error: 'Access denied. You are not subscribed to this subject.' });
+      if (req.user.loginType === 'quiz') {
+        if (!quizData.is_competitive) {
+          return res.status(403).json({ error: 'Access denied. This quiz is only available through the courses portal.' });
+        }
+      } else {
+        if (quizData.is_competitive) {
+          return res.status(403).json({ error: 'Access denied. This quiz is only available through the quiz portal.' });
+        }
+        const { isSubscribedToSubject } = require('../utils/subscriptionHelper');
+        const isSubscribed = await isSubscribedToSubject(req.user.id, quizData.subject, req.headers);
+        if (!isSubscribed) {
+          return res.status(403).json({ error: 'Access denied. You are not subscribed to this subject.' });
+        }
       }
     }
 

@@ -74,6 +74,7 @@ CREATE TABLE quizzes (
   class VARCHAR(50),
   source_document_url VARCHAR(500),
   is_published BOOLEAN DEFAULT FALSE,
+  is_competitive BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
