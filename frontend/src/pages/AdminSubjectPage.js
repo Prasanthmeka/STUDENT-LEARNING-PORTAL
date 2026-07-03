@@ -222,7 +222,7 @@ const AdminSubjectPage = () => {
 
   // Video Form Fields
   const [videoTitle, setVideoTitle] = useState('');
-  const [videoType, setVideoType] = useState('Recorded');
+  const [videoClass, setVideoClass] = useState('Class 6');
   const [videoUrl, setVideoUrl] = useState('');
   const [videoDescription, setVideoDescription] = useState('');
   const [videoDuration, setVideoDuration] = useState('45 mins');
@@ -233,7 +233,7 @@ const AdminSubjectPage = () => {
 
   // Material Form Fields
   const [materialTitle, setMaterialTitle] = useState('');
-  const [materialType, setMaterialType] = useState('PDF');
+  const [materialClass, setMaterialClass] = useState('Class 6');
   const [materialDescription, setMaterialDescription] = useState('');
   const [materialChapter, setMaterialChapter] = useState('');
   const [materialVisibility, setMaterialVisibility] = useState('Premium Only');
@@ -720,7 +720,8 @@ const AdminSubjectPage = () => {
         body: JSON.stringify({
           title: `${videoTitle} - Unit ${videoChapter}`,
           description: videoDescription || 'No description provided.',
-          video_type: videoType.toLowerCase() === 'live' ? 'live' : 'recorded',
+          video_type: 'recorded',
+          class: videoClass,
           youtube_url: videoUrl,
           subject: currentSubject,
           is_published: true
@@ -763,9 +764,10 @@ const AdminSubjectPage = () => {
         body: JSON.stringify({
           title: `${materialTitle} - Unit ${materialChapter}`,
           description: materialDescription || 'No description provided.',
-          file_name: `${materialTitle.toLowerCase().replace(/ /g, '_')}_unit_${materialChapter}.${materialType.toLowerCase() === 'notes' ? 'pdf' : 'zip'}`,
+          file_name: `${materialTitle.toLowerCase().replace(/ /g, '_')}_unit_${materialChapter}.pdf`,
           github_url: 'https://github.com', // fallback URL
-          file_type: materialType === 'Notes' ? 'PDF' : 'ZIP',
+          file_type: 'pdf',
+          class: materialClass,
           subject: currentSubject,
           is_published: true
         })
@@ -2368,9 +2370,9 @@ const AdminSubjectPage = () => {
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200 dark:border-slate-900 shadow-2xl max-w-2xl w-full p-6 relative overflow-hidden text-slate-800 dark:text-slate-200 my-8"
+              className="bg-white dark:bg-slate-955 rounded-3xl border border-slate-200 dark:border-slate-900 shadow-2xl max-w-2xl w-full p-6 relative text-slate-800 dark:text-slate-200 my-8"
             >
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 animate-pulse" />
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-t-3xl animate-pulse" />
               
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-900">
                 <div>
@@ -2410,15 +2412,18 @@ const AdminSubjectPage = () => {
                       className="w-full p-3 rounded-xl border border-slate-250 dark:border-slate-850/60 bg-slate-100 dark:bg-slate-900/50 text-slate-550 dark:text-slate-400 cursor-not-allowed opacity-80"
                     />
                   </div>
-                               {/* Field 3: Video Type (dropdown) */}
+                  {/* Field 3: Class (dropdown) */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Video Type</label>
+                    <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Class *</label>
                     <CustomSelect 
-                      value={videoType}
-                      onChange={setVideoType}
+                      value={videoClass}
+                      onChange={setVideoClass}
                       options={[
-                        { value: 'Recorded', label: 'Recorded' },
-                        { value: 'Live', label: 'Live Stream' }
+                        { value: 'Class 6', label: 'Class 6' },
+                        { value: 'Class 7', label: 'Class 7' },
+                        { value: 'Class 8', label: 'Class 8' },
+                        { value: 'Class 9', label: 'Class 9' },
+                        { value: 'Class 10', label: 'Class 10' }
                       ]}
                       className="!py-2.5 bg-slate-50 dark:bg-slate-900 border-slate-205 dark:border-slate-850"
                     />
@@ -2519,9 +2524,9 @@ const AdminSubjectPage = () => {
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200 dark:border-slate-900 shadow-2xl max-w-xl w-full p-6 relative overflow-hidden text-slate-800 dark:text-slate-200"
+              className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200 dark:border-slate-900 shadow-2xl max-w-xl w-full p-6 relative text-slate-800 dark:text-slate-200"
             >
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 animate-pulse" />
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-t-3xl animate-pulse" />
               
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-900">
                 <div>
@@ -2561,17 +2566,18 @@ const AdminSubjectPage = () => {
                       className="w-full p-3 rounded-xl border border-slate-250 bg-slate-100 dark:bg-slate-900/50 text-slate-555 dark:text-slate-400 cursor-not-allowed opacity-80"
                     />
                   </div>
-                               {/* Field 3: Material Type dropdown */}
+                               {/* Field 3: Class dropdown */}
                   <div className="space-y-1.5">
-                    <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Material Type</label>
+                    <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Class *</label>
                     <CustomSelect 
-                      value={materialType}
-                      onChange={setMaterialType}
+                      value={materialClass}
+                      onChange={setMaterialClass}
                       options={[
-                        { value: 'PDF', label: 'PDF Document' },
-                        { value: 'Notes', label: 'Notes Study Pack' },
-                        { value: 'Assignment', label: 'Assignment Homework' },
-                        { value: 'Worksheet', label: 'Practice Worksheet' }
+                        { value: 'Class 6', label: 'Class 6' },
+                        { value: 'Class 7', label: 'Class 7' },
+                        { value: 'Class 8', label: 'Class 8' },
+                        { value: 'Class 9', label: 'Class 9' },
+                        { value: 'Class 10', label: 'Class 10' }
                       ]}
                       className="!py-2.5 bg-slate-50 dark:bg-slate-900 border-slate-205 dark:border-slate-850"
                     />

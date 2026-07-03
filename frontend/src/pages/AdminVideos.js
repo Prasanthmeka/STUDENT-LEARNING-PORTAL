@@ -11,6 +11,7 @@ const AdminVideos = () => {
     title: '',
     description: '',
     video_type: 'recorded',
+    class: '',
     youtube_url: '',
     subject: ''
   });
@@ -65,6 +66,7 @@ const AdminVideos = () => {
         title: '',
         description: '',
         video_type: 'recorded',
+        class: '',
         youtube_url: '',
         subject: ''
       });
@@ -176,15 +178,20 @@ const AdminVideos = () => {
             </div>
 
             <div className="form-group">
-              <label>Video Type</label>
+              <label>Class *</label>
               <select
-                name="video_type"
-                value={formData.video_type}
+                name="class"
+                value={formData.class}
                 onChange={handleChange}
+                required
                 disabled={loading}
               >
-                <option value="recorded">Recorded</option>
-                <option value="live">Live Stream</option>
+                <option value="">Select Class</option>
+                <option value="Class 6">Class 6</option>
+                <option value="Class 7">Class 7</option>
+                <option value="Class 8">Class 8</option>
+                <option value="Class 9">Class 9</option>
+                <option value="Class 10">Class 10</option>
               </select>
             </div>
 
@@ -246,8 +253,8 @@ const AdminVideos = () => {
                     <h3>{video.title}</h3>
                     <p>{video.description}</p>
                     <div className="video-meta">
-                      <span className={`type ${video.video_type}`}>
-                        {video.video_type === 'recorded' ? '🎥 Recorded' : '🔴 Live'}
+                      <span className="class-badge" style={{ display: 'inline-block', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1', marginRight: '8px' }}>
+                        🏫 {video.class || 'All Classes'}
                       </span>
                       <span className={`status ${video.is_published ? 'published' : 'draft'}`}>
                         {video.is_published ? '✓ Published' : '⏳ Draft'}

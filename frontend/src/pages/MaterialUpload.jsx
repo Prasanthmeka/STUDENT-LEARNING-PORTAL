@@ -20,7 +20,7 @@ const MaterialUpload = () => {
   const [materialTitle, setMaterialTitle] = useState('');
   const [materialDescription, setMaterialDescription] = useState('');
   const [materialChapter, setMaterialChapter] = useState('');
-  const [fileType, setFileType] = useState('PDF');
+  const [materialClass, setMaterialClass] = useState('Class 6');
   const [materialUrl, setMaterialUrl] = useState('');
   const [materialVisibility, setMaterialVisibility] = useState('Premium Only');
 
@@ -51,11 +51,12 @@ const MaterialUpload = () => {
     try {
       // Structure fields correctly for backend API
       const materialData = {
-        title: `${materialTitle} - Unit ${materialChapter}.${fileType === 'Notes' ? 'pdf' : fileType.toLowerCase() === 'assignment' ? 'pdf' : 'pdf'}`,
+        title: `${materialTitle} - Unit ${materialChapter}.pdf`,
         description: materialDescription,
         file_name: `${materialTitle.toLowerCase().replace(/ /g, '_')}_unit${materialChapter}.pdf`,
         github_url: materialUrl,
-        file_type: fileType.toLowerCase(),
+        file_type: 'pdf',
+        class: materialClass,
         subject: currentSubject,
         chapter: materialChapter,
         visibility: materialVisibility,
@@ -130,8 +131,8 @@ const MaterialUpload = () => {
         )}
 
         {/* Centered Form Card */}
-        <div className="max-w-4xl w-full mx-auto bg-white/70 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl border border-slate-200/80 dark:border-indigo-950/20 shadow-saas overflow-hidden relative mt-4">
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-purple-500 via-pink-600 to-pink-700" />
+        <div className="max-w-4xl w-full mx-auto bg-white/70 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl border border-slate-200/80 dark:border-indigo-950/20 shadow-saas relative mt-4">
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-purple-500 via-pink-600 to-pink-700 rounded-t-3xl" />
           
           <form onSubmit={handleUploadSubmit} className="p-6 md:p-8 space-y-6 text-xs font-bold">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -173,11 +174,11 @@ const MaterialUpload = () => {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] text-slate-450 uppercase tracking-wider block">File Type</label>
+                    <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Class *</label>
                     <CustomSelect 
-                      value={fileType}
-                      onChange={setFileType}
-                      options={['PDF', 'Notes', 'Assignment', 'Worksheet']}
+                      value={materialClass}
+                      onChange={setMaterialClass}
+                      options={['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10']}
                     />
                   </div>
                 </div>

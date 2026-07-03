@@ -20,7 +20,7 @@ const VideoUpload = () => {
   const [videoTitle, setVideoTitle] = useState('');
   const [videoDescription, setVideoDescription] = useState('');
   const [videoChapter, setVideoChapter] = useState('');
-  const [videoType, setVideoType] = useState('Recorded');
+  const [videoClass, setVideoClass] = useState('Class 6');
   const [videoDuration, setVideoDuration] = useState('45 mins');
   const [videoUrl, setVideoUrl] = useState('');
   const [videoVisibility, setVideoVisibility] = useState('Premium Only');
@@ -56,7 +56,8 @@ const VideoUpload = () => {
         description: videoDescription,
         url: videoUrl,
         duration: videoDuration || '45 mins',
-        video_type: videoType,
+        video_type: 'recorded',
+        class: videoClass,
         visibility: videoVisibility,
         subject: currentSubject,
         chapter: videoChapter,
@@ -136,8 +137,8 @@ const VideoUpload = () => {
         )}
 
         {/* Centered Form Card */}
-        <div className="max-w-4xl w-full mx-auto bg-white/70 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl border border-slate-200/80 dark:border-indigo-950/20 shadow-saas overflow-hidden relative mt-4">
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 via-indigo-600 to-indigo-700" />
+        <div className="max-w-4xl w-full mx-auto bg-white/70 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl border border-slate-200/80 dark:border-indigo-950/20 shadow-saas relative mt-4">
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 via-indigo-600 to-indigo-700 rounded-t-3xl" />
           
           <form onSubmit={handleUploadSubmit} className="p-6 md:p-8 space-y-6 text-xs font-bold">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -179,11 +180,11 @@ const VideoUpload = () => {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Video Type</label>
+                    <label className="text-[10px] text-slate-450 uppercase tracking-wider block">Class *</label>
                     <CustomSelect 
-                      value={videoType}
-                      onChange={setVideoType}
-                      options={['Recorded', 'Live']}
+                      value={videoClass}
+                      onChange={setVideoClass}
+                      options={['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10']}
                     />
                   </div>
                 </div>

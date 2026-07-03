@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 
-const CustomSelect = ({ value, onChange, options, className = '' }) => {
+const CustomSelect = ({ value, onChange, options, className = '', direction = 'down' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
 
@@ -38,7 +38,9 @@ const CustomSelect = ({ value, onChange, options, className = '' }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1 w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900 rounded-xl shadow-xl overflow-hidden py-1 max-h-60 overflow-y-auto">
+        <div className={`absolute z-50 left-0 right-0 w-full bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-900 rounded-xl shadow-xl py-1 max-h-60 overflow-y-auto ${
+          direction === 'up' ? 'bottom-full mb-1' : 'top-full mt-1'
+        }`}>
           {formattedOptions.map((opt) => (
             <button
               key={opt.value}
