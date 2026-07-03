@@ -49,7 +49,7 @@ const WelcomeHero = ({ streak = 0, totalTests = 0, passPercentage = 0 }) => {
         <div className="md:col-span-7 space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold tracking-wide border border-white/10 uppercase">
             <GraduationCap className="w-3.5 h-3.5 text-indigo-200" />
-            Student Workspace
+            Student Workspace {user?.class ? `• ${user.class}` : ''}
           </div>
           
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight font-sans text-white leading-tight">

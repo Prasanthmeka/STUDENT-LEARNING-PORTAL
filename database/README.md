@@ -14,6 +14,7 @@ CREATE TABLE users (
   password_hash VARCHAR(255),
   full_name VARCHAR(255),
   role VARCHAR(50) NOT NULL CHECK (role IN ('admin', 'student')),
+  class VARCHAR(50),
   avatar_url TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -26,6 +27,7 @@ CREATE TABLE users (
 - `password_hash` - Hashed password
 - `full_name` - User's full name
 - `role` - User role (admin or student)
+- `class` - Student's class (e.g. Class 6, Class 7, Class 8, Class 9, Class 10)
 - `avatar_url` - Profile picture URL
 - `created_at` - Account creation timestamp
 - `updated_at` - Last update timestamp

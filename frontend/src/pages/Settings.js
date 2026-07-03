@@ -201,7 +201,7 @@ const Settings = () => {
 
                 {/* Name / Email form */}
                 <form onSubmit={handleProfileSave} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Full Name</label>
                       <input 
@@ -218,6 +218,15 @@ const Settings = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full p-3 text-xs rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950 text-slate-700 dark:text-slate-200 font-bold focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-smooth"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Class / Grade</label>
+                      <input 
+                        type="text" 
+                        value={user?.class || 'N/A'}
+                        disabled
+                        className="w-full p-3 text-xs rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-100/50 dark:bg-slate-950 text-slate-400 dark:text-slate-500 font-bold focus:outline-none cursor-not-allowed"
                       />
                     </div>
                   </div>

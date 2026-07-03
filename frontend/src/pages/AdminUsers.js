@@ -64,6 +64,7 @@ const AdminUsers = () => {
                   <tr>
                     <th>Name</th>
                     <th>Email</th>
+                    <th>Class</th>
                     <th>Role</th>
                     <th>Action</th>
                   </tr>
@@ -73,6 +74,11 @@ const AdminUsers = () => {
                     <tr key={u.id}>
                       <td>{u.full_name}</td>
                       <td>{u.email}</td>
+                      <td>
+                        <span style={{ fontWeight: '600', color: u.class ? '#e2e8f0' : '#94a3b8' }}>
+                          {u.class || 'N/A'}
+                        </span>
+                      </td>
                       <td>
                         <span className={`role-badge ${u.role === 'admin' ? 'role-admin' : 'role-student'}`}>
                           {u.role}

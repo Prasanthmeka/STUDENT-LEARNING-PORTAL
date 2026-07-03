@@ -9,7 +9,7 @@ const router = express.Router();
 // Register User
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, full_name } = req.body;
+    const { email, password, full_name, class: userClass } = req.body;
     const role = 'student'; // Force role to student for public registration
 
     if (!email || !password || !full_name) {
@@ -25,7 +25,8 @@ router.post('/register', async (req, res) => {
           email,
           password_hash: hashedPassword,
           full_name,
-          role
+          role,
+          class: userClass
         }
       ])
       .select();
@@ -168,7 +169,7 @@ router.get('/users', async (req, res) => {
 
     const { data, error } = await supabase
       .from('users')
-      .select('id, full_name, email, role')
+      .select('id, full_name, email, role, class')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
