@@ -34,6 +34,7 @@ const QuizCreate = () => {
   const [quizDuration, setQuizDuration] = useState('20 mins');
   const [passingMarks, setPassingMarks] = useState(50);
   const [quizClass, setQuizClass] = useState('Class 6');
+  const [isCompetitive, setIsCompetitive] = useState(false);
 
   // --- MANUAL ENTRY STATE ---
   const [manualQuestions, setManualQuestions] = useState([
@@ -184,7 +185,8 @@ const QuizCreate = () => {
         passing_marks: parseInt(passingMarks) || 50,
         questions: manualQuestions,
         class: quizClass,
-        status: 'Active'
+        status: 'Active',
+        is_competitive: isCompetitive
       };
 
       await quizAPI.createQuiz(quizData);
@@ -390,7 +392,8 @@ const QuizCreate = () => {
           ? [...generatedQuestions].sort(() => Math.random() - 0.5) 
           : generatedQuestions,
         class: quizClass,
-        status: 'Active'
+        status: 'Active',
+        is_competitive: isCompetitive
       };
 
       await quizAPI.createQuiz(quizData);
@@ -589,6 +592,22 @@ const QuizCreate = () => {
                   options={['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10']}
                   direction="up"
                 />
+              </div>
+
+              <div className="space-y-1.5 flex flex-col justify-end pb-2">
+                <label className="text-[10px] text-slate-455 uppercase tracking-wider block mb-1">Competitive Quiz</label>
+                <div className="flex items-center gap-2.5 h-10">
+                  <input
+                    type="checkbox"
+                    id="competitive-checkbox"
+                    checked={isCompetitive}
+                    onChange={(e) => setIsCompetitive(e.target.checked)}
+                    className="w-4 h-4 cursor-pointer accent-indigo-650"
+                  />
+                  <label htmlFor="competitive-checkbox" className="text-xs font-black text-slate-750 dark:text-slate-300 cursor-pointer select-none">
+                    Enable Competitive Quiz Mode
+                  </label>
+                </div>
               </div>
             </div>
           </div>

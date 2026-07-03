@@ -40,8 +40,9 @@ const ScrollToTop = () => {
   return null;
 };
 
-const ProtectedRoute = ({ component: Component, requiredRole }) => {
+const ProtectedRoute = ({ component: Component, requiredRole, allowQuizLogin = false }) => {
   const { isAuthenticated, user, loading } = useAuth();
+  const loginType = localStorage.getItem('loginType');
 
   if (loading) return <div className="loading">Loading...</div>;
 
@@ -51,6 +52,11 @@ const ProtectedRoute = ({ component: Component, requiredRole }) => {
 
   if (requiredRole && user?.role !== requiredRole) {
     return <Navigate to={user?.role === 'admin' ? '/admin/dashboard' : '/student/dashboard'} />;
+  }
+
+  // If student is logged in to participate in quiz, redirect them to quizzes if they try to access other student routes
+  if (user?.role === 'student' && loginType === 'quiz' && !allowQuizLogin) {
+    return <Navigate to="/student/quizzes" replace />;
   }
 
   return Component;
@@ -94,8 +100,8 @@ function AppContent() {
           <Route path="/student/videos" element={<ProtectedRoute component={<StudentVideos />} requiredRole="student" />} />
           <Route path="/student/videos/:id" element={<ProtectedRoute component={<VideoPlayer />} requiredRole="student" />} />
           <Route path="/student/materials" element={<ProtectedRoute component={<StudentMaterials />} requiredRole="student" />} />
-          <Route path="/student/quizzes" element={<ProtectedRoute component={<QuizzesPage />} requiredRole="student" />} />
-          <Route path="/student/quiz/:id" element={<ProtectedRoute component={<QuizPage />} requiredRole="student" />} />
+          <Route path="/student/quizzes" element={<ProtectedRoute component={<QuizzesPage />} requiredRole="student" allowQuizLogin={true} />} />
+          <Route path="/student/quiz/:id" element={<ProtectedRoute component={<QuizPage />} requiredRole="student" allowQuizLogin={true} />} />
           <Route path="/student/leaderboard" element={<ProtectedRoute component={<Leaderboard />} requiredRole="student" />} />
           <Route path="/student/settings" element={<ProtectedRoute component={<Settings />} requiredRole="student" />} />
           <Route path="/student/subscription" element={<ProtectedRoute component={<Subscription />} requiredRole="student" />} />

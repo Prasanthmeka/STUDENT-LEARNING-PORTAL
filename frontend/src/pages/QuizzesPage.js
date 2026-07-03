@@ -15,6 +15,7 @@ import { motion } from 'framer-motion';
 
 const QuizzesPage = () => {
   const navigate = useNavigate();
+  const loginType = localStorage.getItem('loginType');
 
   // Component States
   const [quizzes, setQuizzes] = useState([]);
@@ -41,7 +42,9 @@ const QuizzesPage = () => {
     const bOrder = subjectOrder[b.toLowerCase().trim()] || 99;
     return aOrder - bOrder;
   });
-  const subjects = ['All', ...sortedSubscribedList];
+  const subjects = loginType === 'quiz'
+    ? ['All', ...new Set(quizzes.map(q => q.subject).filter(Boolean))]
+    : ['All', ...sortedSubscribedList];
 
   useEffect(() => {
     fetchQuizzes();
@@ -56,15 +59,18 @@ const QuizzesPage = () => {
       const allowed = ['TELUGU', 'HINDI', 'ENGLISH', 'SOCIAL', 'PHYSICS', 'CHEMISTRY', 'MATHS', 'BIOLOGY', 'SOCIAL STUDIES'];
       const subscribed = JSON.parse(localStorage.getItem('subscribedSubjects') || '[]');
       
-      const filteredRaw = (response.data || []).filter(q => 
-        allowed.includes(q.subject?.toUpperCase()) &&
-        subscribed.some(s => {
-          const sNorm = s.toLowerCase();
-          const qNorm = q.subject?.toLowerCase() || '';
-          return sNorm === qNorm || 
-            ((sNorm === 'social' || sNorm === 'social studies') && (qNorm === 'social' || qNorm === 'social studies'));
-        })
-      );
+      const filteredRaw = (response.data || []).filter(q => {
+        if (loginType === 'quiz') {
+          return true; // Bypass subscription check for quiz portal
+        }
+        return allowed.includes(q.subject?.toUpperCase()) &&
+          subscribed.some(s => {
+            const sNorm = s.toLowerCase();
+            const qNorm = q.subject?.toLowerCase() || '';
+            return sNorm === qNorm || 
+              ((sNorm === 'social' || sNorm === 'social studies') && (qNorm === 'social' || qNorm === 'social studies'));
+          });
+      });
       
       setQuizzes(filteredRaw);
       setFilteredQuizzes(filteredRaw);
@@ -152,14 +158,14 @@ const QuizzesPage = () => {
 
   return (
     <StudentLayout>
-      <GoBackButton />
+      {loginType !== 'quiz' && <GoBackButton />}
 
       {/* Page Header */}
       <PageHeader 
         title="Quizzes & Test Portal"
         subtitle="Complete auto-graded mock assessments, view your accuracy scores, and challenge peers on subject metrics."
-        parentLabel="Dashboard"
-        parentPath="/student/dashboard"
+        parentLabel={loginType === 'quiz' ? null : "Dashboard"}
+        parentPath={loginType === 'quiz' ? null : "/student/dashboard"}
       />
 
       {/* Mini Stats strip */}
@@ -257,16 +263,20 @@ const QuizzesPage = () => {
             <HelpCircle className="w-8 h-8 stroke-1.5" />
           </div>
           <h4 className="font-extrabold text-slate-800 dark:text-white text-lg leading-tight">
-            {(JSON.parse(localStorage.getItem('subscribedSubjects') || '[]')).length === 0 
-              ? 'No Subscribed Subjects' 
-              : 'No Assessments Found'}
+            {loginType === 'quiz'
+              ? 'No Competitive Quizzes'
+              : (JSON.parse(localStorage.getItem('subscribedSubjects') || '[]')).length === 0 
+                ? 'No Subscribed Subjects' 
+                : 'No Assessments Found'}
           </h4>
           <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-            {(JSON.parse(localStorage.getItem('subscribedSubjects') || '[]')).length === 0 
-              ? 'You have not subscribed to any subjects yet. Customize your curriculum on the subscription page to unlock auto-graded mock assessments!' 
-              : 'There are no quizzes matching your filters. Complete study courses to unlock new quiz assessments!'}
+            {loginType === 'quiz'
+              ? 'There are currently no competitive quizzes posted by the admin.'
+              : (JSON.parse(localStorage.getItem('subscribedSubjects') || '[]')).length === 0 
+                ? 'You have not subscribed to any subjects yet. Customize your curriculum on the subscription page to unlock auto-graded mock assessments!' 
+                : 'There are no quizzes matching your filters. Complete study courses to unlock new quiz assessments!'}
           </p>
-          {(JSON.parse(localStorage.getItem('subscribedSubjects') || '[]')).length === 0 && (
+          {loginType !== 'quiz' && (JSON.parse(localStorage.getItem('subscribedSubjects') || '[]')).length === 0 && (
             <a
               href="/student/subscription"
               className="inline-flex items-center gap-2 mt-5 py-2.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-755 text-white font-bold text-xs tracking-wide transition-smooth shadow-md shadow-indigo-600/10 shrink-0"
