@@ -33,6 +33,7 @@ const AdminQuizzes = () => {
     passing_score: 50,
     time_limit_minutes: 30,
     subject: '',
+    class: '',
     question_numbers: ''
   });
 
@@ -340,6 +341,7 @@ const AdminQuizzes = () => {
         passing_score: quizInfo.passing_score,
         time_limit_minutes: quizInfo.time_limit_minutes,
         subject: quizInfo.subject,
+        class: quizInfo.class,
         questions: extractedQuestions
       };
 
@@ -363,6 +365,7 @@ const AdminQuizzes = () => {
           passing_score: 50,
           time_limit_minutes: 30,
           subject: '',
+          class: '',
           question_numbers: ''
         });
       }, 2000);
@@ -498,6 +501,24 @@ const AdminQuizzes = () => {
                         <option value="Chemistry">Chemistry</option>
                         <option value="Biology">Biology</option>
                         <option value="Social">Social Studies</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Class *</label>
+                      <select
+                        name="class"
+                        value={quizInfo.class}
+                        onChange={handleQuizInfoChange}
+                        required
+                        disabled={loading}
+                      >
+                        <option value="">Select Class</option>
+                        <option value="Class 6">Class 6</option>
+                        <option value="Class 7">Class 7</option>
+                        <option value="Class 8">Class 8</option>
+                        <option value="Class 9">Class 9</option>
+                        <option value="Class 10">Class 10</option>
                       </select>
                     </div>
 

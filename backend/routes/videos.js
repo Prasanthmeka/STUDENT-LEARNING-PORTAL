@@ -8,7 +8,7 @@ const router = express.Router();
 // Create YouTube Video (Admin Only)
 router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) => {
   try {
-    let { title, description, video_type, youtube_url, url, live_stream_url, subject } = req.body;
+    let { title, description, video_type, youtube_url, url, live_stream_url, subject, class: videoClass } = req.body;
 
     const finalYoutubeUrl = youtube_url || url;
     const finalVideoType = String(video_type || 'recorded').toLowerCase();
@@ -37,6 +37,7 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
           youtube_url: finalVideoType === 'recorded' ? finalYoutubeUrl : null,
           live_stream_url: finalVideoType === 'live' ? live_stream_url : null,
           subject,
+          class: videoClass,
           uploaded_by: req.user.id,
           is_published: true
         }
@@ -66,19 +67,23 @@ router.get('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
 
-    // Filter by subscribed subjects if user is a student
+    // Filter by subscribed subjects and class if user is a student
     if (req.user && req.user.role === 'student') {
       const { getSubscribedSubjects } = require('../utils/subscriptionHelper');
       const subscribedSubjects = await getSubscribedSubjects(req.user.id, req.headers);
       
-      const filtered = (data || []).filter(v => 
-        subscribedSubjects.some(s => {
+      const filtered = (data || []).filter(v => {
+        // Filter by class
+        if (req.user.class && v.class && v.class !== req.user.class) {
+          return false;
+        }
+        return subscribedSubjects.some(s => {
           const sNorm = s.toLowerCase();
           const vNorm = v.subject?.toLowerCase() || '';
           return sNorm === vNorm || 
             ((sNorm === 'social' || sNorm === 'social studies') && (vNorm === 'social' || vNorm === 'social studies'));
-        })
-      );
+        });
+      });
       return res.json(filtered);
     }
 
@@ -138,7 +143,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // Update Video (Admin Only)
 router.put('/:id', authenticateToken, authorizeRole(['admin']), async (req, res) => {
   try {
-    const { title, description, is_published } = req.body;
+    const { title, description, is_published, class: videoClass } = req.body;
 
     const { data, error } = await supabase
       .from('videos')
@@ -146,6 +151,7 @@ router.put('/:id', authenticateToken, authorizeRole(['admin']), async (req, res)
         title,
         description,
         is_published,
+        class: videoClass,
         updated_at: new Date()
       })
       .eq('id', req.params.id)

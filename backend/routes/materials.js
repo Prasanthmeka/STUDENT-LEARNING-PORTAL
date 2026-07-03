@@ -8,7 +8,7 @@ const router = express.Router();
 // Upload Study Material (Admin Only)
 router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) => {
   try {
-    let { title, description, file_name, github_url, file_type, subject } = req.body;
+    let { title, description, file_name, github_url, file_type, subject, class: materialClass } = req.body;
 
     // Capitalize subject to match DB and UI filters
     if (subject) {
@@ -32,8 +32,9 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
           description,
           file_name,
           github_url,
-          file_type,
+          file_type: file_type || 'pdf',
           subject,
+          class: materialClass,
           uploaded_by: req.user.id,
           is_published: true
         }
@@ -63,19 +64,23 @@ router.get('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
 
-    // Filter by subscribed subjects if user is a student
+    // Filter by subscribed subjects and class if user is a student
     if (req.user && req.user.role === 'student') {
       const { getSubscribedSubjects } = require('../utils/subscriptionHelper');
       const subscribedSubjects = await getSubscribedSubjects(req.user.id, req.headers);
       
-      const filtered = (data || []).filter(m => 
-        subscribedSubjects.some(s => {
+      const filtered = (data || []).filter(m => {
+        // Filter by class
+        if (req.user.class && m.class && m.class !== req.user.class) {
+          return false;
+        }
+        return subscribedSubjects.some(s => {
           const sNorm = s.toLowerCase();
           const mNorm = m.subject?.toLowerCase() || '';
           return sNorm === mNorm || 
             ((sNorm === 'social' || sNorm === 'social studies') && (mNorm === 'social' || mNorm === 'social studies'));
-        })
-      );
+        });
+      });
       return res.json(filtered);
     }
 
@@ -237,7 +242,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // Update Material (Admin Only)
 router.put('/:id', authenticateToken, authorizeRole(['admin']), async (req, res) => {
   try {
-    const { title, description, is_published } = req.body;
+    const { title, description, is_published, class: materialClass } = req.body;
 
     const { data, error } = await supabase
       .from('study_materials')
@@ -245,6 +250,7 @@ router.put('/:id', authenticateToken, authorizeRole(['admin']), async (req, res)
         title,
         description,
         is_published,
+        class: materialClass,
         updated_at: new Date()
       })
       .eq('id', req.params.id)

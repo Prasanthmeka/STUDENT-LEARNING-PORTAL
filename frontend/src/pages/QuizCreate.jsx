@@ -33,6 +33,7 @@ const QuizCreate = () => {
   const [quizDifficulty, setQuizDifficulty] = useState('Medium');
   const [quizDuration, setQuizDuration] = useState('20 mins');
   const [passingMarks, setPassingMarks] = useState(50);
+  const [quizClass, setQuizClass] = useState('Class 6');
 
   // --- MANUAL ENTRY STATE ---
   const [manualQuestions, setManualQuestions] = useState([
@@ -182,6 +183,7 @@ const QuizCreate = () => {
         difficulty: quizDifficulty,
         passing_marks: parseInt(passingMarks) || 50,
         questions: manualQuestions,
+        class: quizClass,
         status: 'Active'
       };
 
@@ -387,6 +389,7 @@ const QuizCreate = () => {
         questions: shuffleQuestions 
           ? [...generatedQuestions].sort(() => Math.random() - 0.5) 
           : generatedQuestions,
+        class: quizClass,
         status: 'Active'
       };
 
@@ -575,6 +578,16 @@ const QuizCreate = () => {
                   value={currentSubject}
                   disabled
                   className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-500 select-none cursor-not-allowed"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] text-slate-455 uppercase tracking-wider block">Class *</label>
+                <CustomSelect 
+                  value={quizClass}
+                  onChange={setQuizClass}
+                  options={['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10']}
+                  direction="up"
                 />
               </div>
             </div>

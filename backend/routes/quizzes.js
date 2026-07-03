@@ -81,6 +81,7 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
           passing_score: finalPassingScore,
           time_limit_minutes: finalTimeLimit,
           subject,
+          class: req.body.class,
           is_published: true // Manual quizzes are published immediately
         }
       ])
@@ -161,12 +162,18 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
       }
     }
 
-    // Automatically enable the quiz for all existing students
+    // Automatically enable the quiz for all existing students in the same class
     try {
-      const { data: studentsData } = await supabase
+      let studentQuery = supabase
         .from('users')
         .select('id')
         .eq('role', 'student');
+
+      if (req.body.class) {
+        studentQuery = studentQuery.eq('class', req.body.class);
+      }
+
+      const { data: studentsData } = await studentQuery;
 
       if (studentsData && studentsData.length > 0) {
         const permissionsData = studentsData.map(student => ({
@@ -203,12 +210,14 @@ router.get('/', async (req, res) => {
     let userRole = null;
 
     // If authenticated, decode token to get user info
+    let studentClass = null;
     if (token) {
       const jwt = require('jsonwebtoken');
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
         userId = decoded.id;
         userRole = decoded.role;
+        studentClass = decoded.class;
       } catch (e) {
         // Invalid token, continue as anonymous
       }
@@ -259,15 +268,24 @@ router.get('/', async (req, res) => {
       const { getSubscribedSubjects } = require('../utils/subscriptionHelper');
       const subscribedSubjects = await getSubscribedSubjects(userId, req.headers);
 
-      // Extract quiz data from permissions and attach attempt info, filtered by subject subscription list
+      // Extract quiz data from permissions and attach attempt info, filtered by subject subscription list and class
       const quizzes = (permittedQuizzes || [])
         .map(p => p.quizzes)
-        .filter(q => q && q.is_published && subscribedSubjects.some(s => {
-          const sNorm = s.toLowerCase();
-          const qNorm = q.subject?.toLowerCase() || '';
-          return sNorm === qNorm || 
-            ((sNorm === 'social' || sNorm === 'social studies') && (qNorm === 'social' || qNorm === 'social studies'));
-        }))
+        .filter(q => {
+          if (q && q.is_published) {
+            // Filter by class
+            if (studentClass && q.class && q.class !== studentClass) {
+              return false;
+            }
+            return subscribedSubjects.some(s => {
+              const sNorm = s.toLowerCase();
+              const qNorm = q.subject?.toLowerCase() || '';
+              return sNorm === qNorm || 
+                ((sNorm === 'social' || sNorm === 'social studies') && (qNorm === 'social' || qNorm === 'social studies'));
+            });
+          }
+          return false;
+        })
         .map(q => {
           const attempt = attemptsMap[q.id] || null;
           return {
@@ -764,6 +782,7 @@ router.post('/from-document', authenticateToken, authorizeRole(['admin']), async
           passing_score: passing_score || 50,
           time_limit_minutes: time_limit_minutes || 30,
           subject,
+          class: req.body.class || req.body.quizClass,
           is_published: true
         }
       ])
@@ -1179,12 +1198,24 @@ router.put('/:id/publish', authenticateToken, authorizeRole(['admin']), async (r
       return res.status(400).json({ error: updateError.message });
     }
 
-    // Automatically enable the quiz for all existing students upon publication
+    // Automatically enable the quiz for all existing students in the same class upon publication
     try {
-      const { data: studentsData } = await supabase
+      const { data: quizDetails } = await supabase
+        .from('quizzes')
+        .select('class')
+        .eq('id', quizId)
+        .single();
+
+      let studentQuery = supabase
         .from('users')
         .select('id')
         .eq('role', 'student');
+
+      if (quizDetails && quizDetails.class) {
+        studentQuery = studentQuery.eq('class', quizDetails.class);
+      }
+
+      const { data: studentsData } = await studentQuery;
 
       if (studentsData && studentsData.length > 0) {
         const permissionsData = studentsData.map(student => ({
@@ -1222,7 +1253,7 @@ router.post('/:id/enable-for-all-students', authenticateToken, authorizeRole(['a
     // Verify quiz exists
     const { data: quizData, error: quizError } = await supabase
       .from('quizzes')
-      .select('id, title')
+      .select('id, title, class')
       .eq('id', quizId)
       .single();
 
@@ -1230,11 +1261,17 @@ router.post('/:id/enable-for-all-students', authenticateToken, authorizeRole(['a
       return res.status(404).json({ error: 'Quiz not found' });
     }
 
-    // Get all students
-    const { data: studentsData, error: studentsError } = await supabase
+    // Get all students matching the quiz class
+    let studentQuery = supabase
       .from('users')
       .select('id')
       .eq('role', 'student');
+
+    if (quizData && quizData.class) {
+      studentQuery = studentQuery.eq('class', quizData.class);
+    }
+
+    const { data: studentsData, error: studentsError } = await studentQuery;
 
     if (studentsError) {
       return res.status(400).json({ error: studentsError.message });

@@ -37,6 +37,7 @@ CREATE TABLE videos (
   course_id UUID,
   duration_minutes INT,
   subject VARCHAR(100) CHECK (subject IN ('Telugu', 'Hindi', 'English', 'Maths', 'Physics', 'Chemistry', 'Biology', 'Social')),
+  class VARCHAR(50),
   is_published BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -53,6 +54,7 @@ CREATE TABLE study_materials (
   course_id UUID,
   file_type VARCHAR(50),
   subject VARCHAR(100) CHECK (subject IN ('Telugu', 'Hindi', 'English', 'Maths', 'Physics', 'Chemistry', 'Biology', 'Social')),
+  class VARCHAR(50),
   is_published BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -69,6 +71,7 @@ CREATE TABLE quizzes (
   passing_score INT DEFAULT 50,
   time_limit_minutes INT,
   subject VARCHAR(100) CHECK (subject IN ('Telugu', 'Hindi', 'English', 'Maths', 'Physics', 'Chemistry', 'Biology', 'Social')),
+  class VARCHAR(50),
   source_document_url VARCHAR(500),
   is_published BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

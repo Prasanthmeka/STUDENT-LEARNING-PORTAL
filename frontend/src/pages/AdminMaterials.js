@@ -13,6 +13,7 @@ const AdminMaterials = () => {
     file_name: '',
     github_url: '',
     file_type: 'pdf',
+    class: '',
     subject: ''
   });
   const [loading, setLoading] = useState(false);
@@ -68,6 +69,7 @@ const AdminMaterials = () => {
         file_name: '',
         github_url: '',
         file_type: 'pdf',
+        class: '',
         subject: ''
       });
       setShowForm(false);
@@ -205,18 +207,20 @@ const AdminMaterials = () => {
             </div>
 
             <div className="form-group">
-              <label>File Type</label>
+              <label>Class *</label>
               <select
-                name="file_type"
-                value={formData.file_type}
+                name="class"
+                value={formData.class}
                 onChange={handleChange}
+                required
                 disabled={loading}
               >
-                <option value="pdf">PDF</option>
-                <option value="doc">Word</option>
-                <option value="txt">Text</option>
-                <option value="ppt">PowerPoint</option>
-                <option value="other">Other</option>
+                <option value="">Select Class</option>
+                <option value="Class 6">Class 6</option>
+                <option value="Class 7">Class 7</option>
+                <option value="Class 8">Class 8</option>
+                <option value="Class 9">Class 9</option>
+                <option value="Class 10">Class 10</option>
               </select>
             </div>
 
@@ -259,7 +263,9 @@ const AdminMaterials = () => {
                     <h3>{material.title}</h3>
                     {material.description && <p>{material.description}</p>}
                     <div className="material-meta">
-                      <span className="file-type">{material.file_type?.toUpperCase()}</span>
+                      <span className="class-badge" style={{ display: 'inline-block', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7', marginRight: '8px' }}>
+                        🏫 {material.class || 'All Classes'}
+                      </span>
                       <span className="file-name">{material.file_name}</span>
                       <span className={`status ${material.is_published ? 'published' : 'draft'}`}>
                         {material.is_published ? '✓ Published' : '⏳ Draft'}
