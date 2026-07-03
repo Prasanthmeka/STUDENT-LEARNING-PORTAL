@@ -83,7 +83,7 @@
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
-.auth-card button {
+.auth-card button[type="submit"] {
   width: 100%;
   padding: 14px;
   background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); /* Deep rich purple gradient */
@@ -98,7 +98,7 @@
   box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
 }
 
-.auth-card button:hover {
+.auth-card button[type="submit"]:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
 }

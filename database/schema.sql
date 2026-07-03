@@ -5,6 +5,7 @@ CREATE TABLE users (
   password_hash VARCHAR(255),
   full_name VARCHAR(255),
   role VARCHAR(50) NOT NULL CHECK (role IN ('admin', 'student')),
+  class VARCHAR(50),
   avatar_url TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

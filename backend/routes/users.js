@@ -11,7 +11,7 @@ router.get('/all-students', authenticateToken, authorizeRole(['admin']), async (
   try {
     const { data, error } = await supabase
       .from('users')
-      .select('id, full_name, email, role')
+      .select('id, full_name, email, role, class')
       .eq('role', 'student')
       .order('full_name', { ascending: true });
 
@@ -30,7 +30,7 @@ router.get('/all-users', authenticateToken, authorizeRole(['admin']), async (req
   try {
     const { data, error } = await supabase
       .from('users')
-      .select('id, full_name, email, role, created_at')
+      .select('id, full_name, email, role, created_at, class')
       .order('created_at', { ascending: false });
 
     if (error) {
