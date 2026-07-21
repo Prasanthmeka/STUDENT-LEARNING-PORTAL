@@ -275,8 +275,6 @@ const renderSubjectIcon = (subjectName) => {
 };
 
 function LandingPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-
   // Filterable subjects list
   const subjects = [
     { name: 'Telugu', desc: 'Regional Telugu grammar, alphabets, prose readings, and cultural poetry modules.', color: '#6366f1' },
@@ -288,19 +286,6 @@ function LandingPage() {
     { name: 'Biology', desc: 'Plant systems, animal cellular structures, genetics, and digestive pathways.', color: '#ec4899' },
     { name: 'Social Studies', desc: 'Geography grids, historical maps, civil constitutions, and economic indicators.', color: '#f59e0b' }
   ];
-
-  const filteredSubjects = subjects.filter(subject => 
-    subject.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    subject.desc.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    const element = document.getElementById('courses');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   return (
     <div className="landing-container">
@@ -329,19 +314,6 @@ function LandingPage() {
                 Interactive video lessons, quizzes, study materials, and smart learning tools designed for school students. Boost your scores with regional language support.
               </p>
 
-              {/* Dynamic Search Bar */}
-              <form className="hero-search" onSubmit={handleSearchSubmit}>
-                <div className="search-input-wrapper">
-                  <i className="fa-solid fa-magnifying-glass search-icon"></i>
-                  <input 
-                    type="text" 
-                    placeholder="Search subjects..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                <button type="submit" className="btn-search">Search</button>
-              </form>
 
               <div className="hero-buttons">
                 <Link to="/register" className="btn-cta btn-primary-gradient">Start Learning</Link>
@@ -473,15 +445,8 @@ function LandingPage() {
             <p>Master primary languages, natural sciences, and analytical studies through our custom curriculum paths.</p>
           </div>
 
-          {searchQuery && (
-            <div className="search-filter-indicator">
-              Showing {filteredSubjects.length} subjects matching "{searchQuery}"
-              {filteredSubjects.length === 0 && <button className="btn-clear-search" onClick={() => setSearchQuery('')}>Clear Search</button>}
-            </div>
-          )}
-
           <div className="subjects-grid grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1">
-            {filteredSubjects.map((sub, idx) => (
+            {subjects.map((sub, idx) => (
               <div className="subject-card" key={idx} style={{ borderBottom: `4px solid ${sub.color}` }}>
                 <div className="subject-card-top">
                   <div className="subject-icon-container">

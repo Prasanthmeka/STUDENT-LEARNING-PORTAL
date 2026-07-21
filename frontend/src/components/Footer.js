@@ -34,7 +34,6 @@ function Footer() {
             <ul>
               <li><Link to="/">Home</Link></li>
               <li><a href="/#courses">Courses</a></li>
-              <li><a href="/#live-classes">Live Classes</a></li>
               <li><a href="/#quizzes">Quizzes</a></li>
             </ul>
           </div>
@@ -46,7 +45,6 @@ function Footer() {
               <li><a href="/#courses">Telugu Support</a></li>
               <li><a href="/#courses">Hindi Support</a></li>
               <li><a href="/#courses">Maths & Science</a></li>
-              <li><a href="/#materials">Study Materials</a></li>
             </ul>
           </div>
 
