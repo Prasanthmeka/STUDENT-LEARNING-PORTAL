@@ -18,6 +18,34 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
+// Handle global 401 unauthorized / session invalidation responses
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      const errorMsg = error.response.data?.error || '';
+      const isLoginRequest = error.config && error.config.url && error.config.url.endsWith('/auth/login');
+      const isRegisterRequest = error.config && error.config.url && error.config.url.endsWith('/auth/register');
+
+      if (!isLoginRequest && !isRegisterRequest) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('subscribedSubjects');
+        localStorage.removeItem('activePlan');
+        localStorage.removeItem('loginType');
+
+        if (window.location.pathname !== '/' && window.location.pathname !== '/login') {
+          if (errorMsg.includes('another device') || errorMsg.includes('Session invalidated')) {
+            window.location.href = '/login?error=session_expired';
+          } else {
+            window.location.href = '/login?error=unauthorized';
+          }
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Auth APIs
 export const authAPI = {
   register: (userData) => API.post('/auth/register', userData),

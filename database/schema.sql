@@ -7,6 +7,7 @@ CREATE TABLE users (
   role VARCHAR(50) NOT NULL CHECK (role IN ('admin', 'student')),
   class VARCHAR(50),
   avatar_url TEXT,
+  current_session_id VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

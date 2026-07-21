@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
 const supabase = require('../utils/supabase');
 const { sendWelcomeEmail } = require('../utils/email');
 
@@ -16,6 +17,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Email, password, and full name are required' });
     }
 
+    const sessionId = uuidv4();
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const { data, error } = await supabase
@@ -26,7 +28,8 @@ router.post('/register', async (req, res) => {
           password_hash: hashedPassword,
           full_name,
           role,
-          class: userClass
+          class: userClass,
+          current_session_id: sessionId
         }
       ])
       .select();
@@ -37,7 +40,7 @@ router.post('/register', async (req, res) => {
 
     // Create JWT token
     const token = jwt.sign(
-      { id: data[0].id, email: data[0].email, role: data[0].role, class: data[0].class },
+      { id: data[0].id, email: data[0].email, role: data[0].role, class: data[0].class, current_session_id: sessionId },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -50,7 +53,6 @@ router.post('/register', async (req, res) => {
         .eq('is_published', true);
 
       if (publishedQuizzes && publishedQuizzes.length > 0) {
-        const { v4: uuidv4 } = require('uuid');
         const permissionsData = publishedQuizzes.map(quiz => ({
           id: uuidv4(),
           quiz_id: quiz.id,
@@ -113,8 +115,20 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
+    const sessionId = uuidv4();
+    
+    // Update current_session_id in database to invalidate other devices
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ current_session_id: sessionId })
+      .eq('id', data.id);
+
+    if (updateError) {
+      return res.status(500).json({ error: 'Failed to update session' });
+    }
+
     const token = jwt.sign(
-      { id: data.id, email: data.email, role: data.role, class: data.class, loginType },
+      { id: data.id, email: data.email, role: data.role, class: data.class, loginType, current_session_id: sessionId },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -148,6 +162,11 @@ router.get('/profile', async (req, res) => {
 
     if (error) {
       return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Enforce concurrent login check for students
+    if (data.role === 'student' && data.current_session_id !== decoded.current_session_id) {
+      return res.status(401).json({ error: 'Session invalidated. Logged in from another device.' });
     }
 
     res.json({
