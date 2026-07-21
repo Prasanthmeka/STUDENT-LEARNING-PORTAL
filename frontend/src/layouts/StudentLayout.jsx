@@ -8,7 +8,7 @@ const StudentLayout = ({ children, searchQuery, setSearchQuery }) => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="h-screen bg-slate-50 flex font-sans overflow-hidden">
+    <div className="h-screen bg-slate-50 dark:bg-slate-950 flex font-sans transition-colors duration-300 text-slate-800 dark:text-slate-200 overflow-hidden">
       {/* Sidebar Component */}
       <Sidebar 
         isCollapsed={isSidebarCollapsed}

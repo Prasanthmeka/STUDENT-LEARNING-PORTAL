@@ -46,13 +46,7 @@ function Navigation() {
                       <a href="/#courses" className={location.hash === '#courses' ? 'active' : ''}>Courses</a>
                     </li>
                     <li>
-                      <a href="/#live-classes" className={location.hash === '#live-classes' ? 'active' : ''}>Live Classes</a>
-                    </li>
-                    <li>
                       <a href="/#quizzes" className={location.hash === '#quizzes' ? 'active' : ''}>Quizzes</a>
-                    </li>
-                    <li>
-                      <a href="/#materials" className={location.hash === '#materials' ? 'active' : ''}>Study Materials</a>
                     </li>
                     <li>
                       <a href="/#contact" className={location.hash === '#contact' ? 'active' : ''}>Contact</a>
@@ -126,13 +120,7 @@ function Navigation() {
                 <a href="/#courses" onClick={() => setMobileMenuOpen(false)}>Courses</a>
               </li>
               <li>
-                <a href="/#live-classes" onClick={() => setMobileMenuOpen(false)}>Live Classes</a>
-              </li>
-              <li>
                 <a href="/#quizzes" onClick={() => setMobileMenuOpen(false)}>Quizzes</a>
-              </li>
-              <li>
-                <a href="/#materials" onClick={() => setMobileMenuOpen(false)}>Study Materials</a>
               </li>
               <li>
                 <a href="/#contact" onClick={() => setMobileMenuOpen(false)}>Contact</a>

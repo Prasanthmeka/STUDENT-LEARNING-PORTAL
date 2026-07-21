@@ -66,6 +66,12 @@ function AppContent() {
   const { isAuthenticated, loading, user } = useAuth();
   const location = useLocation();
 
+  // Force light theme on app load
+  useEffect(() => {
+    document.documentElement.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
+  }, []);
+
   if (loading) return <div className="loading">Loading...</div>;
 
   const isDashboardRoute = location.pathname.startsWith('/student/') || location.pathname.startsWith('/admin/');

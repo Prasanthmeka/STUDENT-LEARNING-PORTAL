@@ -21,7 +21,6 @@ const Navbar = ({ isCollapsed, setIsMobileOpen, searchQuery, setSearchQuery }) =
 
   // State Management
   const [time, setTime] = useState(new Date());
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -36,34 +35,6 @@ const Navbar = ({ isCollapsed, setIsMobileOpen, searchQuery, setSearchQuery }) =
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  // Sync Dark/Light Mode Theme on Mount
-  useEffect(() => {
-    const cachedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (cachedTheme === 'dark' || (!cachedTheme && systemPrefersDark)) {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    } else {
-      setIsDarkMode(false);
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
-
-  // Theme Switch Toggle Handler (available for future use in UI)
-  // eslint-disable-next-line no-unused-vars
-  const handleThemeToggle = () => {
-    const nextDark = !isDarkMode;
-    setIsDarkMode(nextDark);
-    if (nextDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  };
 
   // Click outside to close dropdowns
   useEffect(() => {
@@ -125,7 +96,6 @@ const Navbar = ({ isCollapsed, setIsMobileOpen, searchQuery, setSearchQuery }) =
             {formatDate(time)}
           </span>
         </div>
-
 
         {/* Notifications Center */}
         <div className="relative" ref={notificationRef}>
