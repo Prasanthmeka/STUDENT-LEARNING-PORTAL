@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import '../styles/Auth.css';
 import '../styles/LandingPage.css';
 import LearnoQubeLogo from '../components/LearnoQubeLogo';
@@ -14,6 +14,16 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam === 'session_expired') {
+      setError('You have been logged out because your account was logged in on another device.');
+    } else if (errorParam === 'unauthorized') {
+      setError('Session expired. Please log in again.');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
