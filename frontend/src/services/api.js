@@ -1,7 +1,15 @@
 import axios from 'axios';
 
+export const getApiUrl = () => {
+  const envUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  if (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return envUrl.replace('localhost', window.location.hostname).replace('127.0.0.1', window.location.hostname);
+  }
+  return envUrl;
+};
+
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api'
+  baseURL: getApiUrl()
 });
 
 // Add token to requests

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { materialAPI } from '../services/api';
+import { materialAPI, getApiUrl } from '../services/api';
 import '../styles/AdminMaterials.css';
 
 const AdminMaterials = () => {
@@ -34,7 +34,7 @@ const AdminMaterials = () => {
   const fetchMaterials = async () => {
     try {
       // Fetch all materials (admin view - including unpublished)
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/materials/admin`, {
+      const response = await fetch(`${getApiUrl()}/materials/admin`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -84,7 +84,7 @@ const AdminMaterials = () => {
   const handlePublish = async (materialId, currentStatus) => {
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/materials/${materialId}`, {
+      const response = await fetch(`${getApiUrl()}/materials/${materialId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -113,7 +113,7 @@ const AdminMaterials = () => {
     
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/materials/${materialId}`, {
+      const response = await fetch(`${getApiUrl()}/materials/${materialId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`

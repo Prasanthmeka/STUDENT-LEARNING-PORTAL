@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ClipboardList } from 'lucide-react';
+import { getApiUrl } from '../services/api';
 import '../styles/AdminQuizzes.css';
 
 const AdminQuizzes = () => {
@@ -49,7 +50,7 @@ const AdminQuizzes = () => {
   const loadAllQuizzes = async () => {
     setLoadingQuizzes(true);
     try {
-      const response = await fetch('http://localhost:5000/api/quizzes/admin/all-quizzes', {
+      const response = await fetch(`${getApiUrl()}/quizzes/admin/all-quizzes`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -71,7 +72,7 @@ const AdminQuizzes = () => {
   const handleViewQuizQuestions = async (quizId) => {
     setLoadingQuestions(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/quizzes/${quizId}`, {
+      const response = await fetch(`${getApiUrl()}/quizzes/${quizId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -91,7 +92,7 @@ const AdminQuizzes = () => {
   const loadAllStudents = async () => {
     setLoadingStudents(true);
     try {
-      const response = await fetch('http://localhost:5000/api/users/all-students', {
+      const response = await fetch(`${getApiUrl()}/users/all-students`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -117,7 +118,7 @@ const AdminQuizzes = () => {
 
     setDeletingQuizId(quizId);
     try {
-      const response = await fetch(`http://localhost:5000/api/quizzes/${quizId}`, {
+      const response = await fetch(`${getApiUrl()}/quizzes/${quizId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -145,7 +146,7 @@ const AdminQuizzes = () => {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/quizzes/${quizId}/enable-for-students`, {
+      const response = await fetch(`${getApiUrl()}/quizzes/${quizId}/enable-for-students`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -178,7 +179,7 @@ const AdminQuizzes = () => {
 
     setDeletingQuizId(quizId);
     try {
-      const response = await fetch(`http://localhost:5000/api/quizzes/${quizId}/unpublish`, {
+      const response = await fetch(`${getApiUrl()}/quizzes/${quizId}/unpublish`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -205,7 +206,7 @@ const AdminQuizzes = () => {
 
     setDeletingQuizId(quizId);
     try {
-      const response = await fetch(`http://localhost:5000/api/quizzes/${quizId}/publish`, {
+      const response = await fetch(`${getApiUrl()}/quizzes/${quizId}/publish`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -233,7 +234,7 @@ const AdminQuizzes = () => {
 
     setDeletingQuizId(quizId);
     try {
-      const response = await fetch(`http://localhost:5000/api/quizzes/${quizId}/enable-for-all-students`, {
+      const response = await fetch(`${getApiUrl()}/quizzes/${quizId}/enable-for-all-students`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -294,7 +295,7 @@ const AdminQuizzes = () => {
       formData.append('subject', quizInfo.subject);
 
       // Call backend to extract questions
-      const response = await fetch('http://localhost:5000/api/quizzes/extract-questions', {
+      const response = await fetch(`${getApiUrl()}/quizzes/extract-questions`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -345,7 +346,7 @@ const AdminQuizzes = () => {
         questions: extractedQuestions
       };
 
-      await fetch('http://localhost:5000/api/quizzes/from-document', {
+      await fetch(`${getApiUrl()}/quizzes/from-document`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

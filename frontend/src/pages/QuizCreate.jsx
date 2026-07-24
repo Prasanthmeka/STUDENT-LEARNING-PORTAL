@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from '../layouts/AdminLayout';
-import { quizAPI } from '../services/api';
+import { quizAPI, getApiUrl } from '../services/api';
 import { 
   ClipboardList, 
   ArrowLeft, 
@@ -269,7 +269,7 @@ const QuizCreate = () => {
         }
       }
 
-      const response = await fetch('http://localhost:5000/api/quizzes/extract-questions', {
+      const response = await fetch(`${getApiUrl()}/quizzes/extract-questions`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { materialAPI } from '../services/api';
+import { materialAPI, getApiUrl } from '../services/api';
 import StudentLayout from '../layouts/StudentLayout';
 import PageHeader from '../components/layout/PageHeader';
 import GoBackButton from '../components/layout/GoBackButton';
@@ -308,7 +308,7 @@ const StudentMaterials = () => {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {filteredMaterials.map((material) => {
-            const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+            const API_BASE = getApiUrl();
             const token = localStorage.getItem('token') || '';
             const subs = localStorage.getItem('subscribedSubjects') || '[]';
             const proxyUrl = `${API_BASE}/materials/render?id=${material.id}&token=${encodeURIComponent(token)}&subjects=${encodeURIComponent(subs)}`;
