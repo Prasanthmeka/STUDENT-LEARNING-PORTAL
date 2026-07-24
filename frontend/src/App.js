@@ -12,6 +12,7 @@ import StudentVideos from './pages/StudentVideos';
 import StudentMaterials from './pages/StudentMaterials';
 import Leaderboard from './pages/Leaderboard';
 import QuizzesPage from './pages/QuizzesPage';
+import PublicQuizzes from './pages/PublicQuizzes';
 import QuizPage from './pages/QuizPage';
 import VideoPlayer from './pages/VideoPlayer';
 import Settings from './pages/Settings';
@@ -31,11 +32,27 @@ import Footer from './components/Footer';
 import './App.css';
 
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    if (hash) {
+      const id = hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        const timer = setTimeout(() => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100);
+        return () => clearTimeout(timer);
+      }
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname, hash]);
 
   return null;
 };
@@ -85,6 +102,7 @@ function AppContent() {
           {/* Public Routes */}
           <Route path="/" element={isAuthenticated ? <Navigate to={`/${user?.role}/dashboard`} /> : <LandingPage />} />
           <Route path="/services" element={<ServicesPage />} />
+          <Route path="/quizzes" element={<PublicQuizzes />} />
           <Route path="/login" element={isAuthenticated ? <Navigate to={`/${user?.role}/dashboard`} /> : <Login />} />
           <Route path="/register" element={isAuthenticated ? <Navigate to={`/${user?.role}/dashboard`} /> : <Register />} />
           
