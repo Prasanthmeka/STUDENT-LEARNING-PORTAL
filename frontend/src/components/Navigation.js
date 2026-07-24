@@ -40,16 +40,16 @@ function Navigation() {
                 {!isAuthenticated ? (
                   <>
                     <li>
-                      <a href="/#home" className={location.pathname === '/' && !location.hash ? 'active' : ''}>Home</a>
+                      <Link to="/#home" className={location.pathname === '/' && !location.hash ? 'active' : ''}>Home</Link>
                     </li>
                     <li>
-                      <a href="/#courses" className={location.hash === '#courses' ? 'active' : ''}>Courses</a>
+                      <Link to="/#courses" className={location.hash === '#courses' ? 'active' : ''}>Courses</Link>
                     </li>
                     <li>
-                      <a href="/#quizzes" className={location.hash === '#quizzes' ? 'active' : ''}>Quizzes</a>
+                      <Link to="/quizzes" className={location.pathname === '/quizzes' ? 'active' : ''}>Quizzes</Link>
                     </li>
                     <li>
-                      <a href="/#contact" className={location.hash === '#contact' ? 'active' : ''}>Contact</a>
+                      <Link to="/#contact" className={location.hash === '#contact' ? 'active' : ''}>Contact</Link>
                     </li>
                   </>
                 ) : (
@@ -114,16 +114,16 @@ function Navigation() {
           {!isAuthenticated ? (
             <>
               <li>
-                <a href="/#home" onClick={() => setMobileMenuOpen(false)}>Home</a>
+                <Link to="/#home" onClick={() => setMobileMenuOpen(false)}>Home</Link>
               </li>
               <li>
-                <a href="/#courses" onClick={() => setMobileMenuOpen(false)}>Courses</a>
+                <Link to="/#courses" onClick={() => setMobileMenuOpen(false)}>Courses</Link>
               </li>
               <li>
-                <a href="/#quizzes" onClick={() => setMobileMenuOpen(false)}>Quizzes</a>
+                <Link to="/quizzes" onClick={() => setMobileMenuOpen(false)}>Quizzes</Link>
               </li>
               <li>
-                <a href="/#contact" onClick={() => setMobileMenuOpen(false)}>Contact</a>
+                <Link to="/#contact" onClick={() => setMobileMenuOpen(false)}>Contact</Link>
               </li>
               <li>
                 <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="mobile-signin">Login</Link>

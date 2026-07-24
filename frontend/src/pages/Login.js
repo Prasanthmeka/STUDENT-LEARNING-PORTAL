@@ -7,14 +7,14 @@ import LearnoQubeLogo from '../components/LearnoQubeLogo';
 import { BookOpen, Trophy } from 'lucide-react';
 
 const Login = () => {
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loginType, setLoginType] = useState('courses'); // 'courses' or 'quiz'
+  const [loginType, setLoginType] = useState(searchParams.get('type') === 'quiz' ? 'quiz' : 'courses'); // 'courses' or 'quiz'
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     const errorParam = searchParams.get('error');
@@ -22,6 +22,13 @@ const Login = () => {
       setError('You have been logged out because your account was logged in on another device.');
     } else if (errorParam === 'unauthorized') {
       setError('Session expired. Please log in again.');
+    }
+
+    const typeParam = searchParams.get('type');
+    if (typeParam === 'quiz') {
+      setLoginType('quiz');
+    } else if (typeParam === 'courses') {
+      setLoginType('courses');
     }
   }, [searchParams]);
 

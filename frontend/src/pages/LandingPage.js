@@ -415,7 +415,7 @@ function LandingPage() {
             </div>
 
             {/* Feature 6 */}
-            <div className="feature-card" id="quizzes">
+            <div className="feature-card">
               <div className="feature-icon-box color-green">
                 <i className="fa-solid fa-square-check"></i>
               </div>
@@ -470,7 +470,7 @@ function LandingPage() {
 
 
       {/* CALL TO ACTION (CTA) REGISTRATION */}
-      <section className="cta-container" id="contact">
+      <section className="cta-container">
         <div className="container">
           <div className="cta-gradient-box">
             

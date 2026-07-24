@@ -316,8 +316,19 @@ router.get('/', async (req, res) => {
       return res.json(quizzes);
     }
 
-    // Unauthenticated or unknown role - return empty array
-    res.json([]);
+    // Unauthenticated or unknown role - return all competitive quizzes
+    const { data: competitiveQuizzes, error } = await supabase
+      .from('quizzes')
+      .select('*')
+      .eq('is_published', true)
+      .eq('is_competitive', true)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    return res.json(competitiveQuizzes);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
