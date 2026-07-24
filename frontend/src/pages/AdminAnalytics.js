@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { quizAPI } from '../services/api';
+import { quizAPI, getApiUrl } from '../services/api';
 import '../styles/AdminAnalytics.css';
 
 // Admin Analytics Page - Provides detailed insights into student performance, quiz attempts, and overall platform usage. Admins can view top performers, average scores, pass rates, and drill down into individual quiz attempts to see detailed responses and reset attempts if necessary.
@@ -71,7 +71,7 @@ const AdminAnalytics = () => {
   const fetchAnalytics = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/leaderboard', {
+      const response = await fetch(`${getApiUrl()}/leaderboard`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

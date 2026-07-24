@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AdminLayout from '../layouts/AdminLayout';
-import { analyticsAPI, userAPI } from '../services/api';
+import { analyticsAPI, userAPI, getApiUrl } from '../services/api';
 import { 
   GraduationCap, 
   Crown, 
@@ -280,7 +280,7 @@ const AdminSubjectPage = () => {
 
   const loadRealQuizzes = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/quizzes/admin/all-quizzes', {
+      const response = await fetch(`${getApiUrl()}/quizzes/admin/all-quizzes`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -293,7 +293,7 @@ const AdminSubjectPage = () => {
         const mappedQuizzes = await Promise.all(subjectQuizzes.map(async q => {
           let attemptsCount = 0;
           try {
-            const attRes = await fetch(`http://localhost:5000/api/quizzes/${q.id}/all-attempts`, {
+            const attRes = await fetch(`${getApiUrl()}/quizzes/${q.id}/all-attempts`, {
               headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
               }
@@ -330,7 +330,7 @@ const AdminSubjectPage = () => {
       return;
     }
     try {
-      const response = await fetch(`http://localhost:5000/api/quizzes/${quizId}`, {
+      const response = await fetch(`${getApiUrl()}/quizzes/${quizId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -349,7 +349,7 @@ const AdminSubjectPage = () => {
   const handleViewQuizQuestions = async (quizId) => {
     setLoadingQuestions(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/quizzes/${quizId}`, {
+      const response = await fetch(`${getApiUrl()}/quizzes/${quizId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -371,7 +371,7 @@ const AdminSubjectPage = () => {
     setShowAttemptsModal(true);
     setLoadingAttempts(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/quizzes/${quiz.id}/all-attempts`, {
+      const response = await fetch(`${getApiUrl()}/quizzes/${quiz.id}/all-attempts`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -396,7 +396,7 @@ const AdminSubjectPage = () => {
   const handleViewStudentResponse = async (attempt) => {
     setLoadingResponseDetail(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/quizzes/${attempt.quiz_id}`, {
+      const response = await fetch(`${getApiUrl()}/quizzes/${attempt.quiz_id}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -421,7 +421,7 @@ const AdminSubjectPage = () => {
     }
     setResettingAttemptId(attemptId);
     try {
-      const response = await fetch(`http://localhost:5000/api/quizzes/attempt/${attemptId}`, {
+      const response = await fetch(`${getApiUrl()}/quizzes/attempt/${attemptId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -431,7 +431,7 @@ const AdminSubjectPage = () => {
         alert('Student attempt reset successfully.');
         // Refresh attempts within the modal
         if (modalQuiz) {
-          const res = await fetch(`http://localhost:5000/api/quizzes/${modalQuiz.id}/all-attempts`, {
+          const res = await fetch(`${getApiUrl()}/quizzes/${modalQuiz.id}/all-attempts`, {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -456,7 +456,7 @@ const AdminSubjectPage = () => {
 
   const loadRealVideos = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/videos/admin', {
+      const response = await fetch(`${getApiUrl()}/videos/admin`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -486,7 +486,7 @@ const AdminSubjectPage = () => {
       return;
     }
     try {
-      const response = await fetch(`http://localhost:5000/api/videos/${videoId}`, {
+      const response = await fetch(`${getApiUrl()}/videos/${videoId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -504,7 +504,7 @@ const AdminSubjectPage = () => {
 
   const loadRealMaterials = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/materials/admin', {
+      const response = await fetch(`${getApiUrl()}/materials/admin`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -534,7 +534,7 @@ const AdminSubjectPage = () => {
       return;
     }
     try {
-      const response = await fetch(`http://localhost:5000/api/materials/${materialId}`, {
+      const response = await fetch(`${getApiUrl()}/materials/${materialId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -711,7 +711,7 @@ const AdminSubjectPage = () => {
       return;
     }
     try {
-      const response = await fetch('http://localhost:5000/api/videos', {
+      const response = await fetch(`${getApiUrl()}/videos`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -755,7 +755,7 @@ const AdminSubjectPage = () => {
       return;
     }
     try {
-      const response = await fetch('http://localhost:5000/api/materials', {
+      const response = await fetch(`${getApiUrl()}/materials`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -828,7 +828,7 @@ const AdminSubjectPage = () => {
       const parsedDuration = parseInt(String(quizDuration).replace(/[^0-9]/g, ''), 10);
       const timeLimit = isNaN(parsedDuration) ? 20 : parsedDuration;
 
-      const response = await fetch('http://localhost:5000/api/quizzes', {
+      const response = await fetch(`${getApiUrl()}/quizzes`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { videoAPI } from '../services/api';
+import { videoAPI, getApiUrl } from '../services/api';
 import '../styles/AdminVideos.css';
 
 const AdminVideos = () => {
@@ -33,7 +33,7 @@ const AdminVideos = () => {
   const fetchVideos = async () => {
     try {
       // Fetch all videos (admin view - including unpublished)
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/videos/admin`, {
+      const response = await fetch(`${getApiUrl()}/videos/admin`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -82,7 +82,7 @@ const AdminVideos = () => {
   const handlePublish = async (videoId, currentStatus) => {
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/videos/${videoId}`, {
+      const response = await fetch(`${getApiUrl()}/videos/${videoId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -111,7 +111,7 @@ const AdminVideos = () => {
     
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/videos/${videoId}`, {
+      const response = await fetch(`${getApiUrl()}/videos/${videoId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
