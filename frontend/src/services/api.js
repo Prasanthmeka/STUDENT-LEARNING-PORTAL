@@ -140,4 +140,11 @@ export const userAPI = {
   updateUserSubscription: (id, data) => API.put(`/users/${id}/subscription`, data)
 };
 
+// Notification APIs
+export const notificationAPI = {
+  getNotifications: () => API.get('/notifications'),
+  markRead: (id) => API.put(`/notifications/${id}/read`),
+  markAllRead: () => API.put('/notifications/mark-all-read')
+};
+
 export default API;

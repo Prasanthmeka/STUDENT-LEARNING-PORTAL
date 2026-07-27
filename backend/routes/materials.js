@@ -45,6 +45,15 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
       return res.status(400).json({ error: error.message });
     }
 
+    // Trigger notification asynchronously for subscribed students
+    const { createUploadNotification } = require('../utils/notificationHelper');
+    createUploadNotification({
+      subject,
+      title,
+      resourceType: 'study_material',
+      resourceId: data[0].id
+    }).catch(err => console.error('Error dispatching study material upload notification:', err));
+
     res.status(201).json({ message: 'Study material created successfully', material: data[0] });
   } catch (err) {
     res.status(500).json({ error: err.message });

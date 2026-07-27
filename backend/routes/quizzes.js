@@ -196,6 +196,15 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
       console.error('Error in automatic quiz enablement:', permErr);
     }
 
+    // Trigger notification asynchronously for subscribed students
+    const { createUploadNotification } = require('../utils/notificationHelper');
+    createUploadNotification({
+      subject,
+      title,
+      resourceType: 'quiz',
+      resourceId: quizId
+    }).catch(err => console.error('Error dispatching quiz upload notification:', err));
+
     res.status(201).json({ message: 'Quiz created successfully', quiz: quizData[0] });
   } catch (err) {
     res.status(500).json({ error: err.message });

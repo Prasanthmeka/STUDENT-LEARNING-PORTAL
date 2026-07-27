@@ -165,3 +165,20 @@ CREATE INDEX idx_leaderboard_student ON leaderboard(student_id);
 CREATE INDEX idx_leaderboard_rank ON leaderboard(rank);
 CREATE INDEX idx_quiz_permissions_quiz ON quiz_permissions(quiz_id);
 CREATE INDEX idx_quiz_permissions_student ON quiz_permissions(student_id);
+
+-- Notifications Table
+CREATE TABLE notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  text TEXT NOT NULL,
+  type VARCHAR(50) DEFAULT 'info' CHECK (type IN ('success', 'info', 'warning')),
+  subject VARCHAR(100) CHECK (subject IN ('Telugu', 'Hindi', 'English', 'Maths', 'Physics', 'Chemistry', 'Biology', 'Social')),
+  resource_type VARCHAR(50) CHECK (resource_type IN ('quiz', 'video', 'study_material')),
+  resource_id UUID,
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_notifications_student ON notifications(student_id);
+CREATE INDEX idx_notifications_created_at ON notifications(created_at);
+
