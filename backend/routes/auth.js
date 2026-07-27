@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const supabase = require('../utils/supabase');
 const { sendWelcomeEmail } = require('../utils/email');
+const { createRegistrationNotification } = require('../utils/notificationHelper');
 
 const router = express.Router();
 
@@ -78,6 +79,14 @@ router.post('/register', async (req, res) => {
         .catch(err => console.error('Asynchronous welcome email dispatch failed:', err));
     } catch (emailErr) {
       console.error('Error in triggering welcome email:', emailErr);
+    }
+
+    // Asynchronously trigger registration notification for admin users
+    try {
+      createRegistrationNotification({ fullName: data[0].full_name, email: data[0].email })
+        .catch(err => console.error('Asynchronous admin registration notification failed:', err));
+    } catch (notifErr) {
+      console.error('Error in triggering registration notification:', notifErr);
     }
 
     res.status(201).json({
