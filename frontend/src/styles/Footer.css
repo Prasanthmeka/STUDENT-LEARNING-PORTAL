@@ -185,12 +185,13 @@
   border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
   padding-top: 25px !important;
   display: flex !important;
-  justify-content: space-between !important;
+  justify-content: center !important;
   align-items: center !important;
   flex-wrap: wrap !important;
   gap: 15px !important;
   font-size: 14px !important;
   color: #9ca3af !important;
+  text-align: center !important;
 }
 
 @media (max-width: 768px) {
@@ -200,13 +201,3 @@
   }
 }
 
-#site-footer.premium-footer .footer-heart {
-  color: #ef4444 !important;
-  margin: 0 2px !important;
-  animation: heartPulse 1.2s infinite alternate !important;
-}
-
-@keyframes heartPulse {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.15); }
-}

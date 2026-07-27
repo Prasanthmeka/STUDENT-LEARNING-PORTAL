@@ -71,9 +71,6 @@ function Footer() {
           {/* Footer Bottom Bar */}
           <div className="footer-bottom-bar">
             <p className="mb-0">&copy; {new Date().getFullYear()} LearnoQube Learning Platform. All rights reserved.</p>
-            <p className="mb-0">
-              Designed with <i className="fa-solid fa-heart footer-heart"></i> for standard school excellence.
-            </p>
           </div>
 
         </div>
