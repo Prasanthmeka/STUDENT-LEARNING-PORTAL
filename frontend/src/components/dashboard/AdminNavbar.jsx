@@ -11,6 +11,7 @@ import {
   AlertCircle,
   Activity
 } from 'lucide-react';
+import { notificationAPI } from '../../services/api';
 
 const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
   const { user, logout } = useAuth();
@@ -23,6 +24,7 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
   const [time, setTime] = useState(new Date());
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
 
   // Refs for closing dropdowns when clicking outside
   const profileRef = useRef(null);
@@ -35,6 +37,49 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Fetch Notifications for Admin
+  const fetchNotifications = async () => {
+    if (!user || user.role !== 'admin') return;
+    try {
+      const response = await notificationAPI.getNotifications();
+      setNotifications(response.data || []);
+    } catch (error) {
+      console.error('Error fetching admin notifications:', error);
+    }
+  };
+
+  // Fetch on load & periodically
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  // Fetch immediately when opened
+  useEffect(() => {
+    if (showNotifications) {
+      fetchNotifications();
+    }
+  }, [showNotifications]);
+
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationAPI.markAllRead();
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    } catch (error) {
+      console.error('Error marking all notifications read:', error);
+    }
+  };
+
+  const handleMarkRead = async (id) => {
+    try {
+      await notificationAPI.markRead(id);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+    } catch (error) {
+      console.error('Error marking notification read:', error);
+    }
+  };
 
   // Click outside and escape key down to close dropdowns
   useEffect(() => {
@@ -74,11 +119,26 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
     return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const notifications = [
-    { id: 1, text: "New Premium subscription activated by Prasanth Meka!", type: "subscription", time: "3m ago" },
-    { id: 2, text: "Overall quiz pass rate has increased to 78.4% this week.", type: "analytics", time: "45m ago" },
-    { id: 3, text: "Server resources status: Healthy (CPU load 14%).", type: "system", time: "3h ago" }
-  ];
+  const formatRelativeTime = (dateString) => {
+    if (!dateString) return '';
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now - date;
+    
+    if (diffMs < 0) return 'Just now';
+    
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 60) return 'Just now';
+    
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    
+    const diffDay = Math.floor(diffHr / 24);
+    return `${diffDay}d ago`;
+  };
 
   // Reactive Theme Accent state
   const [themeAccent, setThemeAccent] = useState(() => localStorage.getItem('admin_theme_accent') || 'purple');
@@ -171,7 +231,9 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
             className="relative p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-900 bg-slate-50/50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-600 dark:text-slate-350 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-200"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-550 ring-2 ring-white dark:ring-slate-955"></span>
+            {notifications.some(n => !n.is_read) && (
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-550 ring-2 ring-white dark:ring-slate-955 animate-pulse"></span>
+            )}
           </button>
 
           <AnimatePresence>
@@ -184,27 +246,63 @@ const AdminNavbar = ({ setIsMobileOpen, searchQuery, setSearchQuery }) => {
               >
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-900">
                   <span className="font-bold text-slate-850 dark:text-slate-100 text-xs tracking-wide">System Notifications</span>
-                  <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${navColors.pillBg}`}>3 New</span>
+                  {notifications.some(n => !n.is_read) ? (
+                    <button 
+                      onClick={handleMarkAllRead}
+                      className="text-[10px] text-indigo-500 dark:text-indigo-400 font-semibold hover:underline"
+                    >
+                      Mark all read
+                    </button>
+                  ) : (
+                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${navColors.pillBg}`}>
+                      {notifications.filter(n => !n.is_read).length} New
+                    </span>
+                  )}
                 </div>
                 
-                <div className="mt-3 space-y-3">
-                  {notifications.map((notif) => (
-                    <div key={notif.id} className="flex gap-3 hover:bg-slate-50 dark:hover:bg-slate-900/60 p-2 rounded-xl transition-all duration-150">
-                      <div className="mt-0.5 shrink-0">
-                        {notif.type === 'subscription' ? (
-                          <CheckCircle className="w-4 h-4 text-emerald-500" />
-                        ) : notif.type === 'analytics' ? (
-                          <Activity className={`w-4 h-4 ${navColors.iconColor}`} />
-                        ) : (
-                          <AlertCircle className="w-4 h-4 text-amber-500" />
+                <div className="mt-3 space-y-3 max-h-72 overflow-y-auto pr-1">
+                  {notifications.length === 0 ? (
+                    <div className="text-center py-6 text-slate-400 dark:text-slate-500 text-[11px] font-semibold">
+                      No notifications
+                    </div>
+                  ) : (
+                    notifications.map((notif) => (
+                      <div 
+                        key={notif.id} 
+                        onClick={() => !notif.is_read && handleMarkRead(notif.id)}
+                        className={`flex gap-3 p-2 rounded-xl transition-all duration-150 cursor-pointer ${
+                          notif.is_read 
+                            ? 'hover:bg-slate-50 dark:hover:bg-slate-900/60 opacity-60' 
+                            : 'bg-indigo-50/40 dark:bg-indigo-950/20 hover:bg-indigo-50/70 dark:hover:bg-indigo-950/40 border-l-2 border-indigo-500 pl-1.5'
+                        }`}
+                      >
+                        <div className="mt-0.5 shrink-0">
+                          {notif.type === 'success' ? (
+                            <CheckCircle className="w-4 h-4 text-emerald-500" />
+                          ) : notif.type === 'warning' ? (
+                            <AlertCircle className="w-4 h-4 text-amber-500" />
+                          ) : (
+                            <AlertCircle className="w-4 h-4 text-indigo-500" />
+                          )}
+                        </div>
+                        <div className="overflow-hidden min-w-0 flex-1">
+                          <p className={`text-[11px] leading-relaxed font-sans ${
+                            notif.is_read 
+                              ? 'text-slate-500 dark:text-slate-400 font-medium' 
+                              : 'text-slate-800 dark:text-slate-200 font-bold'
+                          }`}>
+                            {notif.text}
+                          </p>
+                          <span className="text-[9px] text-slate-400 dark:text-slate-500 mt-1 block font-medium">
+                            {formatRelativeTime(notif.created_at)}
+                          </span>
+                        </div>
+                        {!notif.is_read && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 self-center shrink-0"></span>
                         )}
                       </div>
-                      <div className="overflow-hidden min-w-0">
-                        <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed font-semibold font-sans">{notif.text}</p>
-                        <span className="text-[9px] text-slate-400 dark:text-slate-500 mt-1 block font-medium">{notif.time}</span>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </motion.div>
             )}

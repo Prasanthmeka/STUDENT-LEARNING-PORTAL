@@ -81,6 +81,57 @@ async function createUploadNotification({ subject, title, resourceType, resource
   }
 }
 
+/**
+ * Creates notifications for all admin users when a new student is registered.
+ * @param {object} params
+ * @param {string} params.fullName - The registered student's full name.
+ * @param {string} params.email - The registered student's email.
+ */
+async function createRegistrationNotification({ fullName, email }) {
+  try {
+    // 1. Fetch all admin users
+    const { data: admins, error } = await supabase
+      .from('users')
+      .select('id')
+      .eq('role', 'admin');
+
+    if (error) {
+      console.error('Error fetching admin users for notification:', error.message);
+      return;
+    }
+
+    if (!admins || admins.length === 0) {
+      console.log('No admin users found to notify.');
+      return;
+    }
+
+    const text = `New student registered: ${fullName} (${email})`;
+
+    // 2. Build notification records for each admin (recipient)
+    const notificationsToInsert = admins.map(admin => ({
+      id: uuidv4(),
+      student_id: admin.id, // student_id column in notifications table acts as the user recipient ID
+      text,
+      type: 'success',
+      is_read: false
+    }));
+
+    // 3. Bulk insert notifications
+    const { error: insertError } = await supabase
+      .from('notifications')
+      .insert(notificationsToInsert);
+
+    if (insertError) {
+      console.error('Error bulk inserting registration notifications in Supabase:', insertError.message);
+    } else {
+      console.log(`Created ${notificationsToInsert.length} registration notifications for admins.`);
+    }
+  } catch (err) {
+    console.error('Failed to create registration notifications:', err.message);
+  }
+}
+
 module.exports = {
-  createUploadNotification
+  createUploadNotification,
+  createRegistrationNotification
 };
