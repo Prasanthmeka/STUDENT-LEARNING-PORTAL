@@ -10,7 +10,7 @@ router.get('/student-dashboard', authenticateToken, authorizeRole(['student']), 
     const studentId = req.user.id;
 
     // 1. Fetch all graded attempts for this student
-    const { data: attempts, error: attemptsError } = await supabase
+    const { data: rawAttempts, error: attemptsError } = await supabase
       .from('quiz_attempts')
       .select(`
         *,
@@ -18,7 +18,8 @@ router.get('/student-dashboard', authenticateToken, authorizeRole(['student']), 
           id,
           title,
           subject,
-          total_questions
+          total_questions,
+          is_competitive
         )
       `)
       .eq('student_id', studentId)
@@ -28,6 +29,14 @@ router.get('/student-dashboard', authenticateToken, authorizeRole(['student']), 
     if (attemptsError) {
       return res.status(400).json({ error: attemptsError.message });
     }
+
+    // In course portal login, strictly exclude competitive quizzes from metrics and top rankings
+    const attempts = (rawAttempts || []).filter(a => {
+      if (req.user?.loginType !== 'quiz' && a.quizzes?.is_competitive) {
+        return false;
+      }
+      return true;
+    });
 
     // 2. Compute analytics numbers
     const totalTests = attempts.length;

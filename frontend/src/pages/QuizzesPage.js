@@ -77,6 +77,10 @@ const QuizzesPage = () => {
         if (loginType === 'quiz') {
           return q.is_competitive;
         }
+        // In course login, strictly do not show competitive quizzes
+        if (q.is_competitive) {
+          return false;
+        }
         if (!isPaidSubscriber || subscribedList.length === 0) {
           return false;
         }
@@ -179,8 +183,10 @@ const QuizzesPage = () => {
 
       {/* Page Header */}
       <PageHeader 
-        title="Quizzes & Test Portal"
-        subtitle="Complete auto-graded mock assessments, view your accuracy scores, and challenge peers on subject metrics."
+        title={loginType === 'quiz' ? "Competitive Quizzes" : "Course Tests & Assessments"}
+        subtitle={loginType === 'quiz'
+          ? "Challenge yourself with our online competitive mock exams, test your accuracy, and rank on the leaderboard."
+          : "Complete auto-graded mock assessments for your subscribed courses and view your accuracy scores."}
         parentLabel={loginType === 'quiz' ? null : "Dashboard"}
         parentPath={loginType === 'quiz' ? null : "/student/dashboard"}
       />
@@ -189,7 +195,9 @@ const QuizzesPage = () => {
       <div className="mb-8 max-w-xs">
         <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-saas flex items-center justify-between">
           <div className="overflow-hidden">
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Total Quizzes</span>
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
+              {loginType === 'quiz' ? "Total Quizzes" : "Total Tests"}
+            </span>
             <span className="text-xl font-black text-slate-800 dark:text-white leading-none">{quizzes.length}</span>
           </div>
           <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 text-indigo-500 dark:text-indigo-400 shrink-0">
@@ -224,7 +232,7 @@ const QuizzesPage = () => {
                   : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
               }`}
             >
-              All Tests
+              {loginType === 'quiz' ? 'All Quizzes' : 'All Tests'}
             </button>
             <button
               onClick={() => handleStatusChange('short')}
