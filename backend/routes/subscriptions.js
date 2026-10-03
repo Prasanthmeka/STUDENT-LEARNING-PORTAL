@@ -167,8 +167,10 @@ router.get('/prices', authenticateToken, async (req, res) => {
 // Get Student's Subscription
 router.get('/my-subscription', authenticateToken, async (req, res) => {
   try {
+    const defaultSubjects = ['Telugu', 'Hindi', 'English', 'Maths', 'Physics', 'Chemistry', 'Biology', 'Social'];
+
     // Fetch active subscription from Supabase
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('subscriptions')
       .select('*')
       .eq('student_id', req.user.id)
@@ -180,10 +182,38 @@ router.get('/my-subscription', authenticateToken, async (req, res) => {
     }
 
     if (!data || data.length === 0) {
+      // Auto-create initial 14-day Free Trial subscription with empty subjects
+      const start = new Date();
+      const end = new Date(start);
+      end.setDate(start.getDate() + 14);
+
+      const { data: newSub, error: insertErr } = await supabase
+        .from('subscriptions')
+        .insert([
+          {
+            id: uuidv4(),
+            student_id: req.user.id,
+            subscription_type: 'free',
+            plan_name: 'Free Trial',
+            start_date: start,
+            end_date: end,
+            is_active: true,
+            subscribed_subjects: []
+          }
+        ])
+        .select();
+
+      if (!insertErr && newSub && newSub.length > 0) {
+        data = newSub;
+      }
+    }
+
+    if (!data || data.length === 0) {
       return res.status(404).json({ error: 'No active subscription found' });
     }
 
     const subscription = data[0];
+    const isFree = subscription.plan_name === 'Free Trial' || subscription.subscription_type === 'free';
     const result = {
       id: subscription.id,
       student_id: subscription.student_id,
@@ -192,7 +222,7 @@ router.get('/my-subscription', authenticateToken, async (req, res) => {
       start_date: subscription.start_date,
       end_date: subscription.end_date,
       active_plan: subscription.plan_name || 'Free Trial',
-      subscribed_subjects: subscription.subscribed_subjects || []
+      subscribed_subjects: isFree ? [] : (subscription.subscribed_subjects || [])
     };
 
     res.json(result);

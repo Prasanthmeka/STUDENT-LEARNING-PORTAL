@@ -24,6 +24,18 @@ const upload = multer({
   }
 });
 
+// Helper to ensure database UTC timestamps have Z indicator
+const normalizeAttempt = (a) => {
+  if (!a) return a;
+  const fix = (ts) => (ts && typeof ts === 'string' && !ts.endsWith('Z') && !/[+-]\d{2}:?\d{2}$/.test(ts)) ? `${ts}Z` : ts;
+  return {
+    ...a,
+    started_at: fix(a.started_at),
+    submitted_at: fix(a.submitted_at),
+    created_at: fix(a.created_at)
+  };
+};
+
 // Create Quiz (Admin Only)
 router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) => {
   try {
@@ -163,18 +175,12 @@ router.post('/', authenticateToken, authorizeRole(['admin']), async (req, res) =
       }
     }
 
-    // Automatically enable the quiz for all existing students in the same class
+    // Automatically enable the quiz for all existing students
     try {
-      let studentQuery = supabase
+      const { data: studentsData } = await supabase
         .from('users')
-        .select('id')
+        .select('id, class')
         .eq('role', 'student');
-
-      if (req.body.class) {
-        studentQuery = studentQuery.eq('class', req.body.class);
-      }
-
-      const { data: studentsData } = await studentQuery;
 
       if (studentsData && studentsData.length > 0) {
         const permissionsData = studentsData.map(student => ({
@@ -250,17 +256,64 @@ router.get('/', async (req, res) => {
       return res.json(data);
     }
 
-    // If authenticated student, return only quizzes they have permission for
+    // If authenticated student, return published quizzes and permitted quizzes
     if (userId && userRole === 'student') {
-      const { data: permittedQuizzes, error } = await supabase
+      // If loginType === 'quiz', only show competitive quizzes
+      if (loginType === 'quiz') {
+        const { data: competitiveQuizzes, error } = await supabase
+          .from('quizzes')
+          .select('*')
+          .eq('is_published', true)
+          .eq('is_competitive', true)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          return res.status(400).json({ error: error.message });
+        }
+
+        return res.json(competitiveQuizzes || []);
+      }
+
+      // Check if student is an active paid subscriber
+      const { isPaidSubscriber, getPaidSubscribedSubjects } = require('../utils/subscriptionHelper');
+      const isPaid = await isPaidSubscriber(userId);
+
+      // Free Trial students are NOT allowed to see tests!
+      if (!isPaid) {
+        return res.json([]);
+      }
+
+      const paidSubjects = await getPaidSubscribedSubjects(userId);
+      if (!paidSubjects || paidSubjects.length === 0) {
+        return res.json([]);
+      }
+
+      // 1. Fetch all published quizzes directly
+      const { data: publishedQuizzes, error: pubError } = await supabase
+        .from('quizzes')
+        .select('*')
+        .eq('is_published', true)
+        .order('created_at', { ascending: false });
+
+      if (pubError) {
+        return res.status(400).json({ error: pubError.message });
+      }
+
+      // 2. Also fetch any quizzes specifically permitted to this student in quiz_permissions
+      const { data: permittedQuizzes } = await supabase
         .from('quiz_permissions')
         .select('quiz_id, quizzes(*)')
-        .eq('student_id', userId)
-        .order('granted_at', { ascending: false });
+        .eq('student_id', userId);
 
-      if (error) {
-        return res.status(400).json({ error: error.message });
-      }
+      // Merge candidate quizzes, deduplicating by quiz id
+      const quizzesMap = new Map();
+      (publishedQuizzes || []).forEach(q => {
+        if (q && q.id) quizzesMap.set(q.id, q);
+      });
+      (permittedQuizzes || []).forEach(p => {
+        if (p && p.quizzes && p.quizzes.id) quizzesMap.set(p.quizzes.id, p.quizzes);
+      });
+      const candidateQuizzes = Array.from(quizzesMap.values());
 
       // Fetch all attempts for this student to attach attempt status
       const { data: attempts } = await supabase
@@ -276,38 +329,43 @@ router.get('/', async (req, res) => {
         });
       }
 
-      // Extract subscribed subjects list securely from local JSON
-      const { getSubscribedSubjects } = require('../utils/subscriptionHelper');
-      const subscribedSubjects = await getSubscribedSubjects(userId, req.headers);
+      // If studentClass is missing in token, fetch from users table
+      if (!studentClass) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('class')
+          .eq('id', userId)
+          .single();
+        if (userData && userData.class) {
+          studentClass = userData.class;
+        }
+      }
 
-      // Extract quiz data from permissions and attach attempt info, filtered by subject subscription list and class
-      const quizzes = (permittedQuizzes || [])
-        .map(p => p.quizzes)
+      // Filter candidate quizzes for subscribed student
+      const quizzes = candidateQuizzes
         .filter(q => {
-          if (q && q.is_published) {
-            // Filter by class
-            if (studentClass && q.class && q.class !== studentClass) {
+          if (!q) return false;
+
+          // Must be published OR explicitly permitted
+          const isExplicitlyPermitted = (permittedQuizzes || []).some(p => p.quiz_id === q.id);
+          if (!q.is_published && !isExplicitlyPermitted) {
+            return false;
+          }
+
+          // Filter by class only if both student and quiz have a specific class assigned
+          if (studentClass && q.class && q.class.trim() !== '' && q.class !== 'All Classes') {
+            if (studentClass.toLowerCase() !== q.class.toLowerCase()) {
               return false;
             }
-
-            // Filter by competitive type based on loginType
-            if (loginType === 'quiz') {
-              if (!q.is_competitive) return false;
-              // Bypass subscription check for quiz portal mode
-              return true;
-            } else {
-              // courses portal
-              if (q.is_competitive) return false;
-            }
-
-            return subscribedSubjects.some(s => {
-              const sNorm = s.toLowerCase();
-              const qNorm = q.subject?.toLowerCase() || '';
-              return sNorm === qNorm || 
-                ((sNorm === 'social' || sNorm === 'social studies') && (qNorm === 'social' || qNorm === 'social studies'));
-            });
           }
-          return false;
+
+          // For standard subject quizzes: must match student's paid subscribed subjects
+          return paidSubjects.some(s => {
+            const sNorm = s.toLowerCase().trim();
+            const qNorm = q.subject?.toLowerCase().trim() || '';
+            return sNorm === qNorm || 
+              ((sNorm === 'social' || sNorm === 'social studies') && (qNorm === 'social' || qNorm === 'social studies'));
+          });
         })
         .map(q => {
           const attempt = attemptsMap[q.id] || null;
@@ -363,13 +421,27 @@ router.get('/:id', authenticateToken, async (req, res) => {
           return res.status(403).json({ error: 'Access denied. This quiz is only available through the courses portal.' });
         }
       } else {
-        if (quizData.is_competitive) {
-          return res.status(403).json({ error: 'Access denied. This quiz is only available through the quiz portal.' });
+        // In courses portal: only active paid subscribers can access tests
+        const { isPaidSubscriber, getPaidSubscribedSubjects } = require('../utils/subscriptionHelper');
+        const isPaid = await isPaidSubscriber(req.user.id);
+        if (!isPaid) {
+          return res.status(403).json({ 
+            error: 'Subscription required. Mock tests and assessments are exclusive to subscribed students.' 
+          });
         }
-        const { isSubscribedToSubject } = require('../utils/subscriptionHelper');
-        const isSubscribed = await isSubscribedToSubject(req.user.id, quizData.subject, req.headers);
-        if (!isSubscribed) {
-          return res.status(403).json({ error: 'Access denied. You are not subscribed to this subject.' });
+
+        const paidSubjects = await getPaidSubscribedSubjects(req.user.id);
+        const isSubscribedToSubject = paidSubjects.some(s => {
+          const sNorm = s.toLowerCase().trim();
+          const qNorm = quizData.subject?.toLowerCase().trim() || '';
+          return sNorm === qNorm || 
+            ((sNorm === 'social' || sNorm === 'social studies') && (qNorm === 'social' || qNorm === 'social studies'));
+        });
+
+        if (!isSubscribedToSubject) {
+          return res.status(403).json({ 
+            error: `Access denied. You are not subscribed to ${quizData.subject || 'this subject'}. Please upgrade your subscription.` 
+          });
         }
       }
     }
@@ -393,8 +465,40 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // Submit Quiz Answers
 router.post('/:id/submit', authenticateToken, authorizeRole(['student']), async (req, res) => {
   try {
-    const { answers, startedAt } = req.body; // answers: [{question_id, option_id_or_text}, ...]
     const quizId = req.params.id;
+
+    // Security guard: verify student is allowed to take this test
+    if (req.user.loginType === 'quiz') {
+      const { data: qCheck } = await supabase.from('quizzes').select('is_competitive').eq('id', quizId).single();
+      if (!qCheck || !qCheck.is_competitive) {
+        return res.status(403).json({ error: 'Access denied. This quiz is only available through the courses portal.' });
+      }
+    } else {
+      const { isPaidSubscriber, getPaidSubscribedSubjects } = require('../utils/subscriptionHelper');
+      const isPaid = await isPaidSubscriber(req.user.id);
+      if (!isPaid) {
+        return res.status(403).json({ 
+          error: 'Subscription required. Mock tests and assessments are exclusive to subscribed students.' 
+        });
+      }
+
+      const { data: qCheck } = await supabase.from('quizzes').select('subject').eq('id', quizId).single();
+      const paidSubjects = await getPaidSubscribedSubjects(req.user.id);
+      const isSubscribedToSubject = paidSubjects.some(s => {
+        const sNorm = s.toLowerCase().trim();
+        const qNorm = qCheck?.subject?.toLowerCase().trim() || '';
+        return sNorm === qNorm || 
+          ((sNorm === 'social' || sNorm === 'social studies') && (qNorm === 'social' || qNorm === 'social studies'));
+      });
+
+      if (!isSubscribedToSubject) {
+        return res.status(403).json({ 
+          error: `Access denied. You are not subscribed to ${qCheck?.subject || 'this subject'}.` 
+        });
+      }
+    }
+
+    const { answers, startedAt } = req.body; // answers: [{question_id, option_id_or_text}, ...]
 
     // Create quiz attempt
     const attemptId = uuidv4();
@@ -554,7 +658,7 @@ router.post('/:id/submit', authenticateToken, authorizeRole(['student']), async 
 
     const resultPayload = {
       message: 'Quiz submitted successfully',
-      attempt: updatedAttempt[0],
+      attempt: normalizeAttempt(updatedAttempt[0]),
       result: {
         totalMarks,
         marksObtained,
@@ -601,7 +705,7 @@ router.get('/:id/attempt/:attemptId', authenticateToken, async (req, res) => {
     }
 
     res.json({
-      attempt: attemptData,
+      attempt: normalizeAttempt(attemptData),
       responses
     });
   } catch (err) {
@@ -648,7 +752,7 @@ router.get('/:id/my-attempts', authenticateToken, authorizeRole(['student', 'adm
         result
       });
 
-      res.json([{ attempt: latestAttempt, result, responses }]);
+      res.json([{ attempt: normalizeAttempt(latestAttempt), result, responses }]);
     } else {
       res.json([]);
     }
@@ -691,7 +795,7 @@ router.get('/:id/all-attempts', authenticateToken, authorizeRole(['admin']), asy
       }
     }
 
-    res.json({ attempts, responses: allResponses });
+    res.json({ attempts: (attempts || []).map(normalizeAttempt), responses: allResponses });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -812,6 +916,20 @@ router.post('/from-document', authenticateToken, authorizeRole(['admin']), async
 
     const quizId = uuidv4();
 
+    // Capitalize subject to match DB and UI filters
+    let quizSubject = subject;
+    if (quizSubject) {
+      const subLower = quizSubject.toLowerCase();
+      if (subLower === 'telugu') quizSubject = 'Telugu';
+      else if (subLower === 'hindi') quizSubject = 'Hindi';
+      else if (subLower === 'english') quizSubject = 'English';
+      else if (subLower === 'maths') quizSubject = 'Maths';
+      else if (subLower === 'physics') quizSubject = 'Physics';
+      else if (subLower === 'chemistry') quizSubject = 'Chemistry';
+      else if (subLower === 'biology') quizSubject = 'Biology';
+      else if (subLower === 'social' || subLower === 'social studies') quizSubject = 'Social';
+    }
+
     // Create quiz
     const { data: quizData, error: quizError } = await supabase
       .from('quizzes')
@@ -824,7 +942,7 @@ router.post('/from-document', authenticateToken, authorizeRole(['admin']), async
           total_questions: questions.length,
           passing_score: passing_score || 50,
           time_limit_minutes: time_limit_minutes || 30,
-          subject,
+          subject: quizSubject,
           class: req.body.class || req.body.quizClass,
           is_published: true
         }

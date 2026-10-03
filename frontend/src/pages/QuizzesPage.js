@@ -9,7 +9,8 @@ import {
   Search, 
   Clock, 
   HelpCircle,
-  Award
+  Award,
+  Lock
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -25,7 +26,11 @@ const QuizzesPage = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [selectedSubject, setSelectedSubject] = useState('All');
 
+  const activePlan = localStorage.getItem('activePlan') || 'Free Trial';
+  const isFreeTrial = activePlan === 'Free Trial' || activePlan === 'free';
   const subscribedList = JSON.parse(localStorage.getItem('subscribedSubjects') || '[]');
+  const isPaidSubscriber = loginType === 'quiz' || (!isFreeTrial && subscribedList.length > 0);
+
   const subjectOrder = {
     'telugu': 1,
     'hindi': 2,
@@ -44,7 +49,9 @@ const QuizzesPage = () => {
   });
   const subjects = loginType === 'quiz'
     ? ['All', ...new Set(quizzes.map(q => q.subject).filter(Boolean))]
-    : ['All', ...sortedSubscribedList];
+    : (!isPaidSubscriber || sortedSubscribedList.length === 0
+        ? ['All']
+        : ['All', ...sortedSubscribedList]);
 
   useEffect(() => {
     fetchQuizzes();
@@ -53,18 +60,28 @@ const QuizzesPage = () => {
   const fetchQuizzes = async () => {
     try {
       setLoading(true);
+
+      // Free Trial students cannot view mock tests
+      if (loginType !== 'quiz' && !isPaidSubscriber) {
+        setQuizzes([]);
+        setFilteredQuizzes([]);
+        return;
+      }
+
       const response = await quizAPI.getQuizzes();
       
       // Restrict to authorized 8 subjects & check subscription list
       const allowed = ['TELUGU', 'HINDI', 'ENGLISH', 'SOCIAL', 'PHYSICS', 'CHEMISTRY', 'MATHS', 'BIOLOGY', 'SOCIAL STUDIES'];
-      const subscribed = JSON.parse(localStorage.getItem('subscribedSubjects') || '[]');
       
       const filteredRaw = (response.data || []).filter(q => {
         if (loginType === 'quiz') {
-          return true; // Bypass subscription check for quiz portal
+          return q.is_competitive;
+        }
+        if (!isPaidSubscriber || subscribedList.length === 0) {
+          return false;
         }
         return allowed.includes(q.subject?.toUpperCase()) &&
-          subscribed.some(s => {
+          subscribedList.some(s => {
             const sNorm = s.toLowerCase();
             const qNorm = q.subject?.toLowerCase() || '';
             return sNorm === qNorm || 
@@ -257,34 +274,45 @@ const QuizzesPage = () => {
           ))}
         </div>
       ) : filteredQuizzes.length === 0 ? (
-        /* Empty State */
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-12 text-center shadow-saas max-w-md mx-auto">
-          <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850 flex items-center justify-center text-slate-400 mx-auto mb-4">
-            <HelpCircle className="w-8 h-8 stroke-1.5" />
-          </div>
-          <h4 className="font-extrabold text-slate-800 dark:text-white text-lg leading-tight">
-            {loginType === 'quiz'
-              ? 'No Competitive Quizzes'
-              : (JSON.parse(localStorage.getItem('subscribedSubjects') || '[]')).length === 0 
-                ? 'No Subscribed Subjects' 
-                : 'No Assessments Found'}
-          </h4>
-          <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-            {loginType === 'quiz'
-              ? 'There are currently no competitive quizzes posted by the admin.'
-              : (JSON.parse(localStorage.getItem('subscribedSubjects') || '[]')).length === 0 
-                ? 'You have not subscribed to any subjects yet. Customize your curriculum on the subscription page to unlock auto-graded mock assessments!' 
-                : 'There are no quizzes matching your filters. Complete study courses to unlock new quiz assessments!'}
-          </p>
-          {loginType !== 'quiz' && (JSON.parse(localStorage.getItem('subscribedSubjects') || '[]')).length === 0 && (
-            <a
-              href="/student/subscription"
-              className="inline-flex items-center gap-2 mt-5 py-2.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-755 text-white font-bold text-xs tracking-wide transition-smooth shadow-md shadow-indigo-600/10 shrink-0"
+        /* Empty / Locked State */
+        loginType !== 'quiz' && !isPaidSubscriber ? (
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-10 md:p-12 text-center shadow-saas max-w-lg mx-auto">
+            <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-955/30 border border-amber-200 dark:border-amber-900/40 flex items-center justify-center text-amber-500 mx-auto mb-4 shadow-sm">
+              <Lock className="w-8 h-8 stroke-2" />
+            </div>
+            <div className="inline-block px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-400 font-extrabold text-[10px] uppercase tracking-wider mb-2">
+              Subscription Required
+            </div>
+            <h4 className="font-black text-slate-850 dark:text-white text-xl leading-tight font-sans">
+              Mock Tests are for Subscribed Students Only
+            </h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2.5 leading-relaxed max-w-md mx-auto">
+              You are currently on the Free Trial. Auto-graded chapter tests, mock diagnostic exams, and accuracy reports are exclusive to students with an active paid subscription.
+            </p>
+            <button
+              onClick={() => navigate('/student/subscription')}
+              className="inline-flex items-center gap-2 mt-6 py-3 px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black text-xs tracking-wide transition-smooth shadow-lg shadow-indigo-600/20"
             >
-              Go to Subscription
-            </a>
-          )}
-        </div>
+              Upgrade Subscription to Unlock Tests
+            </button>
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-12 text-center shadow-saas max-w-md mx-auto">
+            <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850 flex items-center justify-center text-slate-400 mx-auto mb-4">
+              <HelpCircle className="w-8 h-8 stroke-1.5" />
+            </div>
+            <h4 className="font-extrabold text-slate-800 dark:text-white text-lg leading-tight">
+              {loginType === 'quiz'
+                ? 'No Competitive Quizzes'
+                : 'No Assessments Found'}
+            </h4>
+            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+              {loginType === 'quiz'
+                ? 'There are currently no competitive quizzes posted by the admin.'
+                : 'There are no quizzes matching your filters. When new tests are published for your subscribed subjects, they will appear here!'}
+            </p>
+          </div>
+        )
       ) : (
         <motion.div 
           variants={containerVariants}
@@ -307,6 +335,11 @@ const QuizzesPage = () => {
                     <span className="text-[9px] font-extrabold uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 text-indigo-500 dark:text-indigo-400 px-2 py-0.5 rounded-md">
                       {quiz.subject === 'Social' ? 'Social Studies' : quiz.subject}
                     </span>
+                    {quiz.is_competitive && (
+                      <span className="text-[9px] font-black uppercase tracking-wider bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-md shadow-sm">
+                        🏆 Competitive
+                      </span>
+                    )}
                     {quiz.attempt && (
                       <span className="inline-flex items-center gap-0.5 text-[9.5px] font-black uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 text-emerald-600 dark:text-emerald-450 px-2 py-0.5 rounded-md shadow-sm">
                         ✓ Completed
