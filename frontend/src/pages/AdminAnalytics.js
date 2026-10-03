@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { quizAPI, getApiUrl } from '../services/api';
+import { formatSubmissionDate } from '../utils/dateHelper';
 import '../styles/AdminAnalytics.css';
 
 // Admin Analytics Page - Provides detailed insights into student performance, quiz attempts, and overall platform usage. Admins can view top performers, average scores, pass rates, and drill down into individual quiz attempts to see detailed responses and reset attempts if necessary.
@@ -254,7 +255,7 @@ const AdminAnalytics = () => {
                     <React.Fragment key={attempt.id}>
                       <tr style={{ background: selectedAttemptId === attempt.id ? '#f7fafc' : 'transparent' }}>
                         <td style={{ fontWeight: '600', color: '#2d3748' }}>{attempt.users?.full_name}</td>
-                        <td style={{ color: '#718096' }}>{new Date(attempt.submitted_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</td>
+                        <td style={{ color: '#718096' }}>{formatSubmissionDate(attempt.submitted_at)}</td>
                         <td style={{ fontWeight: 'bold', color: '#4a5568' }}>{attempt.marks_obtained} / {attempt.total_marks} ({Number(attempt.percentage).toFixed(1)}%)</td>
                         <td>
                           <span className={`score ${attempt.is_passed ? 'pass' : 'fail'}`}>

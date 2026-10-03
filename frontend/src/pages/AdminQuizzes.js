@@ -515,6 +515,7 @@ const AdminQuizzes = () => {
                         disabled={loading}
                       >
                         <option value="">Select Class</option>
+                        <option value="All Classes">All Classes</option>
                         <option value="Class 6">Class 6</option>
                         <option value="Class 7">Class 7</option>
                         <option value="Class 8">Class 8</option>

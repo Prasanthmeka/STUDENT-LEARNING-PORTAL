@@ -10,7 +10,8 @@ import {
   ArrowRight,
   CheckCircle,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  Lock
 } from 'lucide-react';
 
 // Helper function to format seconds to readable format
@@ -41,6 +42,7 @@ const QuizPage = () => {
 
   // Core States
   const [quiz, setQuiz] = useState(null);
+  const [error, setError] = useState(null);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
@@ -125,6 +127,7 @@ const QuizPage = () => {
         }
       } catch (error) {
         console.error('Failed to fetch quiz:', error);
+        setError(error.response?.data?.error || 'Subscription required. Mock tests are exclusive to subscribed students.');
       } finally {
         setLoading(false);
       }
@@ -166,6 +169,37 @@ const QuizPage = () => {
     return (
       <StudentLayout>
         <div className="h-[500px] rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-saas skeleton-pulse" />
+      </StudentLayout>
+    );
+  }
+
+  // ----------------------------------------------------
+  // RENDER COMPONENT: ACCESS RESTRICTED / ERROR STATE
+  // ----------------------------------------------------
+  if (error || (!loading && !quiz)) {
+    return (
+      <StudentLayout>
+        {loginType !== 'quiz' && <GoBackButton to={backPath} replace={true} />}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-10 md:p-12 text-center shadow-saas max-w-lg mx-auto my-12">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-955/30 border border-amber-200 dark:border-amber-900/40 flex items-center justify-center text-amber-500 mx-auto mb-4 shadow-sm">
+            <Lock className="w-8 h-8 stroke-2" />
+          </div>
+          <div className="inline-block px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-400 font-extrabold text-[10px] uppercase tracking-wider mb-2">
+            Subscription Required
+          </div>
+          <h4 className="font-black text-slate-850 dark:text-white text-xl leading-tight font-sans">
+            Mock Tests are for Subscribed Students Only
+          </h4>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2.5 leading-relaxed max-w-md mx-auto">
+            {error || 'This test is exclusive to students with an active paid subscription. Upgrade your subscription plan to unlock full access to all mock tests.'}
+          </p>
+          <button
+            onClick={() => navigate('/student/subscription')}
+            className="inline-flex items-center gap-2 mt-6 py-3 px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black text-xs tracking-wide transition-smooth shadow-lg shadow-indigo-600/20"
+          >
+            Upgrade Subscription
+          </button>
+        </div>
       </StudentLayout>
     );
   }

@@ -33,7 +33,7 @@ const QuizCreate = () => {
   const [quizDifficulty, setQuizDifficulty] = useState('Medium');
   const [quizDuration, setQuizDuration] = useState('20 mins');
   const [passingMarks, setPassingMarks] = useState(50);
-  const [quizClass, setQuizClass] = useState('Class 6');
+  const [quizClass, setQuizClass] = useState('All Classes');
   const [isCompetitive, setIsCompetitive] = useState(false);
 
   // --- MANUAL ENTRY STATE ---
@@ -589,7 +589,7 @@ const QuizCreate = () => {
                 <CustomSelect 
                   value={quizClass}
                   onChange={setQuizClass}
-                  options={['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10']}
+                  options={['All Classes', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10']}
                   direction="up"
                 />
               </div>

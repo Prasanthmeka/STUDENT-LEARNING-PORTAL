@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CustomSelect from '../components/dashboard/CustomSelect';
+import { formatSubmissionDate } from '../utils/dateHelper';
 
 // Strict Subjects List validation
 const VALID_SUBJECTS = ['TELUGU', 'HINDI', 'ENGLISH', 'SOCIAL', 'PHYSICS', 'CHEMISTRY', 'BIOLOGY', 'MATHS'];
@@ -2776,15 +2777,7 @@ const AdminSubjectPage = () => {
                           const studentName = attempt.users?.full_name || 'Anonymous Student';
                           const studentEmail = attempt.users?.email || 'N/A';
                           const isPassed = attempt.is_passed;
-                          const formattedDate = attempt.submitted_at 
-                            ? new Date(attempt.submitted_at).toLocaleString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })
-                            : 'N/A';
+                          const formattedDate = formatSubmissionDate(attempt.submitted_at);
                           
                           return (
                             <tr key={attempt.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/20 transition-all">
@@ -3052,13 +3045,7 @@ const AdminSubjectPage = () => {
                     <div>
                       <span className="text-[9px] text-slate-400 uppercase tracking-wider block">Submitted At</span>
                       <span className="text-xs text-slate-800 dark:text-slate-100 block mt-0.5 font-mono">
-                        {new Date(selectedAttemptForResponse.submitted_at).toLocaleString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                        {formatSubmissionDate(selectedAttemptForResponse.submitted_at)}
                       </span>
                     </div>
                     <div>

@@ -46,6 +46,30 @@ router.post('/register', async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    // Auto-create initial Free Trial subscription
+    try {
+      const start = new Date();
+      const end = new Date(start);
+      end.setDate(start.getDate() + 14);
+
+      await supabase
+        .from('subscriptions')
+        .insert([
+          {
+            id: uuidv4(),
+            student_id: data[0].id,
+            subscription_type: 'free',
+            plan_name: 'Free Trial',
+            start_date: start,
+            end_date: end,
+            is_active: true,
+            subscribed_subjects: []
+          }
+        ]);
+    } catch (subErr) {
+      console.error('Error creating default free trial subscription:', subErr);
+    }
+
     // Automatically grant permissions to all existing published quizzes for the newly registered student
     try {
       const { data: publishedQuizzes } = await supabase
