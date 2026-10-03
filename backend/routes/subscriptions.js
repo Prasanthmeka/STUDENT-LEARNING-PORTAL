@@ -169,12 +169,12 @@ router.get('/my-subscription', authenticateToken, async (req, res) => {
   try {
     const defaultSubjects = ['Telugu', 'Hindi', 'English', 'Maths', 'Physics', 'Chemistry', 'Biology', 'Social'];
 
-    // Fetch active subscription from Supabase
+    // Fetch latest subscription from Supabase
     let { data, error } = await supabase
       .from('subscriptions')
       .select('*')
       .eq('student_id', req.user.id)
-      .eq('is_active', true)
+      .order('created_at', { ascending: false })
       .limit(1);
 
     if (error) {
@@ -213,16 +213,29 @@ router.get('/my-subscription', authenticateToken, async (req, res) => {
     }
 
     const subscription = data[0];
+    const now = new Date();
+    const isExpired = !subscription.is_active || (subscription.end_date && new Date(subscription.end_date) < now);
     const isFree = subscription.plan_name === 'Free Trial' || subscription.subscription_type === 'free';
+    
+    // Proactively sync database if subscription is expired but is_active was true
+    if (isExpired && subscription.is_active) {
+      supabase
+        .from('subscriptions')
+        .update({ is_active: false })
+        .eq('id', subscription.id)
+        .then(() => {})
+        .catch(err => console.warn('Could not update expired subscription in DB:', err.message));
+    }
+
     const result = {
       id: subscription.id,
       student_id: subscription.student_id,
       subscription_type: subscription.subscription_type,
-      is_active: subscription.is_active,
+      is_active: !isExpired,
       start_date: subscription.start_date,
       end_date: subscription.end_date,
-      active_plan: subscription.plan_name || 'Free Trial',
-      subscribed_subjects: isFree ? [] : (subscription.subscribed_subjects || [])
+      active_plan: isExpired ? 'Expired' : (subscription.plan_name || 'Free Trial'),
+      subscribed_subjects: (isFree || isExpired) ? [] : (subscription.subscribed_subjects || [])
     };
 
     res.json(result);
