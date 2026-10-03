@@ -171,7 +171,7 @@ router.put('/:id/subscription', authenticateToken, authorizeRole(['admin']), asy
         .from('subscriptions')
         .update({
           subscription_type,
-          end_date: status === 'Expired' ? end : (subscription_type === 'premium' ? end : null),
+          end_date: end,
           is_active: status === 'Active' || status === 'Free Trial',
           plan_name,
           subscribed_subjects: subjects
@@ -193,7 +193,7 @@ router.put('/:id/subscription', authenticateToken, authorizeRole(['admin']), asy
             subscription_type,
             is_active: status === 'Active' || status === 'Free Trial',
             start_date: start,
-            end_date: status === 'Expired' ? end : (subscription_type === 'premium' ? end : null),
+            end_date: end,
             plan_name,
             subscribed_subjects: subjects
           }

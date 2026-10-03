@@ -226,7 +226,13 @@ router.get('/admin-dashboard', authenticateToken, authorizeRole(['admin']), asyn
       return res.status(400).json({ error: subsError.message });
     }
 
-    const activeSubscriptions = subscriptions.filter(s => s.is_active).length;
+    const now = new Date();
+    const activeSubscriptions = subscriptions.filter(s => {
+      if (!s.is_active) return false;
+      if (s.subscription_type !== 'premium') return false;
+      if (s.end_date && new Date(s.end_date) < now) return false;
+      return true;
+    }).length;
 
     // 3. Quiz Pass / Fail rate
     const { data: attempts, error: attemptsError } = await supabase
@@ -267,7 +273,12 @@ router.get('/admin-dashboard', authenticateToken, authorizeRole(['admin']), asyn
 
     // 5. Build Student Table Data
     const studentsTableData = students.map(student => {
-      const sub = subscriptions.find(s => s.student_id === student.id && s.is_active);
+      // Find the most recent subscription for this student
+      const studentSubs = subscriptions
+        .filter(s => s.student_id === student.id)
+        .sort((a, b) => new Date(b.created_at || b.start_date || 0) - new Date(a.created_at || a.start_date || 0));
+      const sub = studentSubs[0];
+
       const subjects = sub?.subscribed_subjects || [];
       
       let plan = 'Free Trial';
@@ -288,7 +299,13 @@ router.get('/admin-dashboard', authenticateToken, authorizeRole(['admin']), asyn
           subEndDate = end;
         }
         expiryDate = new Date(subEndDate).toLocaleDateString();
-        status = sub.subscription_type === 'premium' ? 'Active' : 'Expired';
+
+        const isExpired = !sub.is_active || (subEndDate && new Date(subEndDate) < now);
+        if (isExpired) {
+          status = 'Expired';
+        } else {
+          status = sub.subscription_type === 'premium' ? 'Active' : 'Free Trial';
+        }
       } else {
         // Mock free trial expiry (14 days from registration)
         const regDate = new Date(student.created_at || new Date());
@@ -296,7 +313,7 @@ router.get('/admin-dashboard', authenticateToken, authorizeRole(['admin']), asyn
         exp.setDate(exp.getDate() + 14);
         
         expiryDate = exp.toLocaleDateString();
-        status = exp > new Date() ? 'Free Trial' : 'Expired';
+        status = exp > now ? 'Free Trial' : 'Expired';
       }
 
       return {
@@ -437,13 +454,20 @@ router.get('/admin-subject-dashboard/:subjectName', authenticateToken, authorize
 
     // 5. Build Student list for this subject
     const subjectStudents = students.filter(student => {
-      const sub = subscriptions.find(s => s.student_id === student.id && s.is_active);
+      const studentSubs = subscriptions
+        .filter(s => s.student_id === student.id)
+        .sort((a, b) => new Date(b.created_at || b.start_date || 0) - new Date(a.created_at || a.start_date || 0));
+      const sub = studentSubs[0];
       const subjects = sub?.subscribed_subjects || [];
       return subjects.some(s => s.toLowerCase() === subjectName.toLowerCase());
     });
 
+    const now = new Date();
     const studentsTableData = subjectStudents.map(student => {
-      const sub = subscriptions.find(s => s.student_id === student.id && s.is_active);
+      const studentSubs = subscriptions
+        .filter(s => s.student_id === student.id)
+        .sort((a, b) => new Date(b.created_at || b.start_date || 0) - new Date(a.created_at || a.start_date || 0));
+      const sub = studentSubs[0];
       
       let plan = 'Free Trial';
       let expiryDate = null;
@@ -463,14 +487,20 @@ router.get('/admin-subject-dashboard/:subjectName', authenticateToken, authorize
           subEndDate = end;
         }
         expiryDate = new Date(subEndDate).toLocaleDateString();
-        status = sub.subscription_type === 'premium' ? 'Active' : 'Expired';
+
+        const isExpired = !sub.is_active || (subEndDate && new Date(subEndDate) < now);
+        if (isExpired) {
+          status = 'Expired';
+        } else {
+          status = sub.subscription_type === 'premium' ? 'Active' : 'Free Trial';
+        }
       } else {
         const regDate = new Date(student.created_at || new Date());
         const exp = new Date(regDate);
         exp.setDate(exp.getDate() + 14);
         
         expiryDate = exp.toLocaleDateString();
-        status = exp > new Date() ? 'Free Trial' : 'Expired';
+        status = exp > now ? 'Free Trial' : 'Expired';
       }
 
       // Calculate real attempts and performance for this subject
@@ -513,7 +543,6 @@ router.get('/admin-subject-dashboard/:subjectName', authenticateToken, authorize
     // 7. Calculate weekly progress analytics (last 4 weeks)
     const weeklyAnalytics = [];
     const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
-    const now = new Date();
 
     for (let i = 0; i < 4; i++) {
       const weekStart = new Date(now.getTime() - (i + 1) * oneWeekMs);
