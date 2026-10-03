@@ -271,7 +271,33 @@ router.get('/', async (req, res) => {
           return res.status(400).json({ error: error.message });
         }
 
-        return res.json(competitiveQuizzes || []);
+        // Fetch all attempts for this student to attach attempt status
+        const { data: attempts } = await supabase
+          .from('quiz_attempts')
+          .select('quiz_id, status, is_passed, percentage, id')
+          .eq('student_id', userId);
+
+        const attemptsMap = {};
+        if (attempts) {
+          attempts.forEach(att => {
+            attemptsMap[att.quiz_id] = att;
+          });
+        }
+
+        const enrichedCompetitiveQuizzes = (competitiveQuizzes || []).map(q => {
+          const attempt = attemptsMap[q.id] || null;
+          return {
+            ...q,
+            attempt: attempt ? {
+              id: attempt.id,
+              status: attempt.status,
+              is_passed: attempt.is_passed,
+              percentage: attempt.percentage
+            } : null
+          };
+        });
+
+        return res.json(enrichedCompetitiveQuizzes);
       }
 
       // Check if student is an active paid subscriber
@@ -345,6 +371,11 @@ router.get('/', async (req, res) => {
       const quizzes = candidateQuizzes
         .filter(q => {
           if (!q) return false;
+
+          // Strictly do NOT show competitive quizzes in course login (show only in quiz portal login)
+          if (q.is_competitive) {
+            return false;
+          }
 
           // Must be published OR explicitly permitted
           const isExplicitlyPermitted = (permittedQuizzes || []).some(p => p.quiz_id === q.id);
@@ -421,6 +452,11 @@ router.get('/:id', authenticateToken, async (req, res) => {
           return res.status(403).json({ error: 'Access denied. This quiz is only available through the courses portal.' });
         }
       } else {
+        // In courses portal: strictly deny access to competitive quizzes
+        if (quizData.is_competitive) {
+          return res.status(403).json({ error: 'Access denied. Competitive quizzes are only available through the quiz portal.' });
+        }
+
         // In courses portal: only active paid subscribers can access tests
         const { isPaidSubscriber, getPaidSubscribedSubjects } = require('../utils/subscriptionHelper');
         const isPaid = await isPaidSubscriber(req.user.id);
@@ -482,7 +518,11 @@ router.post('/:id/submit', authenticateToken, authorizeRole(['student']), async 
         });
       }
 
-      const { data: qCheck } = await supabase.from('quizzes').select('subject').eq('id', quizId).single();
+      const { data: qCheck } = await supabase.from('quizzes').select('subject, is_competitive').eq('id', quizId).single();
+      if (qCheck?.is_competitive) {
+        return res.status(403).json({ error: 'Access denied. Competitive quizzes are only available through the quiz portal.' });
+      }
+
       const paidSubjects = await getPaidSubscribedSubjects(req.user.id);
       const isSubscribedToSubject = paidSubjects.some(s => {
         const sNorm = s.toLowerCase().trim();
@@ -716,6 +756,19 @@ router.get('/:id/attempt/:attemptId', authenticateToken, async (req, res) => {
 // Get all attempts for a student on a specific quiz
 router.get('/:id/my-attempts', authenticateToken, authorizeRole(['student', 'admin']), async (req, res) => {
   try {
+    if (req.user && req.user.role === 'student') {
+      const { data: qCheck } = await supabase.from('quizzes').select('is_competitive').eq('id', req.params.id).single();
+      if (req.user.loginType === 'quiz') {
+        if (!qCheck?.is_competitive) {
+          return res.status(403).json({ error: 'Access denied. This quiz is only available through the courses portal.' });
+        }
+      } else {
+        if (qCheck?.is_competitive) {
+          return res.status(403).json({ error: 'Access denied. Competitive quizzes are only available through the quiz portal.' });
+        }
+      }
+    }
+
     const { data: attempts, error } = await supabase
       .from('quiz_attempts')
       .select('*')

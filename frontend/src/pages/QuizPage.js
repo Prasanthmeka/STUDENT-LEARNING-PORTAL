@@ -38,7 +38,7 @@ const QuizPage = () => {
   // Determine back path
   const fromDashboard = location.state?.from === 'dashboard';
   const backPath = (fromDashboard && loginType !== 'quiz') ? '/student/dashboard' : '/student/quizzes';
-  const backLabel = (fromDashboard && loginType !== 'quiz') ? 'Dashboard' : 'Tests';
+  const backLabel = (fromDashboard && loginType !== 'quiz') ? 'Dashboard' : (loginType === 'quiz' ? 'Quizzes' : 'Tests');
 
   // Core States
   const [quiz, setQuiz] = useState(null);
@@ -121,6 +121,14 @@ const QuizPage = () => {
         }
 
         const response = await quizAPI.getQuiz(id);
+        if (response.data.is_competitive && loginType !== 'quiz') {
+          setError('Access denied. Competitive quizzes are only available through the quiz portal.');
+          return;
+        }
+        if (!response.data.is_competitive && loginType === 'quiz') {
+          setError('Access denied. This quiz is only available through the courses portal.');
+          return;
+        }
         setQuiz(response.data);
         if (response.data.time_limit_minutes) {
           setTimeLeft(response.data.time_limit_minutes * 60);
@@ -134,7 +142,7 @@ const QuizPage = () => {
     };
 
     fetchQuiz();
-  }, [id]);
+  }, [id, loginType]);
 
   // Countdown timer thread
   useEffect(() => {
@@ -177,28 +185,43 @@ const QuizPage = () => {
   // RENDER COMPONENT: ACCESS RESTRICTED / ERROR STATE
   // ----------------------------------------------------
   if (error || (!loading && !quiz)) {
+    const isPortalMismatch = error && (
+      error.includes('quiz portal') || 
+      error.includes('courses portal') || 
+      error.includes('Competitive quizzes')
+    );
+
     return (
       <StudentLayout>
         {loginType !== 'quiz' && <GoBackButton to={backPath} replace={true} />}
         <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-10 md:p-12 text-center shadow-saas max-w-lg mx-auto my-12">
-          <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-955/30 border border-amber-200 dark:border-amber-900/40 flex items-center justify-center text-amber-500 mx-auto mb-4 shadow-sm">
-            <Lock className="w-8 h-8 stroke-2" />
+          <div className={`w-16 h-16 rounded-2xl ${isPortalMismatch ? 'bg-indigo-50 dark:bg-indigo-955/30 border-indigo-200 dark:border-indigo-900/40 text-indigo-500' : 'bg-amber-50 dark:bg-amber-955/30 border-amber-200 dark:border-amber-900/40 text-amber-500'} border flex items-center justify-center mx-auto mb-4 shadow-sm`}>
+            {isPortalMismatch ? <AlertTriangle className="w-8 h-8 stroke-2" /> : <Lock className="w-8 h-8 stroke-2" />}
           </div>
-          <div className="inline-block px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-400 font-extrabold text-[10px] uppercase tracking-wider mb-2">
-            Subscription Required
+          <div className={`inline-block px-3 py-1 rounded-full ${isPortalMismatch ? 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-400' : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-400'} font-extrabold text-[10px] uppercase tracking-wider mb-2`}>
+            {isPortalMismatch ? 'Portal Restriction' : 'Subscription Required'}
           </div>
           <h4 className="font-black text-slate-850 dark:text-white text-xl leading-tight font-sans">
-            Mock Tests are for Subscribed Students Only
+            {isPortalMismatch ? 'Access Restricted' : 'Mock Tests are for Subscribed Students Only'}
           </h4>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-2.5 leading-relaxed max-w-md mx-auto">
             {error || 'This test is exclusive to students with an active paid subscription. Upgrade your subscription plan to unlock full access to all mock tests.'}
           </p>
-          <button
-            onClick={() => navigate('/student/subscription')}
-            className="inline-flex items-center gap-2 mt-6 py-3 px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black text-xs tracking-wide transition-smooth shadow-lg shadow-indigo-600/20"
-          >
-            Upgrade Subscription
-          </button>
+          {isPortalMismatch ? (
+            <button
+              onClick={() => navigate('/student/quizzes')}
+              className="inline-flex items-center gap-2 mt-6 py-3 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs tracking-wide transition-smooth shadow-lg shadow-indigo-600/20"
+            >
+              Back to Tests
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/student/subscription')}
+              className="inline-flex items-center gap-2 mt-6 py-3 px-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black text-xs tracking-wide transition-smooth shadow-lg shadow-indigo-600/20"
+            >
+              Upgrade Subscription
+            </button>
+          )}
         </div>
       </StudentLayout>
     );
